@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, Save, Edit } from "lucide-react";
 import { Event, Participant } from "@/types";
 
 export default function EditEventPage({
@@ -43,14 +43,12 @@ export default function EditEventPage({
 
   const fetchEventData = async (id: string) => {
     try {
-      // Fetch Event
       const resEvent = await fetch(`/api/events/${id}`);
       if (resEvent.ok) {
         const data = await resEvent.json();
         setEvent(data);
-        // Format date for datetime-local input
         const date = new Date(data.event_date);
-        const formattedDate = date.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+        const formattedDate = date.toISOString().slice(0, 16);
 
         setFormData({
           title: data.title,
@@ -61,24 +59,6 @@ export default function EditEventPage({
           description: data.description || "",
         });
       }
-
-      // Fetch Participants - we need an API for this or reuse GET /api/events/[id] public page logic?
-      // Oops, the public page logic fetches participants via DB query.
-      // We need an API or we can just add a `participants` include to the event API?
-      // The PRD says "Participant Management ... Located within the Edit Event view".
-      // I don't have a specific API to list participants for an event in the Admin API list yet,
-      // BUT I can create one or just misuse the public page logic if I was doing server components.
-      // Since I am in a Client Component, I need an API.
-      // I'll create a quick GET endpoint for participants or just update the logic to use what I have.
-      // Actually, I can add a `GET /api/admin/participants?event_id=XYZ` or similar.
-      // Or I can just blindly create it now.
-      // Let's create GET /api/admin/participants?event_id=...
-
-      // WAIT, I haven't created a GET participants API. I'll rely on a new fetch or just add it now.
-      // For simplicity, I'll add the fetch logic here assuming I'll fix the API in a moment.
-      // Or I can use a server action if this was server component.
-
-      // Let's Assume I create GET /api/events/[id]/participants
       fetchParticipants(id);
     } catch (err) {
       console.error("Error fetching data", err);
@@ -88,7 +68,7 @@ export default function EditEventPage({
   };
 
   const fetchParticipants = async (id: string) => {
-    const res = await fetch(`/api/events/${id}/participants`); // Need to create this
+    const res = await fetch(`/api/events/${id}/participants`);
     if (res.ok) {
       setParticipants(await res.json());
     }
@@ -155,27 +135,47 @@ export default function EditEventPage({
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
-  if (!event) return <div className="p-8">Event not found</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-md-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-md-primary border-t-transparent" />
+      </div>
+    );
+
+  if (!event)
+    return (
+      <div className="p-8 text-center text-md-on-background">
+        Event not found
+      </div>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-md-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
         <Link
           href="/admin"
-          className="text-gray-500 hover:text-gray-900 flex items-center mb-6"
+          className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-background mb-8 px-4 py-2 rounded-full hover:bg-md-on-surface/5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Edit Event Form */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold mb-4">Edit Event</h2>
+          <div className="bg-md-surface-container p-6 rounded-[32px] shadow-sm">
+            <div className="flex items-center gap-3 mb-6 border-b border-md-outline/10 pb-4">
+              <div className="w-10 h-10 rounded-full bg-md-secondary-container flex items-center justify-center text-md-on-secondary-container">
+                <Edit className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-bold text-md-on-surface">
+                Edit Event
+              </h2>
+            </div>
+
             <form onSubmit={handleEventUpdate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Title
+              {/* Title */}
+              <div className="space-y-2 group">
+                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
+                  Event Title
                 </label>
                 <input
                   type="text"
@@ -184,27 +184,15 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
+                  placeholder="Title"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Slug
-                </label>
-                <input
-                  type="text"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData({ ...formData, slug: e.target.value })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
+
+              {/* Date */}
+              <div className="space-y-2 group">
+                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
                   Date
                 </label>
                 <input
@@ -214,13 +202,15 @@ export default function EditEventPage({
                   onChange={(e) =>
                     setFormData({ ...formData, event_date: e.target.value })
                   }
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
                   required
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                {/* Location */}
+                <div className="space-y-2 group">
+                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
                     Location
                   </label>
                   <input
@@ -230,33 +220,55 @@ export default function EditEventPage({
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
+                    placeholder="Location"
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
+
+                {/* Distance */}
+                <div className="space-y-2 group">
+                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
                     Distance
                   </label>
-                  <select
-                    name="distance"
-                    value={formData.distance}
-                    onChange={(e) =>
-                      setFormData({ ...formData, distance: e.target.value })
-                    }
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                    required
-                  >
-                    <option value="5K">5K</option>
-                    <option value="10K">10K</option>
-                    <option value="Half Marathon">Half Marathon</option>
-                    <option value="Full Marathon">Full Marathon</option>
-                    <option value="Ultra Marathon">Ultra Marathon</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="distance"
+                      value={formData.distance}
+                      onChange={(e) =>
+                        setFormData({ ...formData, distance: e.target.value })
+                      }
+                      className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base appearance-none cursor-pointer focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
+                      required
+                    >
+                      <option value="5K">5K</option>
+                      <option value="10K">10K</option>
+                      <option value="Half Marathon">Half Marathon</option>
+                      <option value="Full Marathon">Full Marathon</option>
+                      <option value="Ultra Marathon">Ultra Marathon</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
+
+              {/* Description */}
+              <div className="space-y-2 group">
+                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
                   Description
                 </label>
                 <textarea
@@ -266,48 +278,64 @@ export default function EditEventPage({
                     setFormData({ ...formData, description: e.target.value })
                   }
                   rows={3}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  className="w-full p-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base resize-none focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
                 />
               </div>
+
               <button
                 type="submit"
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+                className="w-full h-14 rounded-full bg-md-primary text-md-on-primary font-medium text-lg shadow-lg shadow-md-primary/25 hover:shadow-xl hover:bg-md-primary/90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 mt-4"
               >
+                <Save className="w-5 h-5" />
                 Update Event
               </button>
             </form>
           </div>
 
           {/* Participants Management */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold mb-4">Participants</h2>
+          <div className="bg-md-surface-container p-6 rounded-[32px] shadow-sm flex flex-col h-full">
+            <div className="flex items-center justify-between mb-6 border-b border-md-outline/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-md-tertiary-container flex items-center justify-center text-md-on-tertiary-container">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-md-on-surface">
+                  Participants
+                </h2>
+              </div>
+              <span className="bg-md-surface-variant text-md-on-surface-variant px-3 py-1 rounded-full text-xs font-bold">
+                {participants.length}
+              </span>
+            </div>
 
             {/* Add Participant Form */}
             <form
               onSubmit={handleAddParticipant}
-              className="mb-6 bg-gray-50 p-4 rounded-md"
+              className="mb-6 bg-md-surface-container-high p-4 rounded-[20px]"
             >
-              <h3 className="text-sm font-medium text-gray-900 mb-2">
-                Add New Participant
+              <h3 className="text-sm font-semibold text-md-on-surface mb-3 ml-1">
+                Add Runner
               </h3>
-              <div className="grid grid-cols-1 gap-3">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={newParticipant.name}
-                  onChange={(e) =>
-                    setNewParticipant({
-                      ...newParticipant,
-                      name: e.target.value,
-                    })
-                  }
-                  className="block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm"
-                  required
-                />
-                <div className="flex gap-2">
+              <div className="flex gap-3">
+                <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="Bib Number"
+                    placeholder="Name"
+                    value={newParticipant.name}
+                    onChange={(e) =>
+                      setNewParticipant({
+                        ...newParticipant,
+                        name: e.target.value,
+                      })
+                    }
+                    className="w-full h-12 px-4 rounded-xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-sm focus:bg-md-surface focus:border-md-primary/30 focus:shadow-md outline-none transition-all"
+                    required
+                  />
+                </div>
+                <div className="w-24">
+                  <input
+                    type="text"
+                    placeholder="Bib"
                     value={newParticipant.bib_number}
                     onChange={(e) =>
                       setNewParticipant({
@@ -315,42 +343,42 @@ export default function EditEventPage({
                         bib_number: e.target.value,
                       })
                     }
-                    className="block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm"
+                    className="w-full h-12 px-4 rounded-xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-sm focus:bg-md-surface focus:border-md-primary/30 focus:shadow-md outline-none transition-all"
                   />
-                  <button
-                    type="submit"
-                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm whitespace-nowrap"
-                  >
-                    Add
-                  </button>
                 </div>
+                <button
+                  type="submit"
+                  className="h-12 w-12 rounded-full bg-md-primary text-md-on-primary flex items-center justify-center shadow-lg shadow-md-primary/20 hover:bg-md-primary/90 active:scale-95 transition-all"
+                >
+                  <Plus className="w-6 h-6" />
+                </button>
               </div>
             </form>
 
             {/* Participants List */}
-            <div className="overflow-y-auto max-h-[500px]">
+            <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 scrollbar-thin scrollbar-thumb-md-outline/20">
               {participants.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center">
-                  No participants yet.
-                </p>
+                <div className="flex flex-col items-center justify-center h-40 text-md-on-surface-variant/50">
+                  <p className="text-sm">No participants yet.</p>
+                </div>
               ) : (
-                <ul className="divide-y divide-gray-200">
+                <ul className="space-y-2">
                   {participants.map((p) => (
                     <li
                       key={p.id}
-                      className="py-3 flex justify-between items-center"
+                      className="p-3 bg-md-surface rounded-[16px] border border-md-outline/5 flex justify-between items-center group hover:border-md-outline/20 transition-colors"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-md-secondary-container text-md-on-secondary-container flex items-center justify-center text-xs font-bold font-mono">
+                          {p.bib_number || "#"}
+                        </div>
+                        <p className="text-sm font-medium text-md-on-surface">
                           {p.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Bib: {p.bib_number || "-"}
                         </p>
                       </div>
                       <button
                         onClick={() => handleDeleteParticipant(p.id)}
-                        className="text-red-400 hover:text-red-500 p-1"
+                        className="w-8 h-8 rounded-full text-md-on-surface-variant hover:bg-md-error-container hover:text-md-on-error-container flex items-center justify-center transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

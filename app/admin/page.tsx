@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Trash2, Calendar, LogOut } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, LogOut, MapPin } from "lucide-react";
 import { Event } from "@/types";
 
 export default function AdminDashboard() {
@@ -48,102 +48,111 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    // In a real app we'd call an API to clear the cookie, but clearing locally or redirecting helps visually.
-    // Since cookie is httpOnly, we can't clear it from JS.
-    // We should probably have a logout endpoint, but simply redirecting to login is often enough if we rely on cookie expiration or just restricted access.
-    // Proper way: call logout API.
-    // For now, let's just force a refresh or similar, but simplified:
-    document.cookie = "token=; Max-Age=0; path=/;"; // This won't work for HttpOnly.
-    // So let's implement a logout route later or just redirect.
-    // Given the constraints, I will create a simple logout action or just redirect to login which implies "done".
-    // Actually, I'll rely on the user manually dealing with cookies if needed, or just redirect.
-    // Better: Add a logout API route if I have time, but sticking to basics.
-    // I will write a quick logout API in the next steps.
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-md-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-md-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="flex space-x-4">
-            <Link
-              href="/admin/events/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Event
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </button>
+    <div className="min-h-screen bg-md-background text-md-on-background pb-20 relative">
+      {/* Background Decor */}
+      <div className="fixed top-0 left-0 w-full h-64 bg-md-surface-container -z-10 rounded-b-[48px]" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-md-on-surface mb-2">
+              Admin Dashboard
+            </h1>
+            <p className="text-md-on-surface-variant">
+              Manage your events and runners.
+            </p>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center px-5 h-10 border border-md-outline/20 rounded-full text-sm font-medium text-md-on-surface hover:bg-md-surface-variant/30 transition-colors"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </button>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {events.length === 0 ? (
-              <li className="px-6 py-12 text-center text-gray-500">
-                No events found. Create one to get started.
-              </li>
-            ) : (
-              events.map((event) => (
-                <li key={event.id}>
-                  <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
-                    <div className="flex items-center truncate">
-                      <div className="flex-shrink-0 mr-4">
-                        <Calendar className="h-10 w-10 text-gray-400" />
-                      </div>
-                      <div className="truncate">
-                        <Link
-                          href={`/events/${event.id}`}
-                          className="text-lg font-medium text-indigo-600 hover:text-indigo-900 truncate block"
-                        >
-                          {event.title}
-                        </Link>
-                        <p className="text-sm text-gray-500">
-                          {new Date(event.event_date).toLocaleDateString()} •{" "}
-                          {event.location} • {event.distance}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link
-                        href={`/admin/events/${event.id}`}
-                        className="p-2 text-gray-400 hover:text-gray-500"
-                      >
-                        <Edit className="h-5 w-5" />
-                        <span className="sr-only">Edit</span>
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="p-2 text-red-400 hover:text-red-500"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                        <span className="sr-only">Delete</span>
-                      </button>
+        <div className="grid gap-4 sm:gap-6">
+          {events.length === 0 ? (
+            <div className="px-6 py-24 text-center bg-md-surface rounded-[32px] border border-md-outline/10 shadow-sm">
+              <p className="text-md-on-surface-variant text-lg">
+                No events found. Tap the + button to create one.
+              </p>
+            </div>
+          ) : (
+            events.map((event) => (
+              <div
+                key={event.id}
+                className="bg-md-surface p-6 rounded-[24px] shadow-sm hover:shadow-md transition-shadow duration-300 border border-md-outline/5 flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+              >
+                <div className="flex items-start gap-4 flex-1">
+                  <div className="w-12 h-12 rounded-2xl bg-md-secondary-container flex items-center justify-center shrink-0 text-md-on-secondary-container">
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="text-xl font-bold text-md-on-surface hover:text-md-primary transition-colors block mb-1 group-hover:underline decoration-2 decoration-transparent group-hover:decoration-md-primary/30 underline-offset-4"
+                    >
+                      {event.title}
+                    </Link>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-md-on-surface-variant">
+                      <span>
+                        {new Date(event.event_date).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center">
+                        <MapPin className="w-3 h-3 mr-1" /> {event.location}
+                      </span>
+                      <span className="bg-md-surface-variant px-2 py-0.5 rounded-md text-xs font-semibold">
+                        {event.distance}
+                      </span>
                     </div>
                   </div>
-                </li>
-              ))
-            )}
-          </ul>
+                </div>
+
+                <div className="flex items-center gap-3 self-end md:self-center">
+                  <Link
+                    href={`/admin/events/${event.id}`}
+                    className="p-3 rounded-full text-md-primary hover:bg-md-primary/10 active:scale-95 transition-all"
+                  >
+                    <Edit className="h-5 w-5" />
+                    <span className="sr-only">Edit</span>
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(event.id)}
+                    className="p-3 rounded-full text-md-error hover:bg-md-error/10 active:scale-95 transition-all"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    <span className="sr-only">Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
+
+      {/* Floating Action Button (FAB) */}
+      <Link
+        href="/admin/events/new"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-md-tertiary-container text-md-on-tertiary-container rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-300 ease-emphasized z-50"
+      >
+        <Plus className="h-8 w-8" />
+        <span className="sr-only">New Event</span>
+      </Link>
     </div>
   );
 }

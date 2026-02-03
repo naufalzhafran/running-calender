@@ -19,13 +19,27 @@ export default function CreateEventPage() {
     description: "",
   });
 
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      if (name === "title") {
+        newData.slug = generateSlug(value);
+      }
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,147 +68,180 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-md-background py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
         <Link
           href="/admin"
-          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 mb-8"
+          className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-background mb-8 px-4 py-2 rounded-full hover:bg-md-on-surface/5 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" />
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Link>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+
+        <div className="bg-md-surface-container p-8 rounded-[32px] shadow-sm">
+          <h1 className="text-3xl font-bold text-md-on-surface mb-8">
             Create New Event
           </h1>
 
           {error && (
-            <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4 text-sm text-red-700">
+            <div className="mb-6 bg-md-error/10 border-l-4 border-md-error p-4 text-sm text-md-error font-medium rounded-r-lg">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+            {/* Title */}
+            <div className="space-y-2 group">
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-gray-700"
+                className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
                 Event Title
               </label>
-              <input
-                type="text"
-                name="title"
-                id="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="title"
+                  id="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                           text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base
+                           focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                           outline-none transition-all duration-300 ease-emphasized"
+                  placeholder="e.g. Summer City Marathon"
+                />
+              </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="slug"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Slug (URL friendly)
-              </label>
-              <input
-                type="text"
-                name="slug"
-                id="slug"
-                required
-                value={formData.slug}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-              />
-            </div>
-
-            <div>
+            {/* Date */}
+            <div className="space-y-2 group">
               <label
                 htmlFor="event_date"
-                className="block text-sm font-medium text-gray-700"
+                className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
                 Date & Time
               </label>
-              <input
-                type="datetime-local"
-                name="event_date"
-                id="event_date"
-                required
-                value={formData.event_date}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-              />
+              <div className="relative">
+                <input
+                  type="datetime-local"
+                  name="event_date"
+                  id="event_date"
+                  required
+                  value={formData.event_date}
+                  onChange={handleChange}
+                  className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                           text-md-on-surface text-base
+                           focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                           outline-none transition-all duration-300 ease-emphasized"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              {/* Location */}
+              <div className="space-y-2 group">
                 <label
                   htmlFor="location"
-                  className="block text-sm font-medium text-gray-700"
+                  className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
                 >
                   Location
                 </label>
-                <input
-                  type="text"
-                  name="location"
-                  id="location"
-                  required
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                             text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base
+                             focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                             outline-none transition-all duration-300 ease-emphasized"
+                    placeholder="e.g. Central Park, NY"
+                  />
+                </div>
               </div>
 
-              <div>
+              {/* Distance */}
+              <div className="space-y-2 group">
                 <label
                   htmlFor="distance"
-                  className="block text-sm font-medium text-gray-700"
+                  className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
                 >
                   Distance
                 </label>
-                <select
-                  name="distance"
-                  id="distance"
-                  required
-                  value={formData.distance}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                >
-                  <option value="">Select Distance</option>
-                  <option value="5K">5K</option>
-                  <option value="10K">10K</option>
-                  <option value="Half Marathon">Half Marathon</option>
-                  <option value="Full Marathon">Full Marathon</option>
-                  <option value="Ultra Marathon">Ultra Marathon</option>
-                </select>
+                <div className="relative">
+                  <select
+                    name="distance"
+                    id="distance"
+                    required
+                    value={formData.distance}
+                    onChange={handleChange}
+                    className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                             text-md-on-surface text-base appearance-none cursor-pointer
+                             focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                             outline-none transition-all duration-300 ease-emphasized"
+                  >
+                    <option value="" disabled>
+                      Select Distance
+                    </option>
+                    <option value="5K">5K</option>
+                    <option value="10K">10K</option>
+                    <option value="Half Marathon">Half Marathon</option>
+                    <option value="Full Marathon">Full Marathon</option>
+                    <option value="Ultra Marathon">Ultra Marathon</option>
+                  </select>
+                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
+            {/* Description */}
+            <div className="space-y-2 group">
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700"
+                className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
                 Description
               </label>
-              <textarea
-                name="description"
-                id="description"
-                rows={4}
-                value={formData.description}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-              />
+              <div className="relative">
+                <textarea
+                  name="description"
+                  id="description"
+                  rows={4}
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full p-5 rounded-[24px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                           text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base resize-none
+                           focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                           outline-none transition-all duration-300 ease-emphasized"
+                  placeholder="Tell people about the race..."
+                ></textarea>
+              </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="inline-flex justify-center items-center px-8 h-12 border border-transparent text-sm font-medium rounded-full text-md-on-primary bg-md-primary hover:bg-md-primary/90 shadow-lg hover:shadow-xl shadow-md-primary/20 active:scale-95 transition-all duration-200 disabled:opacity-50"
               >
                 {loading ? "Creating..." : "Create Event"}
               </button>
