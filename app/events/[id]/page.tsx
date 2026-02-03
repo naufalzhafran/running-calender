@@ -56,7 +56,7 @@ export default async function EventPage({ params }: PageProps) {
           className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-surface mb-8 px-4 py-2 rounded-full hover:bg-md-secondary/5 transition-colors active:scale-95 ease-emphasized"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Events
+          Kembali ke Daftar
         </Link>
 
         {/* Hero Card */}
@@ -87,10 +87,10 @@ export default async function EventPage({ params }: PageProps) {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider opacity-70">
-                    Date
+                    Tanggal
                   </p>
                   <p className="text-lg font-medium text-md-on-surface">
-                    {new Date(event.event_date).toLocaleString(undefined, {
+                    {new Date(event.event_date).toLocaleString("id-ID", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
@@ -103,7 +103,7 @@ export default async function EventPage({ params }: PageProps) {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider opacity-70">
-                    Location
+                    Lokasi
                   </p>
                   <p className="text-lg font-medium text-md-on-surface">
                     {event.location}
@@ -129,7 +129,7 @@ export default async function EventPage({ params }: PageProps) {
               <div className="w-8 h-8 rounded-full bg-md-primary/10 flex items-center justify-center mr-3 text-md-primary">
                 <Users className="w-4 h-4" />
               </div>
-              <h2 className="text-xl font-bold text-md-on-surface">Roster</h2>
+              <h2 className="text-xl font-bold text-md-on-surface">Peserta</h2>
             </div>
             <span className="bg-md-secondary-container text-md-on-secondary-container px-4 py-1 rounded-full text-sm font-bold">
               {participants.length}
@@ -141,8 +141,8 @@ export default async function EventPage({ params }: PageProps) {
               <thead className="bg-md-surface-container/50 text-md-on-surface-variant text-xs uppercase tracking-wider font-semibold">
                 <tr>
                   <th className="px-8 py-4">Bib</th>
-                  <th className="px-8 py-4">Name</th>
-                  <th className="px-8 py-4">Category</th>
+                  <th className="px-8 py-4">Nama</th>
+                  <th className="px-8 py-4">Kategori</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-md-outline/5 text-md-on-surface text-sm">
@@ -152,7 +152,7 @@ export default async function EventPage({ params }: PageProps) {
                       colSpan={3}
                       className="px-8 py-12 text-center text-md-on-surface-variant"
                     >
-                      No participants registered yet.
+                      Belum ada peserta terdaftar.
                     </td>
                   </tr>
                 ) : (

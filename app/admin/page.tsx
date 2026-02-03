@@ -30,7 +30,7 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!confirm("Apakah Anda yakin ingin menghapus event ini?")) return;
 
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
@@ -40,10 +40,10 @@ export default function AdminDashboard() {
       if (res.ok) {
         fetchEvents();
       } else {
-        alert("Failed to delete event");
+        alert("Gagal menghapus event");
       }
     } catch (err) {
-      alert("An error occurred");
+      alert("Terjadi kesalahan");
     }
   };
 
@@ -69,10 +69,10 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-12">
           <div>
             <h1 className="text-4xl font-bold text-md-on-surface mb-2">
-              Admin Dashboard
+              Dashboard Admin
             </h1>
             <p className="text-md-on-surface-variant">
-              Manage your events and runners.
+              Kelola event dan peserta lari Anda.
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
             className="inline-flex items-center px-5 h-10 border border-md-outline/20 rounded-full text-sm font-medium text-md-on-surface hover:bg-md-surface-variant/30 transition-colors"
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            Keluar
           </button>
         </div>
 
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
           {events.length === 0 ? (
             <div className="px-6 py-24 text-center bg-md-surface rounded-[32px] border border-md-outline/10 shadow-sm">
               <p className="text-md-on-surface-variant text-lg">
-                No events found. Tap the + button to create one.
+                Tidak ada event ditemukan. Tekan tombol + untuk membuat baru.
               </p>
             </div>
           ) : (
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
                     </Link>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-md-on-surface-variant">
                       <span>
-                        {new Date(event.event_date).toLocaleDateString()}
+                        {new Date(event.event_date).toLocaleDateString("id-ID")}
                       </span>
                       <span className="flex items-center">
                         <MapPin className="w-3 h-3 mr-1" /> {event.location}
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                     className="p-3 rounded-full text-md-error hover:bg-md-error/10 active:scale-95 transition-all"
                   >
                     <Trash2 className="h-5 w-5" />
-                    <span className="sr-only">Delete</span>
+                    <span className="sr-only">Hapus</span>
                   </button>
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
         className="fixed bottom-8 right-8 w-14 h-14 bg-md-tertiary-container text-md-on-tertiary-container rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-300 ease-emphasized z-50"
       >
         <Plus className="h-8 w-8" />
-        <span className="sr-only">New Event</span>
+        <span className="sr-only">Event Baru</span>
       </Link>
     </div>
   );

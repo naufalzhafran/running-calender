@@ -89,10 +89,10 @@ export default function CreateEventPage() {
         router.push("/admin");
       } else {
         const data = await res.json();
-        setError(data.message || "Failed to create event");
+        setError(data.message || "Gagal membuat event");
       }
     } catch (err) {
-      setError("An error occurred");
+      setError("Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -106,12 +106,12 @@ export default function CreateEventPage() {
           className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-background mb-8 px-4 py-2 rounded-full hover:bg-md-on-surface/5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
+          Kembali ke Dashboard
         </Link>
 
         <div className="bg-md-surface-container p-8 rounded-[32px] shadow-sm">
           <h1 className="text-3xl font-bold text-md-on-surface mb-8">
-            Create New Event
+            Buat Event Baru
           </h1>
 
           {error && (
@@ -127,7 +127,7 @@ export default function CreateEventPage() {
                 htmlFor="title"
                 className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
-                Event Title
+                Judul Event
               </label>
               <div className="relative">
                 <input
@@ -141,7 +141,7 @@ export default function CreateEventPage() {
                            text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base
                            focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
                            outline-none transition-all duration-300 ease-emphasized"
-                  placeholder="e.g. Summer City Marathon"
+                  placeholder="Contoh: Jakarta Marathon 2026"
                 />
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function CreateEventPage() {
                 htmlFor="event_date"
                 className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
-                Date & Time
+                Tanggal & Waktu
               </label>
               <div className="relative">
                 <input
@@ -177,7 +177,7 @@ export default function CreateEventPage() {
                   htmlFor="location"
                   className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
                 >
-                  Location
+                  Lokasi
                 </label>
                 <div className="relative">
                   <input
@@ -191,14 +191,14 @@ export default function CreateEventPage() {
                              text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base
                              focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
                              outline-none transition-all duration-300 ease-emphasized"
-                    placeholder="e.g. Central Park, NY"
+                    placeholder="Contoh: GBK, Jakarta"
                   />
                 </div>
               </div>
 
               <div className="space-y-3 group">
                 <label className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1">
-                  Distances
+                  Jarak
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {availableDistances.map((dist) => (
@@ -234,7 +234,7 @@ export default function CreateEventPage() {
                 htmlFor="description"
                 className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
-                Description
+                Deskripsi
               </label>
               <div className="relative">
                 <textarea
@@ -247,7 +247,7 @@ export default function CreateEventPage() {
                            text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base resize-none
                            focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
                            outline-none transition-all duration-300 ease-emphasized"
-                  placeholder="Tell people about the race..."
+                  placeholder="Ceritakan tentang lomba ini..."
                 ></textarea>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default function CreateEventPage() {
                 disabled={loading}
                 className="inline-flex justify-center items-center px-8 h-12 border border-transparent text-sm font-medium rounded-full text-md-on-primary bg-md-primary hover:bg-md-primary/90 shadow-lg hover:shadow-xl shadow-md-primary/20 active:scale-95 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? "Creating..." : "Create Event"}
+                {loading ? "Membuat..." : "Buat Event"}
               </button>
             </div>
           </form>

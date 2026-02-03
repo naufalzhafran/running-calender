@@ -10,8 +10,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Running Event Calendar",
-  description: "A centralized running event calendar",
+  title: "Kalender Lari",
+  description: "Kalender event lari terpusat",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="id">
       <body className={`${roboto.variable} font-sans antialiased`}>
         {children}
       </body>

@@ -31,17 +31,17 @@ export default async function Home() {
         <div className="flex justify-between items-center mb-16">
           <div>
             <h1 className="text-display-small md:text-5xl font-bold text-md-on-background tracking-tight mb-2">
-              Running Calendar
+              Kalender Lari
             </h1>
             <p className="text-md-on-surface-variant text-lg">
-              Find your next race.
+              Temukan lomba lari berikutnya.
             </p>
           </div>
           <Link
             href="/admin"
             className="hidden sm:inline-flex items-center justify-center px-6 h-10 rounded-full bg-md-secondary-container text-md-on-secondary-container text-sm font-medium hover:brightness-95 transition-all duration-200 active:scale-95 ease-emphasized"
           >
-            Admin Access
+            Akses Admin
           </Link>
         </div>
 
@@ -51,10 +51,10 @@ export default async function Home() {
               <Calendar className="w-8 h-8 text-md-on-surface-variant/50" />
             </div>
             <h3 className="text-xl font-medium text-md-on-surface mb-2">
-              No events yet
+              Belum ada event
             </h3>
             <p className="text-md-on-surface-variant">
-              Check back later for upcoming races.
+              Cek kembali nanti untuk lomba mendatang.
             </p>
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default async function Home() {
                       </div>
                       {new Date(event.event_date) < new Date() && (
                         <span className="text-xs font-medium text-md-outline">
-                          Past
+                          Selesai
                         </span>
                       )}
                     </div>
@@ -97,7 +97,7 @@ export default async function Home() {
                         <Calendar className="w-5 h-5 mr-3 text-md-primary" />
                         <span className="text-sm font-medium">
                           {new Date(event.event_date).toLocaleDateString(
-                            undefined,
+                            "id-ID",
                             {
                               weekday: "long",
                               year: "numeric",

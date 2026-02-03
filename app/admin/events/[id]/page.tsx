@@ -124,13 +124,13 @@ export default function EditEventPage({
       });
 
       if (res.ok) {
-        alert("Event updated successfully");
+        alert("Event berhasil diperbarui");
         fetchEventData(event.id);
       } else {
-        alert("Failed to update event");
+        alert("Gagal memperbarui event");
       }
     } catch (err) {
-      alert("Error updating event");
+      alert("Terjadi kesalahan saat memperbarui event");
     }
   };
 
@@ -152,15 +152,15 @@ export default function EditEventPage({
         setNewParticipant({ name: "", bib_number: "" });
         fetchParticipants(event.id);
       } else {
-        alert("Failed to add participant");
+        alert("Gagal menambahkan peserta");
       }
     } catch (err) {
-      alert("Error adding participant");
+      alert("Terjadi kesalahan saat menambahkan peserta");
     }
   };
 
   const handleDeleteParticipant = async (participantId: string) => {
-    if (!confirm("Delete this participant?")) return;
+    if (!confirm("Hapus peserta ini?")) return;
     try {
       const res = await fetch(`/api/admin/participants/${participantId}`, {
         method: "DELETE",
@@ -169,7 +169,7 @@ export default function EditEventPage({
         fetchParticipants(eventId);
       }
     } catch (err) {
-      alert("Error deleting participant");
+      alert("Gagal menghapus peserta");
     }
   };
 
@@ -183,7 +183,7 @@ export default function EditEventPage({
   if (!event)
     return (
       <div className="p-8 text-center text-md-on-background">
-        Event not found
+        Event tidak ditemukan
       </div>
     );
 
@@ -194,7 +194,7 @@ export default function EditEventPage({
           href="/admin"
           className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-background mb-8 px-4 py-2 rounded-full hover:bg-md-on-surface/5 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+          <ArrowLeft className="w-4 h-4 mr-1" /> Kembali ke Dashboard
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -213,7 +213,7 @@ export default function EditEventPage({
               {/* Title */}
               <div className="space-y-2 group">
                 <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Event Title
+                  Judul Event
                 </label>
                 <input
                   type="text"
@@ -223,7 +223,7 @@ export default function EditEventPage({
                     setFormData({ ...formData, title: e.target.value })
                   }
                   className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                  placeholder="Title"
+                  placeholder="Judul"
                   required
                 />
               </div>
@@ -231,7 +231,7 @@ export default function EditEventPage({
               {/* Date */}
               <div className="space-y-2 group">
                 <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Date
+                  Tanggal
                 </label>
                 <input
                   type="datetime-local"
@@ -249,7 +249,7 @@ export default function EditEventPage({
                 {/* Location */}
                 <div className="space-y-2 group">
                   <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                    Location
+                    Lokasi
                   </label>
                   <input
                     type="text"
@@ -259,14 +259,14 @@ export default function EditEventPage({
                       setFormData({ ...formData, location: e.target.value })
                     }
                     className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                    placeholder="Location"
+                    placeholder="Lokasi"
                     required
                   />
                 </div>
 
                 <div className="space-y-2 group">
                   <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1">
-                    Distance
+                    Jarak
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     {availableDistances.map((dist) => (
@@ -299,7 +299,7 @@ export default function EditEventPage({
               {/* Description */}
               <div className="space-y-2 group">
                 <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Description
+                  Deskripsi
                 </label>
                 <textarea
                   name="description"
@@ -317,7 +317,7 @@ export default function EditEventPage({
                 className="w-full h-14 rounded-full bg-md-primary text-md-on-primary font-medium text-lg shadow-lg shadow-md-primary/25 hover:shadow-xl hover:bg-md-primary/90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 mt-4"
               >
                 <Save className="w-5 h-5" />
-                Update Event
+                Simpan Perubahan
               </button>
             </form>
           </div>
@@ -330,7 +330,7 @@ export default function EditEventPage({
                   <Plus className="w-5 h-5" />
                 </div>
                 <h2 className="text-xl font-bold text-md-on-surface">
-                  Participants
+                  Peserta
                 </h2>
               </div>
               <span className="bg-md-surface-variant text-md-on-surface-variant px-3 py-1 rounded-full text-xs font-bold">
@@ -344,13 +344,13 @@ export default function EditEventPage({
               className="mb-6 bg-md-surface-container-high p-4 rounded-[20px]"
             >
               <h3 className="text-sm font-semibold text-md-on-surface mb-3 ml-1">
-                Add Runner
+                Tambah Peserta
               </h3>
               <div className="flex gap-3">
                 <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="Name"
+                    placeholder="Nama"
                     value={newParticipant.name}
                     onChange={(e) =>
                       setNewParticipant({
@@ -389,7 +389,7 @@ export default function EditEventPage({
             <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 scrollbar-thin scrollbar-thumb-md-outline/20">
               {participants.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-md-on-surface-variant/50">
-                  <p className="text-sm">No participants yet.</p>
+                  <p className="text-sm">Belum ada peserta.</p>
                 </div>
               ) : (
                 <ul className="space-y-2">
