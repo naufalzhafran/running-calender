@@ -65,8 +65,15 @@ export default async function EventPage({ params }: PageProps) {
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-md-primary/10 rounded-full blur-2xl" />
 
           <div className="relative z-10">
-            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-md-tertiary-container text-md-on-tertiary-container text-sm font-bold mb-6">
-              {event.distance}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {(event.distance || "").split(",").map((d, i) => (
+                <div
+                  key={i}
+                  className="inline-flex items-center px-4 py-1.5 rounded-full bg-md-tertiary-container text-md-on-tertiary-container text-sm font-bold"
+                >
+                  {d.trim()}
+                </div>
+              ))}
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold text-md-on-surface mb-6 tracking-tight">

@@ -71,9 +71,16 @@ export default async function Home() {
 
                   <div className="flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-md-primary-container text-md-on-primary-container">
-                        {event.distance}
-                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {(event.distance || "").split(",").map((d, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-md-primary-container text-md-on-primary-container"
+                          >
+                            {d.trim()}
+                          </span>
+                        ))}
+                      </div>
                       {new Date(event.event_date) < new Date() && (
                         <span className="text-xs font-medium text-md-outline">
                           Past

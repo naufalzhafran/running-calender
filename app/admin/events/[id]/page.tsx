@@ -19,14 +19,29 @@ export default function EditEventPage({
   const [eventId, setEventId] = useState<string>("");
 
   // Event Form State
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    slug: string;
+    event_date: string;
+    location: string;
+    distances: string[];
+    description: string;
+  }>({
     title: "",
     slug: "",
     event_date: "",
     location: "",
-    distance: "",
+    distances: [],
     description: "",
   });
+
+  const availableDistances = [
+    "5K",
+    "10K",
+    "Half Marathon",
+    "Full Marathon",
+    "Ultra Marathon",
+  ];
 
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
@@ -50,12 +65,17 @@ export default function EditEventPage({
         const date = new Date(data.event_date);
         const formattedDate = date.toISOString().slice(0, 16);
 
+        // Parse comma-separated distance string into array
+        const distancesArray = data.distance
+          ? data.distance.split(", ").map((d: string) => d.trim())
+          : [];
+
         setFormData({
           title: data.title,
           slug: data.slug,
           event_date: formattedDate,
           location: data.location,
-          distance: data.distance,
+          distances: distancesArray,
           description: data.description || "",
         });
       }
@@ -74,6 +94,20 @@ export default function EditEventPage({
     }
   };
 
+  const handleDistanceChange = (distance: string) => {
+    setFormData((prev) => {
+      const currentDistances = prev.distances;
+      if (currentDistances.includes(distance)) {
+        return {
+          ...prev,
+          distances: currentDistances.filter((d) => d !== distance),
+        };
+      } else {
+        return { ...prev, distances: [...currentDistances, distance] };
+      }
+    });
+  };
+
   const handleEventUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!event) return;
@@ -82,7 +116,11 @@ export default function EditEventPage({
       const res = await fetch(`/api/admin/events/${event.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // Join array back to string
+        body: JSON.stringify({
+          ...formData,
+          distance: formData.distances.join(", "),
+        }),
       });
 
       if (res.ok) {
@@ -226,42 +264,34 @@ export default function EditEventPage({
                   />
                 </div>
 
-                {/* Distance */}
                 <div className="space-y-2 group">
-                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
+                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1">
                     Distance
                   </label>
-                  <div className="relative">
-                    <select
-                      name="distance"
-                      value={formData.distance}
-                      onChange={(e) =>
-                        setFormData({ ...formData, distance: e.target.value })
-                      }
-                      className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base appearance-none cursor-pointer focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                      required
-                    >
-                      <option value="5K">5K</option>
-                      <option value="10K">10K</option>
-                      <option value="Half Marathon">Half Marathon</option>
-                      <option value="Full Marathon">Full Marathon</option>
-                      <option value="Ultra Marathon">Ultra Marathon</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableDistances.map((dist) => (
+                      <label
+                        key={dist}
+                        className={`
+                        relative flex items-center justify-center h-12 px-2 rounded-2xl
+                        border cursor-pointer transition-all duration-200 ease-emphasized select-none text-sm text-center
+                        ${
+                          formData.distances.includes(dist)
+                            ? "bg-md-primary-container text-md-on-primary-container border-md-primary font-medium shadow-sm"
+                            : "bg-md-surface-container-highest/30 border-md-outline/10 text-md-on-surface hover:bg-md-surface-container-highest/50"
+                        }
+                      `}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        ></path>
-                      </svg>
-                    </div>
+                        <input
+                          type="checkbox"
+                          value={dist}
+                          checked={formData.distances.includes(dist)}
+                          onChange={() => handleDistanceChange(dist)}
+                          className="sr-only"
+                        />
+                        <span>{dist}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               </div>

@@ -10,14 +10,29 @@ export default function CreateEventPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    slug: string;
+    event_date: string;
+    location: string;
+    distances: string[]; // Changed from distance string to array
+    description: string;
+  }>({
     title: "",
     slug: "",
     event_date: "",
     location: "",
-    distance: "",
+    distances: [],
     description: "",
   });
+
+  const availableDistances = [
+    "5K",
+    "10K",
+    "Half Marathon",
+    "Full Marathon",
+    "Ultra Marathon",
+  ];
 
   const generateSlug = (text: string) => {
     return text
@@ -27,9 +42,7 @@ export default function CreateEventPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -42,6 +55,20 @@ export default function CreateEventPage() {
     });
   };
 
+  const handleDistanceChange = (distance: string) => {
+    setFormData((prev) => {
+      const currentDistances = prev.distances;
+      if (currentDistances.includes(distance)) {
+        return {
+          ...prev,
+          distances: currentDistances.filter((d) => d !== distance),
+        };
+      } else {
+        return { ...prev, distances: [...currentDistances, distance] };
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -51,7 +78,11 @@ export default function CreateEventPage() {
       const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        // Join distances into a string for the API/DB
+        body: JSON.stringify({
+          ...formData,
+          distance: formData.distances.join(", "),
+        }),
       });
 
       if (res.ok) {
@@ -165,50 +196,34 @@ export default function CreateEventPage() {
                 </div>
               </div>
 
-              {/* Distance */}
-              <div className="space-y-2 group">
-                <label
-                  htmlFor="distance"
-                  className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
-                >
-                  Distance
+              <div className="space-y-3 group">
+                <label className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1">
+                  Distances
                 </label>
-                <div className="relative">
-                  <select
-                    name="distance"
-                    id="distance"
-                    required
-                    value={formData.distance}
-                    onChange={handleChange}
-                    className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
-                             text-md-on-surface text-base appearance-none cursor-pointer
-                             focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
-                             outline-none transition-all duration-300 ease-emphasized"
-                  >
-                    <option value="" disabled>
-                      Select Distance
-                    </option>
-                    <option value="5K">5K</option>
-                    <option value="10K">10K</option>
-                    <option value="Half Marathon">Half Marathon</option>
-                    <option value="Full Marathon">Full Marathon</option>
-                    <option value="Ultra Marathon">Ultra Marathon</option>
-                  </select>
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <div className="grid grid-cols-2 gap-3">
+                  {availableDistances.map((dist) => (
+                    <label
+                      key={dist}
+                      className={`
+                      relative flex items-center justify-center h-12 px-4 rounded-[20px] 
+                      border cursor-pointer transition-all duration-200 ease-emphasized select-none
+                      ${
+                        formData.distances.includes(dist)
+                          ? "bg-md-primary-container text-md-on-primary-container border-md-primary font-medium shadow-sm"
+                          : "bg-md-surface-container-highest/30 border-md-outline/10 text-md-on-surface-variant hover:bg-md-surface-container-highest/50"
+                      }
+                    `}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
-                  </div>
+                      <input
+                        type="checkbox"
+                        value={dist}
+                        checked={formData.distances.includes(dist)}
+                        onChange={() => handleDistanceChange(dist)}
+                        className="sr-only"
+                      />
+                      <span className="text-sm">{dist}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>
