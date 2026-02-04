@@ -22,6 +22,10 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   const hourRef = React.useRef<HTMLInputElement>(null);
   const minuteRef = React.useRef<HTMLInputElement>(null);
 
+  // Use refs to store the current input values to avoid stale state issues
+  const hoursRef = React.useRef<string>("");
+  const minutesRef = React.useRef<string>("");
+
   const [hours, setHours] = React.useState<string>("");
   const [minutes, setMinutes] = React.useState<string>("");
 
@@ -32,58 +36,68 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   React.useEffect(() => {
     if (value && !isEditing) {
       const [h, m] = value.split(":");
-      setHours(h || "");
-      setMinutes(m || "");
+      const newH = h || "";
+      const newM = m || "";
+      setHours(newH);
+      setMinutes(newM);
+      hoursRef.current = newH;
+      minutesRef.current = newM;
     } else if (!value && !isEditing) {
       setHours("");
       setMinutes("");
+      hoursRef.current = "";
+      minutesRef.current = "";
     }
   }, [value, isEditing]);
 
-  const handleTimeChange = (newHours: string, newMinutes: string) => {
+  const commitTime = (h: string, m: string) => {
     if (onChange) {
-      // Ensure 2 digits
-      const formattedHours = newHours.padStart(2, "0");
-      const formattedMinutes = newMinutes.padStart(2, "0");
+      const formattedHours = h.padStart(2, "0");
+      const formattedMinutes = m.padStart(2, "0");
       onChange(`${formattedHours}:${formattedMinutes}`);
     }
   };
 
   const handleHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsEditing(true);
-    let val = e.target.value.replace(/[^0-9]/g, ""); // Only numbers
+    let val = e.target.value.replace(/[^0-9]/g, "");
     if (val.length > 2) val = val.slice(0, 2);
 
     // Validate range 0-23
     const num = parseInt(val);
-    if (!isNaN(num)) {
-      if (num > 23) val = "23";
+    if (!isNaN(num) && num > 23) {
+      val = "23";
     }
 
     setHours(val);
+    hoursRef.current = val;
 
+    // Auto-focus next input after a brief delay to let React update state
     if (val.length === 2) {
-      // Trigger update immediately if valid 2 digits
-      handleTimeChange(val, minutes || "00");
-      // Auto-focus next input if we have minutes
-      minuteRef.current?.focus();
+      setTimeout(() => {
+        minuteRef.current?.focus();
+      }, 0);
     }
   };
 
   const handleHourBlur = () => {
-    setIsEditing(false);
-    // Pad with 0 on blur
-    let val = hours;
+    // Use the ref value which is always current
+    let val = hoursRef.current;
 
-    // If empty on blur, keep it empty or reset to 00 only if minutes are set?
-    // Let's standard behavior: if empty and minutes set, assume 00. If both empty, clear.
-    if (val === "" && minutes === "") return;
+    // If both empty, don't commit anything
+    if (val === "" && minutesRef.current === "") {
+      setIsEditing(false);
+      return;
+    }
 
+    // Pad to 2 digits
     if (val === "") val = "00";
     else if (val.length === 1) val = "0" + val;
 
     setHours(val);
-    handleTimeChange(val, minutes || "00");
+    hoursRef.current = val;
+    commitTime(val, minutesRef.current || "00");
+    setIsEditing(false);
   };
 
   const handleMinuteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,28 +107,31 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
 
     // Validate range 0-59
     const num = parseInt(val);
-    if (!isNaN(num)) {
-      if (num > 59) val = "59";
+    if (!isNaN(num) && num > 59) {
+      val = "59";
     }
 
     setMinutes(val);
-
-    if (val.length === 2) {
-      handleTimeChange(hours || "00", val);
-    }
+    minutesRef.current = val;
   };
 
   const handleMinuteBlur = () => {
-    setIsEditing(false);
-    let val = minutes;
+    let val = minutesRef.current;
 
-    if (val === "" && hours === "") return;
+    // If both empty, don't commit
+    if (val === "" && hoursRef.current === "") {
+      setIsEditing(false);
+      return;
+    }
 
+    // Pad to 2 digits
     if (val === "") val = "00";
     else if (val.length === 1) val = "0" + val;
 
     setMinutes(val);
-    handleTimeChange(hours || "00", val);
+    minutesRef.current = val;
+    commitTime(hoursRef.current || "00", val);
+    setIsEditing(false);
   };
 
   return (
