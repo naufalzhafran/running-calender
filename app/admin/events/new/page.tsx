@@ -26,6 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { TimePicker } from "@/components/ui/time-picker";
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -373,28 +374,20 @@ export default function CreateEventPage() {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-2">
                             <Label className="text-xs">Start Time</Label>
-                            <Input
-                              type="time"
+                            <TimePicker
                               value={dist.start_time}
-                              onChange={(e) =>
-                                handleDistanceChange(
-                                  idx,
-                                  "start_time",
-                                  e.target.value,
-                                )
+                              onChange={(val) =>
+                                handleDistanceChange(idx, "start_time", val)
                               }
-                              className="bg-background"
                             />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs">COT</Label>
-                            <Input
-                              type="time"
+                            <TimePicker
                               value={dist.cot}
-                              onChange={(e) =>
-                                handleDistanceChange(idx, "cot", e.target.value)
+                              onChange={(val) =>
+                                handleDistanceChange(idx, "cot", val)
                               }
-                              className="bg-background"
                             />
                           </div>
                         </div>

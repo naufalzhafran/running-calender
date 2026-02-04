@@ -37,6 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { TimePicker } from "@/components/ui/time-picker";
 
 export default function EditEventPage({
   params,
@@ -488,32 +489,22 @@ export default function EditEventPage({
                           <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
                               <Label className="text-xs">Start Time</Label>
-                              <Input
-                                type="time"
+                              <TimePicker
                                 value={dist.start_time}
-                                onChange={(e) =>
-                                  handleDistanceChange(
-                                    idx,
-                                    "start_time",
-                                    e.target.value,
-                                  )
+                                onChange={(val) =>
+                                  handleDistanceChange(idx, "start_time", val)
                                 }
-                                className="bg-background h-8 text-sm"
+                                className="h-8 text-sm"
                               />
                             </div>
                             <div className="space-y-1">
                               <Label className="text-xs">COT</Label>
-                              <Input
-                                type="time"
+                              <TimePicker
                                 value={dist.cot}
-                                onChange={(e) =>
-                                  handleDistanceChange(
-                                    idx,
-                                    "cot",
-                                    e.target.value,
-                                  )
+                                onChange={(val) =>
+                                  handleDistanceChange(idx, "cot", val)
                                 }
-                                className="bg-background h-8 text-sm"
+                                className="h-8 text-sm"
                               />
                             </div>
                           </div>
