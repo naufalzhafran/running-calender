@@ -38,6 +38,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { TimePicker } from "@/components/ui/time-picker";
+import { useAlertModal } from "@/components/ui/alert-modal";
 
 export default function EditEventPage({
   params,
@@ -49,6 +50,7 @@ export default function EditEventPage({
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventId, setEventId] = useState<string>("");
+  const { alertModal, showConfirm, showSuccess, showError } = useAlertModal();
 
   // Event Form State
   const [formData, setFormData] = useState<{
@@ -71,7 +73,6 @@ export default function EditEventPage({
 
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
-    name: "",
     name: "",
     bib_number: "",
     distance: "",
@@ -207,13 +208,13 @@ export default function EditEventPage({
       });
 
       if (res.ok) {
-        alert("Event berhasil diperbarui");
+        showSuccess("Event berhasil diperbarui");
         fetchEventData(event.id);
       } else {
-        alert("Gagal memperbarui event");
+        showError("Gagal memperbarui event");
       }
     } catch (err) {
-      alert("Terjadi kesalahan saat memperbarui event");
+      showError("Terjadi kesalahan saat memperbarui event");
     }
   };
 
@@ -237,15 +238,22 @@ export default function EditEventPage({
         setNewParticipant({ name: "", bib_number: "", distance: "" });
         fetchParticipants(event.id);
       } else {
-        alert("Gagal menambahkan peserta");
+        showError("Gagal menambahkan peserta");
       }
     } catch (err) {
-      alert("Terjadi kesalahan saat menambahkan peserta");
+      showError("Terjadi kesalahan saat menambahkan peserta");
     }
   };
 
+  const confirmDeleteParticipant = (participantId: string) => {
+    showConfirm(
+      "Hapus peserta ini?",
+      () => handleDeleteParticipant(participantId),
+      { title: "Hapus Peserta" },
+    );
+  };
+
   const handleDeleteParticipant = async (participantId: string) => {
-    if (!confirm("Hapus peserta ini?")) return;
     try {
       const res = await fetch(`/api/admin/participants/${participantId}`, {
         method: "DELETE",
@@ -254,7 +262,7 @@ export default function EditEventPage({
         fetchParticipants(eventId);
       }
     } catch (err) {
-      alert("Gagal menghapus peserta");
+      showError("Gagal menghapus peserta");
     }
   };
 
@@ -661,7 +669,7 @@ export default function EditEventPage({
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteParticipant(p.id)}
+                              onClick={() => confirmDeleteParticipant(p.id)}
                               className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -677,6 +685,7 @@ export default function EditEventPage({
           </Card>
         </div>
       </div>
+      {alertModal}
     </div>
   );
 }

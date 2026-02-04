@@ -16,11 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAlertModal } from "@/components/ui/alert-modal";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { alertModal, showConfirm, showError } = useAlertModal();
 
   useEffect(() => {
     fetchEvents();
@@ -40,9 +42,15 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus event ini?")) return;
+  const confirmDelete = (id: string) => {
+    showConfirm(
+      "Apakah Anda yakin ingin menghapus event ini?",
+      () => handleDelete(id),
+      { title: "Hapus Event" },
+    );
+  };
 
+  const handleDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/admin/events/${id}`, {
         method: "DELETE",
@@ -51,10 +59,10 @@ export default function AdminDashboard() {
       if (res.ok) {
         fetchEvents();
       } else {
-        alert("Gagal menghapus event");
+        showError("Gagal menghapus event");
       }
     } catch (err) {
-      alert("Terjadi kesalahan");
+      showError("Terjadi kesalahan");
     }
   };
 
@@ -183,7 +191,7 @@ export default function AdminDashboard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(event.id)}
+                          onClick={() => confirmDelete(event.id)}
                           className="h-8 w-8 text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -198,6 +206,7 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+      {alertModal}
     </div>
   );
 }
