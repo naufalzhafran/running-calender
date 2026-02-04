@@ -9,12 +9,34 @@ import {
   Plus,
   Save,
   Edit,
-  Clock,
-  MapPin as MapPinIcon,
-  Calendar as CalendarIcon,
   X,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Event, Participant, DistanceDetail } from "@/types";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function EditEventPage({
   params,
@@ -25,7 +47,6 @@ export default function EditEventPage({
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [eventId, setEventId] = useState<string>("");
 
   // Event Form State
@@ -46,8 +67,6 @@ export default function EditEventPage({
     distances: [],
     description: "",
   });
-
-  // Removed availableDistances as we now support dynamic distance input
 
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
@@ -77,11 +96,18 @@ export default function EditEventPage({
           formattedEndDate = endDate.toISOString().slice(0, 10);
         }
 
-        // Distance is now returned as JSON from API (if DB migration ran)
-        // Ensure it's treated as DistanceDetail[]
         const distancesArray: DistanceDetail[] = Array.isArray(data.distance)
           ? data.distance
           : [];
+
+        // Ensure each distance date is also formatted correctly from API
+        // if API returns ISO string with time
+        const cleanDistances = distancesArray.map((d) => ({
+          ...d,
+          date: d.date
+            ? new Date(d.date).toISOString().slice(0, 10)
+            : formattedDate,
+        }));
 
         setFormData({
           title: data.title,
@@ -89,7 +115,7 @@ export default function EditEventPage({
           event_date: formattedDate,
           end_date: formattedEndDate,
           location: data.location,
-          distances: distancesArray,
+          distances: cleanDistances,
           description: data.description || "",
         });
       }
@@ -115,7 +141,7 @@ export default function EditEventPage({
         ...prev.distances,
         {
           name: "",
-          date: prev.event_date.split("T")[0] || "",
+          date: prev.event_date || "",
           start_time: "",
           cot: "",
         },
@@ -142,6 +168,22 @@ export default function EditEventPage({
     });
   };
 
+  const handleDateSelect = (
+    field: "event_date" | "end_date",
+    date: Date | undefined,
+  ) => {
+    if (!date) return;
+    setFormData((prev) => ({
+      ...prev,
+      [field]: format(date, "yyyy-MM-dd"),
+    }));
+  };
+
+  const handleDistanceDateSelect = (index: number, date: Date | undefined) => {
+    if (!date) return;
+    handleDistanceChange(index, "date", format(date, "yyyy-MM-dd"));
+  };
+
   const handleEventUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!event) return;
@@ -150,7 +192,6 @@ export default function EditEventPage({
       const res = await fetch(`/api/admin/events/${event.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        // Send data directly (distance is now JSON)
         body: JSON.stringify({
           ...formData,
           end_date: formData.end_date || null,
@@ -209,145 +250,184 @@ export default function EditEventPage({
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen bg-md-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-md-primary border-t-transparent" />
+      <div className="flex justify-center items-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
 
   if (!event)
     return (
-      <div className="p-8 text-center text-md-on-background">
+      <div className="p-8 text-center text-foreground">
         Event tidak ditemukan
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-md-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <Link
-          href="/admin"
-          className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-background mb-8 px-4 py-2 rounded-full hover:bg-md-on-surface/5 transition-colors"
+    <div className="min-h-screen bg-background py-10 px-4">
+      <div className="container max-w-5xl mx-auto">
+        <Button
+          variant="ghost"
+          className="mb-6 pl-0 hover:bg-transparent hover:text-primary"
+          asChild
         >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Kembali ke Dashboard
-        </Link>
+          <Link href="/admin">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali ke Dashboard
+          </Link>
+        </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Edit Event Form */}
-          <div className="bg-md-surface-container p-6 rounded-[32px] shadow-sm">
-            <div className="flex items-center gap-3 mb-6 border-b border-md-outline/10 pb-4">
-              <div className="w-10 h-10 rounded-full bg-md-secondary-container flex items-center justify-center text-md-on-secondary-container">
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Edit className="w-5 h-5" />
-              </div>
-              <h2 className="text-xl font-bold text-md-on-surface">
                 Edit Event
-              </h2>
-            </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleEventUpdate} className="space-y-4">
+                {/* Title */}
+                <div className="space-y-2">
+                  <Label>Judul Event</Label>
+                  <Input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    placeholder="Judul"
+                    required
+                  />
+                </div>
 
-            <form onSubmit={handleEventUpdate} className="space-y-4">
-              {/* Title */}
-              <div className="space-y-2 group">
-                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Judul Event
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                  placeholder="Judul"
-                  required
-                />
-              </div>
+                {/* Date */}
+                <div className="space-y-2 flex flex-col">
+                  <Label>Tanggal</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !formData.event_date && "text-muted-foreground",
+                        )}
+                      >
+                        {formData.event_date ? (
+                          format(new Date(formData.event_date), "PPP", {
+                            locale: idLocale,
+                          })
+                        ) : (
+                          <span>Pilih tanggal</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          formData.event_date
+                            ? new Date(formData.event_date)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          handleDateSelect("event_date", date)
+                        }
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              {/* Date */}
-              <div className="space-y-2 group">
-                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Tanggal
-                </label>
-                <input
-                  type="date"
-                  name="event_date"
-                  value={formData.event_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, event_date: e.target.value })
-                  }
-                  required
-                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                />
-              </div>
+                {/* End Date */}
+                <div className="space-y-2 flex flex-col">
+                  <Label>Tanggal Selesai (Opsional)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !formData.end_date && "text-muted-foreground",
+                        )}
+                      >
+                        {formData.end_date ? (
+                          format(new Date(formData.end_date), "PPP", {
+                            locale: idLocale,
+                          })
+                        ) : (
+                          <span>Pilih tanggal selesai</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          formData.end_date
+                            ? new Date(formData.end_date)
+                            : undefined
+                        }
+                        onSelect={(date) => handleDateSelect("end_date", date)}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              {/* End Date */}
-              <div className="space-y-2 group">
-                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Tanggal Selesai (Opsional)
-                </label>
-                <input
-                  type="date"
-                  name="end_date"
-                  value={formData.end_date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, end_date: e.target.value })
-                  }
-                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 {/* Location */}
-                <div className="space-y-2 group">
-                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                    Lokasi
-                  </label>
-                  <input
+                <div className="space-y-2">
+                  <Label>Lokasi</Label>
+                  <Input
                     type="text"
                     name="location"
                     value={formData.location}
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
                     placeholder="Lokasi"
                     required
                   />
                 </div>
 
-                <div className="col-span-2 space-y-3">
+                <div className="space-y-4 pt-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1">
-                      Kategori Jarak
-                    </label>
-                    <button
+                    <Label>Kategori Jarak</Label>
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={handleAddDistance}
-                      className="text-xs bg-md-primary-container text-md-on-primary-container px-3 py-1 rounded-full hover:brightness-95 transition-all"
                     >
-                      + Tambah Kategori
-                    </button>
+                      <Plus className="w-3 h-3 mr-1" /> Tambah
+                    </Button>
                   </div>
 
                   <div className="space-y-3">
                     {formData.distances.map((dist, idx) => (
                       <div
                         key={idx}
-                        className="p-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 relative group-hover:border-md-primary/20 transition-colors"
+                        className="p-4 rounded-lg border bg-muted/30 relative"
                       >
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive"
                           onClick={() => handleRemoveDistance(idx)}
-                          className="absolute top-2 right-2 text-md-on-surface-variant/50 hover:text-md-error transition-colors"
                         >
-                          <X className="w-4 h-4" />
-                        </button>
+                          <X className="w-3 h-3" />
+                        </Button>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="col-span-2 md:col-span-2">
-                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
-                              Nama Kategori (contoh: 10K)
-                            </label>
-                            <input
+                        <div className="space-y-3 pt-1">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Nama Kategori</Label>
+                            <Input
                               type="text"
                               value={dist.name}
                               onChange={(e) =>
@@ -357,34 +437,58 @@ export default function EditEventPage({
                                   e.target.value,
                                 )
                               }
-                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
-                              placeholder="5K, 10K, etc"
+                              placeholder="5K"
                               required
+                              className="bg-background h-8 text-sm"
                             />
                           </div>
-                          <div>
-                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
-                              Tanggal
-                            </label>
-                            <input
-                              type="date"
-                              value={dist.date}
-                              onChange={(e) =>
-                                handleDistanceChange(
-                                  idx,
-                                  "date",
-                                  e.target.value,
-                                )
-                              }
-                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
-                            />
+
+                          <div className="space-y-1 flex flex-col">
+                            <Label className="text-xs">Tanggal</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal h-8 text-sm",
+                                    !dist.date && "text-muted-foreground",
+                                  )}
+                                >
+                                  {dist.date ? (
+                                    format(new Date(dist.date), "PPP", {
+                                      locale: idLocale,
+                                    })
+                                  ) : (
+                                    <span>Pilih tanggal</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    dist.date ? new Date(dist.date) : undefined
+                                  }
+                                  onSelect={(date) =>
+                                    handleDistanceDateSelect(idx, date)
+                                  }
+                                  disabled={(date) =>
+                                    date < new Date("1900-01-01")
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </div>
+
                           <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
-                                Start
-                              </label>
-                              <input
+                            <div className="space-y-1">
+                              <Label className="text-xs">Start Time</Label>
+                              <Input
                                 type="time"
                                 value={dist.start_time}
                                 onChange={(e) =>
@@ -394,14 +498,12 @@ export default function EditEventPage({
                                     e.target.value,
                                   )
                                 }
-                                className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                                className="bg-background h-8 text-sm"
                               />
                             </div>
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
-                                COT
-                              </label>
-                              <input
+                            <div className="space-y-1">
+                              <Label className="text-xs">COT</Label>
+                              <Input
                                 type="time"
                                 value={dist.cot}
                                 onChange={(e) =>
@@ -411,7 +513,7 @@ export default function EditEventPage({
                                     e.target.value,
                                   )
                                 }
-                                className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                                className="bg-background h-8 text-sm"
                               />
                             </div>
                           </div>
@@ -419,136 +521,133 @@ export default function EditEventPage({
                       </div>
                     ))}
                     {formData.distances.length === 0 && (
-                      <div className="text-center p-4 border border-dashed border-md-outline/20 rounded-2xl text-sm text-md-on-surface-variant">
+                      <div className="text-center p-4 border border-dashed rounded-lg text-xs text-muted-foreground">
                         Belum ada kategori jarak
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Description */}
-              <div className="space-y-2 group">
-                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
-                  Deskripsi
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full p-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface placeholder:text-md-on-surface-variant/30 text-base resize-none focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
-                />
-              </div>
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label>Deskripsi</Label>
+                  <Textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                className="w-full h-14 rounded-full bg-md-primary text-md-on-primary font-medium text-lg shadow-lg shadow-md-primary/25 hover:shadow-xl hover:bg-md-primary/90 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 mt-4"
-              >
-                <Save className="w-5 h-5" />
-                Simpan Perubahan
-              </button>
-            </form>
-          </div>
+                <div className="pt-4">
+                  <Button type="submit" className="w-full">
+                    <Save className="w-4 h-4 mr-2" />
+                    Simpan Perubahan
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
 
           {/* Participants Management */}
-          <div className="bg-md-surface-container p-6 rounded-[32px] shadow-sm flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6 border-b border-md-outline/10 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-md-tertiary-container flex items-center justify-center text-md-on-tertiary-container">
-                  <Plus className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-bold text-md-on-surface">
-                  Peserta
-                </h2>
+          <Card className="h-full flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="flex items-center gap-2">
+                <CardTitle>Peserta</CardTitle>
+                <Badge variant="secondary" className="rounded-full">
+                  {participants.length}
+                </Badge>
               </div>
-              <span className="bg-md-surface-variant text-md-on-surface-variant px-3 py-1 rounded-full text-xs font-bold">
-                {participants.length}
-              </span>
-            </div>
-
-            {/* Add Participant Form */}
-            <form
-              onSubmit={handleAddParticipant}
-              className="mb-6 bg-md-surface-container-high p-4 rounded-[20px]"
-            >
-              <h3 className="text-sm font-semibold text-md-on-surface mb-3 ml-1">
-                Tambah Peserta
-              </h3>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Nama"
-                    value={newParticipant.name}
-                    onChange={(e) =>
-                      setNewParticipant({
-                        ...newParticipant,
-                        name: e.target.value,
-                      })
-                    }
-                    className="w-full h-12 px-4 rounded-xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-sm focus:bg-md-surface focus:border-md-primary/30 focus:shadow-md outline-none transition-all"
-                    required
-                  />
-                </div>
-                <div className="w-24">
-                  <input
-                    type="text"
-                    placeholder="Bib"
-                    value={newParticipant.bib_number}
-                    onChange={(e) =>
-                      setNewParticipant({
-                        ...newParticipant,
-                        bib_number: e.target.value,
-                      })
-                    }
-                    className="w-full h-12 px-4 rounded-xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-sm focus:bg-md-surface focus:border-md-primary/30 focus:shadow-md outline-none transition-all"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="h-12 w-12 rounded-full bg-md-primary text-md-on-primary flex items-center justify-center shadow-lg shadow-md-primary/20 hover:bg-md-primary/90 active:scale-95 transition-all"
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col gap-6">
+              {/* Add Participant Form */}
+              <div className="bg-muted/30 p-4 rounded-lg border">
+                <h3 className="text-sm font-medium mb-3">Tambah Peserta</h3>
+                <form
+                  onSubmit={handleAddParticipant}
+                  className="flex flex-col sm:flex-row gap-3"
                 >
-                  <Plus className="w-6 h-6" />
-                </button>
+                  <div className="flex-1">
+                    <Input
+                      type="text"
+                      placeholder="Nama"
+                      value={newParticipant.name}
+                      onChange={(e) =>
+                        setNewParticipant({
+                          ...newParticipant,
+                          name: e.target.value,
+                        })
+                      }
+                      className="bg-background"
+                      required
+                    />
+                  </div>
+                  <div className="w-full sm:w-24">
+                    <Input
+                      type="text"
+                      placeholder="Bib"
+                      value={newParticipant.bib_number}
+                      onChange={(e) =>
+                        setNewParticipant({
+                          ...newParticipant,
+                          bib_number: e.target.value,
+                        })
+                      }
+                      className="bg-background"
+                    />
+                  </div>
+                  <Button type="submit" size="icon" className="shrink-0">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </form>
               </div>
-            </form>
 
-            {/* Participants List */}
-            <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 scrollbar-thin scrollbar-thumb-md-outline/20">
-              {participants.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-40 text-md-on-surface-variant/50">
-                  <p className="text-sm">Belum ada peserta.</p>
-                </div>
-              ) : (
-                <ul className="space-y-2">
-                  {participants.map((p) => (
-                    <li
-                      key={p.id}
-                      className="p-3 bg-md-surface rounded-[16px] border border-md-outline/5 flex justify-between items-center group hover:border-md-outline/20 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-md-secondary-container text-md-on-secondary-container flex items-center justify-center text-xs font-bold font-mono">
-                          {p.bib_number || "#"}
-                        </div>
-                        <p className="text-sm font-medium text-md-on-surface">
-                          {p.name}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteParticipant(p.id)}
-                        className="w-8 h-8 rounded-full text-md-on-surface-variant hover:bg-md-error-container hover:text-md-on-error-container flex items-center justify-center transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
+              {/* Participants List */}
+              <div className="flex-1 overflow-auto border rounded-md max-h-[500px]">
+                {participants.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+                    <p className="text-sm">Belum ada peserta.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[80px]">Bib</TableHead>
+                        <TableHead>Nama</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {participants.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-mono font-medium">
+                            {p.bib_number || "-"}
+                          </TableCell>
+                          <TableCell>{p.name}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteParticipant(p.id)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

@@ -5,6 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Edit, Trash2, Calendar, LogOut, MapPin } from "lucide-react";
 import { Event } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -54,107 +65,139 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-md-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-md-primary border-t-transparent"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-md-background text-md-on-background pb-20 relative">
-      {/* Background Decor */}
-      <div className="fixed top-0 left-0 w-full h-64 bg-md-surface-container -z-10 rounded-b-[48px]" />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-12">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-md-on-surface mb-2">
+            <h1 className="text-3xl font-bold tracking-tight">
               Dashboard Admin
             </h1>
-            <p className="text-md-on-surface-variant">
-              Kelola event dan peserta lari Anda.
+            <p className="text-muted-foreground mt-1">
+              Kelola data event dan peserta.
             </p>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center px-5 h-10 border border-md-outline/20 rounded-full text-sm font-medium text-md-on-surface hover:bg-md-surface-variant/30 transition-colors"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Keluar
-          </button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleLogout} size="sm">
+              <LogOut className="mr-2 h-4 w-4" />
+              Keluar
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/admin/events/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Event Baru
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        <div className="grid gap-4 sm:gap-6">
-          {events.length === 0 ? (
-            <div className="px-6 py-24 text-center bg-md-surface rounded-[32px] border border-md-outline/10 shadow-sm">
-              <p className="text-md-on-surface-variant text-lg">
-                Tidak ada event ditemukan. Tekan tombol + untuk membuat baru.
-              </p>
-            </div>
-          ) : (
-            events.map((event) => (
-              <div
-                key={event.id}
-                className="bg-md-surface p-6 rounded-[24px] shadow-sm hover:shadow-md transition-shadow duration-300 border border-md-outline/5 flex flex-col md:flex-row md:items-center justify-between gap-6 group"
-              >
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-2xl bg-md-secondary-container flex items-center justify-center shrink-0 text-md-on-secondary-container">
-                    <Calendar className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="text-xl font-bold text-md-on-surface hover:text-md-primary transition-colors block mb-1 group-hover:underline decoration-2 decoration-transparent group-hover:decoration-md-primary/30 underline-offset-4"
-                    >
-                      {event.title}
-                    </Link>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-md-on-surface-variant">
-                      <span>
-                        {new Date(event.event_date).toLocaleDateString("id-ID")}
-                      </span>
-                      <span className="flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" /> {event.location}
-                      </span>
-                      <span className="bg-md-surface-variant px-2 py-0.5 rounded-md text-xs font-semibold">
-                        {Array.isArray(event.distance)
-                          ? event.distance.map((d) => d.name).join(", ")
-                          : event.distance}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 self-end md:self-center">
-                  <Link
-                    href={`/admin/events/${event.id}`}
-                    className="p-3 rounded-full text-md-primary hover:bg-md-primary/10 active:scale-95 transition-all"
-                  >
-                    <Edit className="h-5 w-5" />
-                    <span className="sr-only">Edit</span>
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    className="p-3 rounded-full text-md-error hover:bg-md-error/10 active:scale-95 transition-all"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                    <span className="sr-only">Hapus</span>
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        {events.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-muted/20 border border-dashed rounded-lg text-center">
+            <p className="text-muted-foreground mb-4">
+              Belum ada event yang dibuat.
+            </p>
+            <Button asChild>
+              <Link href="/admin/events/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Buat Event Pertama
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Event</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Tanggal
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">Lokasi</TableHead>
+                  <TableHead>Jarak</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="hover:underline"
+                      >
+                        {event.title}
+                      </Link>
+                      {/* Mobile-only details */}
+                      <div className="md:hidden text-xs text-muted-foreground mt-1">
+                        {new Date(event.event_date).toLocaleDateString("id-ID")}{" "}
+                        • {event.location}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {new Date(event.event_date).toLocaleDateString("id-ID")}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {event.location}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(event.distance) ? (
+                          event.distance.map((d, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className="font-normal text-xs"
+                            >
+                              {d.name}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="font-normal text-xs"
+                          >
+                            {event.distance}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          asChild
+                          className="h-8 w-8"
+                        >
+                          <Link href={`/admin/events/${event.id}`}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(event.id)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Hapus</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
-
-      {/* Floating Action Button (FAB) */}
-      <Link
-        href="/admin/events/new"
-        className="fixed bottom-8 right-8 w-14 h-14 bg-md-tertiary-container text-md-on-tertiary-container rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center transition-all duration-300 ease-emphasized z-50"
-      >
-        <Plus className="h-8 w-8" />
-        <span className="sr-only">Event Baru</span>
-      </Link>
     </div>
   );
 }

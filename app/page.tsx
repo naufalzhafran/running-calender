@@ -1,7 +1,18 @@
 import Link from "next/link";
 import pool from "@/lib/db";
 import { Event } from "@/types";
-import { Calendar, MapPin, Ruler } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -21,95 +32,80 @@ export default async function Home() {
   const events = await getEvents();
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-md-background text-md-on-background pb-24">
-      {/* Organic Background Shapes */}
-      <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[600px] h-[600px] bg-md-primary/10 rounded-full blur-3xl -z-10" />
-      <div className="absolute top-1/2 left-0 -translate-x-1/3 w-[500px] h-[500px] bg-md-tertiary/10 rounded-full blur-3xl -z-10" />
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-10">
         {/* Header */}
-        <div className="flex justify-between items-center mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-display-small md:text-5xl font-bold text-md-on-background tracking-tight mb-2">
-              Kalender Lari
-            </h1>
-            <p className="text-md-on-surface-variant text-lg">
-              Temukan lomba lari berikutnya.
+            <h1 className="text-3xl font-bold tracking-tight">Kalender Lari</h1>
+            <p className="text-muted-foreground mt-1">
+              Temukan dan ikuti lomba lari favoritmu.
             </p>
           </div>
-          <Link
-            href="/admin"
-            className="hidden sm:inline-flex items-center justify-center px-6 h-10 rounded-full bg-md-secondary-container text-md-on-secondary-container text-sm font-medium hover:brightness-95 transition-all duration-200 active:scale-95 ease-emphasized"
-          >
-            Akses Admin
-          </Link>
+          <Button asChild>
+            <Link href="/admin">Akses Admin</Link>
+          </Button>
         </div>
 
         {events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 px-4 bg-md-surface-container rounded-[32px] text-center border border-white/20">
-            <div className="w-16 h-16 bg-md-surface-variant rounded-2xl flex items-center justify-center mb-4">
-              <Calendar className="w-8 h-8 text-md-on-surface-variant/50" />
+          <div className="flex flex-col items-center justify-center py-20 bg-muted/20 border border-dashed rounded-lg text-center">
+            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+              <Calendar className="w-6 h-6 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-medium text-md-on-surface mb-2">
-              Belum ada event
-            </h3>
-            <p className="text-md-on-surface-variant">
-              Cek kembali nanti untuk lomba mendatang.
+            <h3 className="text-lg font-semibold">Belum ada event</h3>
+            <p className="text-muted-foreground text-sm max-w-sm mt-1">
+              Belum ada jadwal lomba lari yang tersedia saat ini. Cek kembali
+              nanti.
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <Link
                 key={event.id}
                 href={`/events/${event.id}`}
-                className="group relative block"
+                className="group block h-full focus:outline-none"
               >
-                <div className="h-full bg-md-surface-container rounded-[24px] p-6 transition-all duration-300 ease-emphasized shadow-sm hover:shadow-md hover:bg-md-surface-container-high active:scale-[0.99] border border-transparent hover:border-md-outline/10 overflow-hidden isolate">
-                  {/* Card State Layer */}
-                  <div className="absolute inset-0 bg-md-primary/0 group-hover:bg-md-primary/5 transition-colors duration-300 -z-10" />
-
-                  <div className="flex flex-col h-full">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex flex-wrap gap-2">
+                <Card className="h-full transition-colors hover:bg-muted/50 hover:border-primary/50">
+                  <CardHeader>
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {Array.isArray(event.distance) &&
                           event.distance.map((d, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-md-primary-container text-md-on-primary-container"
-                            >
+                            <Badge key={i} variant="secondary">
                               {d.name.trim()}
-                            </span>
+                            </Badge>
                           ))}
                       </div>
                       {new Date(event.event_date) < new Date() && (
-                        <span className="text-xs font-medium text-md-outline">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 h-5 shrink-0"
+                        >
                           Selesai
-                        </span>
+                        </Badge>
                       )}
                     </div>
-
-                    <h2 className="text-2xl font-bold text-md-on-surface mb-3 group-hover:text-md-primary transition-colors">
+                    <CardTitle className="line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                       {event.title}
-                    </h2>
-
-                    <div className="mt-auto space-y-3 text-md-on-surface-variant">
-                      <div className="flex items-center group-hover:translate-x-1 transition-transform duration-300">
-                        <Calendar className="w-5 h-5 mr-3 text-md-primary" />
-                        <span className="text-sm font-medium">
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 shrink-0" />
+                        <span>
                           {new Date(event.event_date).toLocaleDateString(
                             "id-ID",
                             {
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
                               day: "numeric",
+                              month: "long",
+                              year: "numeric",
                             },
                           )}
                           {event.end_date && (
                             <>
-                              {" "}
-                              -{" "}
+                              {" - "}
                               {new Date(event.end_date).toLocaleDateString(
                                 "id-ID",
                                 { day: "numeric", month: "long" },
@@ -118,13 +114,13 @@ export default async function Home() {
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center group-hover:translate-x-1 transition-transform duration-300 delay-75">
-                        <MapPin className="w-5 h-5 mr-3 text-md-secondary" />
-                        <span className="text-sm">{event.location}</span>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className="line-clamp-1">{event.location}</span>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
