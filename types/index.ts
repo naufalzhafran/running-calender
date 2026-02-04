@@ -22,5 +22,6 @@ export interface Participant {
   event_id: string;
   name: string;
   bib_number: string | null;
+  distance: string | null;
   created_at: Date;
 }

@@ -190,9 +190,9 @@ export default async function EventPage({ params }: PageProps) {
             <table className="min-w-full text-left">
               <thead className="bg-md-surface-container/50 text-md-on-surface-variant text-xs uppercase tracking-wider font-semibold">
                 <tr>
-                  <th className="px-8 py-4">Bib</th>
+                  <th className="px-8 py-4 w-32">Kategori</th>
                   <th className="px-8 py-4">Nama</th>
-                  <th className="px-8 py-4">Kategori</th>
+                  <th className="px-8 py-4 w-32 text-right">Bib</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-md-outline/5 text-md-on-surface text-sm">
@@ -212,15 +212,13 @@ export default async function EventPage({ params }: PageProps) {
                       className="hover:bg-md-surface-container-high/50 transition-colors"
                     >
                       <td className="px-8 py-4 font-mono text-md-primary font-bold">
-                        {participant.bib_number || "—"}
+                        {participant.distance || "—"}
                       </td>
                       <td className="px-8 py-4 font-medium">
                         {participant.name}
                       </td>
-                      <td className="px-8 py-4 text-md-on-surface-variant">
-                        {Array.isArray(event.distance)
-                          ? event.distance.map((d) => d.name).join(", ")
-                          : event.distance}
+                      <td className="px-8 py-4 text-md-on-surface-variant text-right font-mono text-xs">
+                        {participant.bib_number || "—"}
                       </td>
                     </tr>
                   ))

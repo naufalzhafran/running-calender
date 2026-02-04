@@ -72,7 +72,9 @@ export default function EditEventPage({
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
     name: "",
+    name: "",
     bib_number: "",
+    distance: "",
   });
 
   useEffect(() => {
@@ -194,8 +196,13 @@ export default function EditEventPage({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          slug: formData.slug,
+          event_date: formData.event_date,
           end_date: formData.end_date || null,
+          location: formData.location,
+          distance: JSON.stringify(formData.distances), // API expects 'distance' as JSON string/object
+          description: formData.description,
         }),
       });
 
@@ -220,12 +227,14 @@ export default function EditEventPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           event_id: event.id,
-          ...newParticipant,
+          name: newParticipant.name,
+          bib_number: newParticipant.bib_number,
+          distance: newParticipant.distance,
         }),
       });
 
       if (res.ok) {
-        setNewParticipant({ name: "", bib_number: "" });
+        setNewParticipant({ name: "", bib_number: "", distance: "" });
         fetchParticipants(event.id);
       } else {
         alert("Gagal menambahkan peserta");
@@ -579,6 +588,29 @@ export default function EditEventPage({
                       required
                     />
                   </div>
+                  <div className="w-full sm:w-32">
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={newParticipant.distance}
+                      onChange={(e) =>
+                        setNewParticipant({
+                          ...newParticipant,
+                          distance: e.target.value,
+                        })
+                      }
+                      required
+                    >
+                      <option value="" disabled>
+                        Pilih Jarak
+                      </option>
+                      {formData.distances.map((d, i) => (
+                        <option key={i} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Optional BIB input */}
                   <div className="w-full sm:w-24">
                     <Input
                       type="text"
@@ -609,8 +641,9 @@ export default function EditEventPage({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[80px]">Bib</TableHead>
+                        <TableHead className="w-[80px]">Jarak</TableHead>
                         <TableHead>Nama</TableHead>
+                        <TableHead className="w-[80px]">Bib</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -618,9 +651,12 @@ export default function EditEventPage({
                       {participants.map((p) => (
                         <TableRow key={p.id}>
                           <TableCell className="font-mono font-medium">
-                            {p.bib_number || "-"}
+                            {p.distance || "-"}
                           </TableCell>
                           <TableCell>{p.name}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {p.bib_number || "-"}
+                          </TableCell>
                           <TableCell>
                             <Button
                               variant="ghost"

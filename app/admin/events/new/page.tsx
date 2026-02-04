@@ -132,8 +132,13 @@ export default function CreateEventPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          slug: formData.slug,
+          event_date: formData.event_date,
           end_date: formData.end_date || null,
+          location: formData.location,
+          distance: JSON.stringify(formData.distances), // API expects 'distance' as JSON string/object
+          description: formData.description,
         }),
       });
 

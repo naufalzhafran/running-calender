@@ -25,14 +25,20 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   const [hours, setHours] = React.useState<string>("");
   const [minutes, setMinutes] = React.useState<string>("");
 
+  // Track if we are currently editing to prevent external value updates from overwriting typed input
+  const [isEditing, setIsEditing] = React.useState(false);
+
   // Initialize state from value prop
   React.useEffect(() => {
-    if (value) {
+    if (value && !isEditing) {
       const [h, m] = value.split(":");
       setHours(h || "");
       setMinutes(m || "");
+    } else if (!value && !isEditing) {
+      setHours("");
+      setMinutes("");
     }
-  }, [value]);
+  }, [value, isEditing]);
 
   const handleTimeChange = (newHours: string, newMinutes: string) => {
     if (onChange) {
@@ -44,6 +50,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   };
 
   const handleHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsEditing(true);
     let val = e.target.value.replace(/[^0-9]/g, ""); // Only numbers
     if (val.length > 2) val = val.slice(0, 2);
 
@@ -56,14 +63,22 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
     setHours(val);
 
     if (val.length === 2) {
+      // Trigger update immediately if valid 2 digits
+      handleTimeChange(val, minutes || "00");
       // Auto-focus next input if we have minutes
       minuteRef.current?.focus();
     }
   };
 
   const handleHourBlur = () => {
+    setIsEditing(false);
     // Pad with 0 on blur
     let val = hours;
+
+    // If empty on blur, keep it empty or reset to 00 only if minutes are set?
+    // Let's standard behavior: if empty and minutes set, assume 00. If both empty, clear.
+    if (val === "" && minutes === "") return;
+
     if (val === "") val = "00";
     else if (val.length === 1) val = "0" + val;
 
@@ -72,6 +87,7 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
   };
 
   const handleMinuteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsEditing(true);
     let val = e.target.value.replace(/[^0-9]/g, "");
     if (val.length > 2) val = val.slice(0, 2);
 
@@ -82,10 +98,18 @@ export function TimePicker({ value, onChange, className }: TimePickerProps) {
     }
 
     setMinutes(val);
+
+    if (val.length === 2) {
+      handleTimeChange(hours || "00", val);
+    }
   };
 
   const handleMinuteBlur = () => {
+    setIsEditing(false);
     let val = minutes;
+
+    if (val === "" && hours === "") return;
+
     if (val === "") val = "00";
     else if (val.length === 1) val = "0" + val;
 

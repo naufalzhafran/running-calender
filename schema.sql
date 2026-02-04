@@ -19,5 +19,6 @@ CREATE TABLE IF NOT EXISTS participants (
     event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     bib_number VARCHAR(50),
+    distance VARCHAR(50),
     created_at TIMESTAMP DEFAULT NOW()
 );
