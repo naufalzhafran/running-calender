@@ -117,7 +117,9 @@ export default function AdminDashboard() {
                         <MapPin className="w-3 h-3 mr-1" /> {event.location}
                       </span>
                       <span className="bg-md-surface-variant px-2 py-0.5 rounded-md text-xs font-semibold">
-                        {event.distance}
+                        {Array.isArray(event.distance)
+                          ? event.distance.map((d) => d.name).join(", ")
+                          : event.distance}
                       </span>
                     </div>
                   </div>

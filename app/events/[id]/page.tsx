@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import pool from "@/lib/db";
 import { Event, Participant } from "@/types";
-import { Calendar, MapPin, Ruler, ArrowLeft, Users } from "lucide-react";
+import { Calendar, MapPin, Ruler, ArrowLeft, Users, Clock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -66,14 +66,15 @@ export default async function EventPage({ params }: PageProps) {
 
           <div className="relative z-10">
             <div className="flex flex-wrap gap-2 mb-6">
-              {(event.distance || "").split(",").map((d, i) => (
-                <div
-                  key={i}
-                  className="inline-flex items-center px-4 py-1.5 rounded-full bg-md-tertiary-container text-md-on-tertiary-container text-sm font-bold"
-                >
-                  {d.trim()}
-                </div>
-              ))}
+              {Array.isArray(event.distance) &&
+                event.distance.map((d, i) => (
+                  <div
+                    key={i}
+                    className="inline-flex items-center px-4 py-1.5 rounded-full bg-md-tertiary-container text-md-on-tertiary-container text-sm font-bold"
+                  >
+                    {d.name.trim()}
+                  </div>
+                ))}
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-bold text-md-on-surface mb-6 tracking-tight">
@@ -92,8 +93,15 @@ export default async function EventPage({ params }: PageProps) {
                   <p className="text-lg font-medium text-md-on-surface">
                     {new Date(event.event_date).toLocaleString("id-ID", {
                       dateStyle: "medium",
-                      timeStyle: "short",
                     })}
+                    {event.end_date && (
+                      <>
+                        {" - "}
+                        {new Date(event.end_date).toLocaleString("id-ID", {
+                          dateStyle: "medium",
+                        })}
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -111,6 +119,48 @@ export default async function EventPage({ params }: PageProps) {
                 </div>
               </div>
             </div>
+
+            {/* Detailed Distances Grid */}
+            {Array.isArray(event.distance) && event.distance.length > 0 && (
+              <div className="mb-8 p-6 bg-md-surface-container-high/30 rounded-2xl border border-md-outline/10">
+                <h3 className="text-lg font-bold text-md-on-surface mb-4 flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-md-tertiary" /> Information
+                  Kategori
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {event.distance.map((dist, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-md-surface p-4 rounded-xl border border-md-outline/10 hover:border-md-primary/20 transition-colors"
+                    >
+                      <div className="font-bold text-xl text-md-primary mb-2">
+                        {dist.name}
+                      </div>
+                      <div className="space-y-2 text-sm text-md-on-surface-variant">
+                        <div className="flex justify-between border-b border-md-outline/5 pb-1">
+                          <span>Start</span>
+                          <span className="font-medium text-md-on-surface">
+                            {dist.date
+                              ? new Date(dist.date).toLocaleDateString(
+                                  "id-ID",
+                                  { day: "numeric", month: "short" },
+                                )
+                              : "-"}{" "}
+                            {dist.start_time || "-"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>COT</span>
+                          <span className="font-medium text-md-on-surface">
+                            {dist.cot || "-"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {event.description && (
               <div className="prose prose-lg text-md-on-surface-variant max-w-none border-t border-md-outline/10 pt-6">
@@ -168,7 +218,9 @@ export default async function EventPage({ params }: PageProps) {
                         {participant.name}
                       </td>
                       <td className="px-8 py-4 text-md-on-surface-variant">
-                        {event.distance}
+                        {Array.isArray(event.distance)
+                          ? event.distance.map((d) => d.name).join(", ")
+                          : event.distance}
                       </td>
                     </tr>
                   ))

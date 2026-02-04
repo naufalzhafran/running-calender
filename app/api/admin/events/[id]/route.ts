@@ -10,11 +10,19 @@ export async function PUT(
   const client = await pool.connect();
   try {
     const body = await req.json();
-    const { title, slug, event_date, location, distance, description } = body;
+    const {
+      title,
+      slug,
+      event_date,
+      end_date,
+      location,
+      distance,
+      description,
+    } = body;
 
     const res = await client.query(
-      "UPDATE events SET title = $1, slug = $2, event_date = $3, location = $4, distance = $5, description = $6 WHERE id = $7 RETURNING *",
-      [title, slug, event_date, location, distance, description, id],
+      "UPDATE events SET title = $1, slug = $2, event_date = $3, end_date = $4, location = $5, distance = $6, description = $7 WHERE id = $8 RETURNING *",
+      [title, slug, event_date, end_date, location, distance, description, id],
     );
 
     if (res.rowCount === 0) {

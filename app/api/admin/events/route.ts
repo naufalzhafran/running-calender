@@ -6,11 +6,19 @@ export async function POST(req: NextRequest) {
   const client = await pool.connect();
   try {
     const body = await req.json();
-    const { title, slug, event_date, location, distance, description } = body;
+    const {
+      title,
+      slug,
+      event_date,
+      end_date,
+      location,
+      distance,
+      description,
+    } = body;
 
     const res = await client.query(
-      "INSERT INTO events (title, slug, event_date, location, distance, description) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [title, slug, event_date, location, distance, description],
+      "INSERT INTO events (title, slug, event_date, end_date, location, distance, description) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [title, slug, event_date, end_date, location, distance, description],
     );
 
     return NextResponse.json(res.rows[0], { status: 201 });

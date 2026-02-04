@@ -72,14 +72,15 @@ export default async function Home() {
                   <div className="flex flex-col h-full">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex flex-wrap gap-2">
-                        {(event.distance || "").split(",").map((d, i) => (
-                          <span
-                            key={i}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-md-primary-container text-md-on-primary-container"
-                          >
-                            {d.trim()}
-                          </span>
-                        ))}
+                        {Array.isArray(event.distance) &&
+                          event.distance.map((d, i) => (
+                            <span
+                              key={i}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-md-primary-container text-md-on-primary-container"
+                            >
+                              {d.name.trim()}
+                            </span>
+                          ))}
                       </div>
                       {new Date(event.event_date) < new Date() && (
                         <span className="text-xs font-medium text-md-outline">
@@ -104,6 +105,16 @@ export default async function Home() {
                               month: "long",
                               day: "numeric",
                             },
+                          )}
+                          {event.end_date && (
+                            <>
+                              {" "}
+                              -{" "}
+                              {new Date(event.end_date).toLocaleDateString(
+                                "id-ID",
+                                { day: "numeric", month: "long" },
+                              )}
+                            </>
                           )}
                         </span>
                       </div>

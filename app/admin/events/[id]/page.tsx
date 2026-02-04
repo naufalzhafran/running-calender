@@ -3,8 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Trash2, Plus, Save, Edit } from "lucide-react";
-import { Event, Participant } from "@/types";
+import {
+  ArrowLeft,
+  Trash2,
+  Plus,
+  Save,
+  Edit,
+  Clock,
+  MapPin as MapPinIcon,
+  Calendar as CalendarIcon,
+  X,
+} from "lucide-react";
+import { Event, Participant, DistanceDetail } from "@/types";
 
 export default function EditEventPage({
   params,
@@ -23,25 +33,21 @@ export default function EditEventPage({
     title: string;
     slug: string;
     event_date: string;
+    end_date: string;
     location: string;
-    distances: string[];
+    distances: DistanceDetail[];
     description: string;
   }>({
     title: "",
     slug: "",
     event_date: "",
+    end_date: "",
     location: "",
     distances: [],
     description: "",
   });
 
-  const availableDistances = [
-    "5K",
-    "10K",
-    "Half Marathon",
-    "Full Marathon",
-    "Ultra Marathon",
-  ];
+  // Removed availableDistances as we now support dynamic distance input
 
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
@@ -63,17 +69,25 @@ export default function EditEventPage({
         const data = await resEvent.json();
         setEvent(data);
         const date = new Date(data.event_date);
-        const formattedDate = date.toISOString().slice(0, 16);
+        const formattedDate = date.toISOString().slice(0, 10);
 
-        // Parse comma-separated distance string into array
-        const distancesArray = data.distance
-          ? data.distance.split(", ").map((d: string) => d.trim())
+        let formattedEndDate = "";
+        if (data.end_date) {
+          const endDate = new Date(data.end_date);
+          formattedEndDate = endDate.toISOString().slice(0, 10);
+        }
+
+        // Distance is now returned as JSON from API (if DB migration ran)
+        // Ensure it's treated as DistanceDetail[]
+        const distancesArray: DistanceDetail[] = Array.isArray(data.distance)
+          ? data.distance
           : [];
 
         setFormData({
           title: data.title,
           slug: data.slug,
           event_date: formattedDate,
+          end_date: formattedEndDate,
           location: data.location,
           distances: distancesArray,
           description: data.description || "",
@@ -94,17 +108,37 @@ export default function EditEventPage({
     }
   };
 
-  const handleDistanceChange = (distance: string) => {
+  const handleAddDistance = () => {
+    setFormData((prev) => ({
+      ...prev,
+      distances: [
+        ...prev.distances,
+        {
+          name: "",
+          date: prev.event_date.split("T")[0] || "",
+          start_time: "",
+          cot: "",
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveDistance = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      distances: prev.distances.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleDistanceChange = (
+    index: number,
+    field: keyof DistanceDetail,
+    value: string,
+  ) => {
     setFormData((prev) => {
-      const currentDistances = prev.distances;
-      if (currentDistances.includes(distance)) {
-        return {
-          ...prev,
-          distances: currentDistances.filter((d) => d !== distance),
-        };
-      } else {
-        return { ...prev, distances: [...currentDistances, distance] };
-      }
+      const newDistances = [...prev.distances];
+      newDistances[index] = { ...newDistances[index], [field]: value };
+      return { ...prev, distances: newDistances };
     });
   };
 
@@ -116,10 +150,10 @@ export default function EditEventPage({
       const res = await fetch(`/api/admin/events/${event.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        // Join array back to string
+        // Send data directly (distance is now JSON)
         body: JSON.stringify({
           ...formData,
-          distance: formData.distances.join(", "),
+          end_date: formData.end_date || null,
         }),
       });
 
@@ -234,14 +268,30 @@ export default function EditEventPage({
                   Tanggal
                 </label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="event_date"
                   value={formData.event_date}
                   onChange={(e) =>
                     setFormData({ ...formData, event_date: e.target.value })
                   }
-                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
                   required
+                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
+                />
+              </div>
+
+              {/* End Date */}
+              <div className="space-y-2 group">
+                <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors">
+                  Tanggal Selesai (Opsional)
+                </label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, end_date: e.target.value })
+                  }
+                  className="w-full h-12 px-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 text-md-on-surface text-base focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-md outline-none transition-all duration-300 ease-emphasized"
                 />
               </div>
 
@@ -264,34 +314,115 @@ export default function EditEventPage({
                   />
                 </div>
 
-                <div className="space-y-2 group">
-                  <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1">
-                    Jarak
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableDistances.map((dist) => (
-                      <label
-                        key={dist}
-                        className={`
-                        relative flex items-center justify-center h-12 px-2 rounded-2xl
-                        border cursor-pointer transition-all duration-200 ease-emphasized select-none text-sm text-center
-                        ${
-                          formData.distances.includes(dist)
-                            ? "bg-md-primary-container text-md-on-primary-container border-md-primary font-medium shadow-sm"
-                            : "bg-md-surface-container-highest/30 border-md-outline/10 text-md-on-surface hover:bg-md-surface-container-highest/50"
-                        }
-                      `}
+                <div className="col-span-2 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold uppercase tracking-wider text-md-on-surface-variant flex items-center gap-2 ml-1">
+                      Kategori Jarak
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAddDistance}
+                      className="text-xs bg-md-primary-container text-md-on-primary-container px-3 py-1 rounded-full hover:brightness-95 transition-all"
+                    >
+                      + Tambah Kategori
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {formData.distances.map((dist, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 relative group-hover:border-md-primary/20 transition-colors"
                       >
-                        <input
-                          type="checkbox"
-                          value={dist}
-                          checked={formData.distances.includes(dist)}
-                          onChange={() => handleDistanceChange(dist)}
-                          className="sr-only"
-                        />
-                        <span>{dist}</span>
-                      </label>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDistance(idx)}
+                          className="absolute top-2 right-2 text-md-on-surface-variant/50 hover:text-md-error transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="col-span-2 md:col-span-2">
+                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                              Nama Kategori (contoh: 10K)
+                            </label>
+                            <input
+                              type="text"
+                              value={dist.name}
+                              onChange={(e) =>
+                                handleDistanceChange(
+                                  idx,
+                                  "name",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                              placeholder="5K, 10K, etc"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                              Tanggal
+                            </label>
+                            <input
+                              type="date"
+                              value={dist.date}
+                              onChange={(e) =>
+                                handleDistanceChange(
+                                  idx,
+                                  "date",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                                Start
+                              </label>
+                              <input
+                                type="time"
+                                value={dist.start_time}
+                                onChange={(e) =>
+                                  handleDistanceChange(
+                                    idx,
+                                    "start_time",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                                COT
+                              </label>
+                              <input
+                                type="time"
+                                value={dist.cot}
+                                onChange={(e) =>
+                                  handleDistanceChange(
+                                    idx,
+                                    "cot",
+                                    e.target.value,
+                                  )
+                                }
+                                className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
+                    {formData.distances.length === 0 && (
+                      <div className="text-center p-4 border border-dashed border-md-outline/20 rounded-2xl text-sm text-md-on-surface-variant">
+                        Belum ada kategori jarak
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

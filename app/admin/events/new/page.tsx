@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
+import { DistanceDetail } from "@/types";
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -14,25 +15,21 @@ export default function CreateEventPage() {
     title: string;
     slug: string;
     event_date: string;
+    end_date: string;
     location: string;
-    distances: string[]; // Changed from distance string to array
+    distances: DistanceDetail[];
     description: string;
   }>({
     title: "",
     slug: "",
     event_date: "",
+    end_date: "",
     location: "",
     distances: [],
     description: "",
   });
 
-  const availableDistances = [
-    "5K",
-    "10K",
-    "Half Marathon",
-    "Full Marathon",
-    "Ultra Marathon",
-  ];
+  // Removed availableDistances as we now support dynamic distance input
 
   const generateSlug = (text: string) => {
     return text
@@ -55,17 +52,37 @@ export default function CreateEventPage() {
     });
   };
 
-  const handleDistanceChange = (distance: string) => {
+  const handleAddDistance = () => {
+    setFormData((prev) => ({
+      ...prev,
+      distances: [
+        ...prev.distances,
+        {
+          name: "",
+          date: prev.event_date.split("T")[0] || "",
+          start_time: "",
+          cot: "",
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveDistance = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      distances: prev.distances.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleDistanceChange = (
+    index: number,
+    field: keyof DistanceDetail,
+    value: string,
+  ) => {
     setFormData((prev) => {
-      const currentDistances = prev.distances;
-      if (currentDistances.includes(distance)) {
-        return {
-          ...prev,
-          distances: currentDistances.filter((d) => d !== distance),
-        };
-      } else {
-        return { ...prev, distances: [...currentDistances, distance] };
-      }
+      const newDistances = [...prev.distances];
+      newDistances[index] = { ...newDistances[index], [field]: value };
+      return { ...prev, distances: newDistances };
     });
   };
 
@@ -78,10 +95,10 @@ export default function CreateEventPage() {
       const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Join distances into a string for the API/DB
+        // Send data directly (distance is now JSON)
         body: JSON.stringify({
           ...formData,
-          distance: formData.distances.join(", "),
+          end_date: formData.end_date || null,
         }),
       });
 
@@ -152,15 +169,38 @@ export default function CreateEventPage() {
                 htmlFor="event_date"
                 className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
               >
-                Tanggal & Waktu
+                Tanggal
               </label>
               <div className="relative">
                 <input
-                  type="datetime-local"
+                  type="date"
                   name="event_date"
                   id="event_date"
                   required
                   value={formData.event_date}
+                  onChange={handleChange}
+                  className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
+                           text-md-on-surface text-base
+                           focus:bg-md-surface focus:border-md-primary/30 focus:ring-4 focus:ring-md-primary/5 focus:shadow-lg focus:shadow-md-primary/5 
+                           outline-none transition-all duration-300 ease-emphasized"
+                />
+              </div>
+            </div>
+
+            {/* End Date */}
+            <div className="space-y-2 group">
+              <label
+                htmlFor="end_date"
+                className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1 group-focus-within:text-md-primary transition-colors"
+              >
+                Tanggal Selesai (Opsional)
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  name="end_date"
+                  id="end_date"
+                  value={formData.end_date}
                   onChange={handleChange}
                   className="w-full h-14 px-5 rounded-[20px] bg-md-surface-container-highest/30 border border-md-outline/10 
                            text-md-on-surface text-base
@@ -197,33 +237,89 @@ export default function CreateEventPage() {
               </div>
 
               <div className="space-y-3 group">
-                <label className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1">
-                  Jarak
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {availableDistances.map((dist) => (
-                    <label
-                      key={dist}
-                      className={`
-                      relative flex items-center justify-center h-12 px-4 rounded-[20px] 
-                      border cursor-pointer transition-all duration-200 ease-emphasized select-none
-                      ${
-                        formData.distances.includes(dist)
-                          ? "bg-md-primary-container text-md-on-primary-container border-md-primary font-medium shadow-sm"
-                          : "bg-md-surface-container-highest/30 border-md-outline/10 text-md-on-surface-variant hover:bg-md-surface-container-highest/50"
-                      }
-                    `}
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-semibold text-md-on-surface-variant flex items-center gap-2 ml-1">
+                    Jarak
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddDistance}
+                    className="text-xs bg-md-primary-container text-md-on-primary-container px-3 py-1 rounded-full hover:brightness-95 transition-all"
+                  >
+                    + Tambah
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {formData.distances.map((dist, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-md-surface-container-highest/30 border border-md-outline/10 relative"
                     >
-                      <input
-                        type="checkbox"
-                        value={dist}
-                        checked={formData.distances.includes(dist)}
-                        onChange={() => handleDistanceChange(dist)}
-                        className="sr-only"
-                      />
-                      <span className="text-sm">{dist}</span>
-                    </label>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDistance(idx)}
+                        className="absolute top-2 right-2 text-md-on-surface-variant/50 hover:text-md-error transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                            Nama
+                          </label>
+                          <input
+                            type="text"
+                            value={dist.name}
+                            onChange={(e) =>
+                              handleDistanceChange(idx, "name", e.target.value)
+                            }
+                            className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                            placeholder="5K"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                              Start
+                            </label>
+                            <input
+                              type="time"
+                              value={dist.start_time}
+                              onChange={(e) =>
+                                handleDistanceChange(
+                                  idx,
+                                  "start_time",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-md-on-surface-variant/70 mb-1 block">
+                              COT
+                            </label>
+                            <input
+                              type="time"
+                              value={dist.cot}
+                              onChange={(e) =>
+                                handleDistanceChange(idx, "cot", e.target.value)
+                              }
+                              className="w-full h-10 px-3 rounded-xl bg-md-surface border border-md-outline/10 text-sm focus:border-md-primary/50 outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
+                  {formData.distances.length === 0 && (
+                    <div className="text-center p-4 border border-dashed border-md-outline/20 rounded-2xl text-sm text-md-on-surface-variant">
+                      Belum ada kategori jarak
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
