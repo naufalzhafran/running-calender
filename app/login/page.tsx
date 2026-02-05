@@ -54,7 +54,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-md-surface-container p-8 rounded-[32px] space-y-6 shadow-sm"
+          className="bg-md-surface-container p-8 rounded-xl space-y-6 shadow-sm"
         >
           {error && (
             <div className="bg-md-error/10 text-md-error px-4 py-3 rounded-xl text-sm font-medium flex items-center">

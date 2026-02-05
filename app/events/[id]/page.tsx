@@ -60,7 +60,7 @@ export default async function EventPage({ params }: PageProps) {
         </Link>
 
         {/* Hero Card */}
-        <div className="bg-md-surface-container-low rounded-[32px] p-8 sm:p-12 mb-8 border border-md-outline/5 relative overflow-hidden">
+        <div className="bg-md-surface-container-low rounded-xl p-8 sm:p-12 mb-8 border border-md-outline/5 relative overflow-hidden">
           {/* Decorative shape inside card */}
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-md-primary/10 rounded-full blur-2xl" />
 
@@ -173,7 +173,7 @@ export default async function EventPage({ params }: PageProps) {
         </div>
 
         {/* Participants Section */}
-        <div className="bg-md-surface-container-low rounded-[32px] overflow-hidden border border-md-outline/5">
+        <div className="bg-md-surface-container-low rounded-xl overflow-hidden border border-md-outline/5">
           <div className="px-8 py-6 bg-md-surface-container flex justify-between items-center border-b border-md-outline/5">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded-full bg-md-primary/10 flex items-center justify-center mr-3 text-md-primary">
