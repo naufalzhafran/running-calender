@@ -156,7 +156,7 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
+    <div className="min-h-screen bg-md-background py-10 px-4">
       <div className="container max-w-3xl mx-auto">
         <Button
           variant="ghost"

@@ -60,7 +60,7 @@ export default async function EventPage({ params }: PageProps) {
         </Link>
 
         {/* Hero Card */}
-        <div className="bg-md-surface-container rounded-[32px] sm:rounded-[40px] p-8 sm:p-12 mb-8 shadow-sm relative overflow-hidden">
+        <div className="bg-md-surface-container-low rounded-[32px] p-8 sm:p-12 mb-8 border border-md-outline/5 relative overflow-hidden">
           {/* Decorative shape inside card */}
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-md-primary/10 rounded-full blur-2xl" />
 

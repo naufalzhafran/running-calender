@@ -60,7 +60,7 @@ export default async function Home() {
                 href={`/events/${event.id}`}
                 className="group block h-full focus:outline-none"
               >
-                <Card className="h-full transition-colors hover:bg-muted/50 hover:border-primary/50">
+                <Card className="h-full transition-colors hover:bg-md-surface-container-high/50 hover:border-md-primary/50">
                   <CardHeader>
                     <div className="flex justify-between items-start mb-2 gap-2">
                       <div className="flex flex-wrap gap-1.5">
