@@ -365,7 +365,6 @@ export default function EditEventPage({
                           handleDateSelect("event_date", date)
                         }
                         disabled={(date) => date < new Date("1900-01-01")}
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -410,7 +409,6 @@ export default function EditEventPage({
                         }
                         onSelect={(date) => handleDateSelect("end_date", date)}
                         disabled={(date) => date < new Date("1900-01-01")}
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -522,7 +520,6 @@ export default function EditEventPage({
                                   disabled={(date) =>
                                     date < new Date("1900-01-01")
                                   }
-                                  initialFocus
                                 />
                               </PopoverContent>
                             </Popover>
