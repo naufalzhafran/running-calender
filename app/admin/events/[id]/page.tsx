@@ -74,7 +74,6 @@ export default function EditEventPage({
   // Participant Form State
   const [newParticipant, setNewParticipant] = useState({
     name: "",
-    bib_number: "",
     distance: "",
   });
 
@@ -229,13 +228,13 @@ export default function EditEventPage({
         body: JSON.stringify({
           event_id: event.id,
           name: newParticipant.name,
-          bib_number: newParticipant.bib_number,
+
           distance: newParticipant.distance,
         }),
       });
 
       if (res.ok) {
-        setNewParticipant({ name: "", bib_number: "", distance: "" });
+        setNewParticipant({ name: "", distance: "" });
         fetchParticipants(event.id);
       } else {
         showError("Gagal menambahkan peserta");
@@ -618,21 +617,7 @@ export default function EditEventPage({
                       ))}
                     </select>
                   </div>
-                  {/* Optional BIB input */}
-                  <div className="w-full sm:w-24">
-                    <Input
-                      type="text"
-                      placeholder="Bib"
-                      value={newParticipant.bib_number}
-                      onChange={(e) =>
-                        setNewParticipant({
-                          ...newParticipant,
-                          bib_number: e.target.value,
-                        })
-                      }
-                      className="bg-background"
-                    />
-                  </div>
+
                   <Button type="submit" size="icon" className="shrink-0">
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -651,7 +636,7 @@ export default function EditEventPage({
                       <TableRow>
                         <TableHead className="w-[80px]">Jarak</TableHead>
                         <TableHead>Nama</TableHead>
-                        <TableHead className="w-[80px]">Bib</TableHead>
+
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -662,9 +647,7 @@ export default function EditEventPage({
                             {p.distance || "-"}
                           </TableCell>
                           <TableCell>{p.name}</TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {p.bib_number || "-"}
-                          </TableCell>
+
                           <TableCell>
                             <Button
                               variant="ghost"

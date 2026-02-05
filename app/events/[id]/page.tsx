@@ -192,14 +192,13 @@ export default async function EventPage({ params }: PageProps) {
                 <tr>
                   <th className="px-8 py-4 w-32">Kategori</th>
                   <th className="px-8 py-4">Nama</th>
-                  <th className="px-8 py-4 w-32 text-right">Bib</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-md-outline/5 text-md-on-surface text-sm">
                 {participants.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={2}
                       className="px-8 py-12 text-center text-md-on-surface-variant"
                     >
                       Belum ada peserta terdaftar.
@@ -216,9 +215,6 @@ export default async function EventPage({ params }: PageProps) {
                       </td>
                       <td className="px-8 py-4 font-medium">
                         {participant.name}
-                      </td>
-                      <td className="px-8 py-4 text-md-on-surface-variant text-right font-mono text-xs">
-                        {participant.bib_number || "—"}
                       </td>
                     </tr>
                   ))
