@@ -122,7 +122,7 @@ export default async function EventPage({ params }: PageProps) {
 
             {/* Detailed Distances Grid */}
             {Array.isArray(event.distance) && event.distance.length > 0 && (
-              <div className="mb-8 p-6 bg-md-surface-container-high/30 rounded-2xl border border-md-outline/10">
+              <div className="mb-8">
                 <h3 className="text-lg font-bold text-md-on-surface mb-4 flex items-center gap-2">
                   <Ruler className="w-5 h-5 text-md-tertiary" /> Information
                   Kategori

@@ -228,6 +228,11 @@ export default function CreateEventPage() {
                           ? new Date(formData.event_date)
                           : undefined
                       }
+                      defaultMonth={
+                        formData.event_date
+                          ? new Date(formData.event_date)
+                          : undefined
+                      }
                       onSelect={(date) => handleDateSelect("event_date", date)}
                       disabled={(date) => date < new Date("1900-01-01")}
                       initialFocus
@@ -265,6 +270,13 @@ export default function CreateEventPage() {
                         formData.end_date
                           ? new Date(formData.end_date)
                           : undefined
+                      }
+                      defaultMonth={
+                        formData.end_date
+                          ? new Date(formData.end_date)
+                          : formData.event_date
+                            ? new Date(formData.event_date)
+                            : undefined
                       }
                       onSelect={(date) => handleDateSelect("end_date", date)}
                       disabled={(date) => date < new Date("1900-01-01")}
@@ -363,6 +375,13 @@ export default function CreateEventPage() {
                                 mode="single"
                                 selected={
                                   dist.date ? new Date(dist.date) : undefined
+                                }
+                                defaultMonth={
+                                  dist.date
+                                    ? new Date(dist.date)
+                                    : formData.event_date
+                                      ? new Date(formData.event_date)
+                                      : undefined
                                 }
                                 onSelect={(date) =>
                                   handleDistanceDateSelect(idx, date)
