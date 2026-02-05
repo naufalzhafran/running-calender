@@ -39,6 +39,13 @@ import {
 } from "@/components/ui/popover";
 import { TimePicker } from "@/components/ui/time-picker";
 import { useAlertModal } from "@/components/ui/alert-modal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function EditEventPage({
   params,
@@ -596,26 +603,27 @@ export default function EditEventPage({
                     />
                   </div>
                   <div className="w-full sm:w-32">
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    <Select
                       value={newParticipant.distance}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setNewParticipant({
                           ...newParticipant,
-                          distance: e.target.value,
+                          distance: value,
                         })
                       }
                       required
                     >
-                      <option value="" disabled>
-                        Pilih Jarak
-                      </option>
-                      {formData.distances.map((d, i) => (
-                        <option key={i} value={d.name}>
-                          {d.name}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Pilih Jarak" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {formData.distances.map((d, i) => (
+                          <SelectItem key={i} value={d.name}>
+                            {d.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <Button type="submit" size="icon" className="shrink-0">
