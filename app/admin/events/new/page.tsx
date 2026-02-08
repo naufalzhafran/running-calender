@@ -187,115 +187,185 @@ export default function CreateEventPage() {
               {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">Judul Event</Label>
-                <Input
-                  type="text"
-                  name="title"
-                  id="title"
-                  required
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Contoh: Jakarta Marathon 2026"
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    name="title"
+                    id="title"
+                    required
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="Contoh: Jakarta Marathon 2026"
+                    className="pr-10"
+                  />
+                  {formData.title && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          title: "",
+                          slug: "",
+                        }))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Date */}
               <div className="space-y-2 flex flex-col">
                 <Label>Tanggal</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
+                <div className="relative">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal pr-12",
+                          !formData.event_date && "text-muted-foreground",
+                        )}
+                      >
+                        {formData.event_date ? (
+                          format(new Date(formData.event_date), "PPP", {
+                            locale: idLocale,
+                          })
+                        ) : (
+                          <span>Pilih tanggal</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          formData.event_date
+                            ? new Date(formData.event_date)
+                            : undefined
+                        }
+                        defaultMonth={
+                          formData.event_date
+                            ? new Date(formData.event_date)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          handleDateSelect("event_date", date)
+                        }
+                        disabled={(date) => date < new Date("1900-01-01")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {formData.event_date && (
                     <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !formData.event_date && "text-muted-foreground",
-                      )}
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData((prev) => ({ ...prev, event_date: "" }));
+                      }}
                     >
-                      {formData.event_date ? (
-                        format(new Date(formData.event_date), "PPP", {
-                          locale: idLocale,
-                        })
-                      ) : (
-                        <span>Pilih tanggal</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      <X className="h-4 w-4" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        formData.event_date
-                          ? new Date(formData.event_date)
-                          : undefined
-                      }
-                      defaultMonth={
-                        formData.event_date
-                          ? new Date(formData.event_date)
-                          : undefined
-                      }
-                      onSelect={(date) => handleDateSelect("event_date", date)}
-                      disabled={(date) => date < new Date("1900-01-01")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                  )}
+                </div>
               </div>
 
               {/* End Date */}
               <div className="space-y-2 flex flex-col">
                 <Label>Tanggal Selesai (Opsional)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !formData.end_date && "text-muted-foreground",
-                      )}
-                    >
-                      {formData.end_date ? (
-                        format(new Date(formData.end_date), "PPP", {
-                          locale: idLocale,
-                        })
-                      ) : (
-                        <span>Pilih tanggal selesai</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={
-                        formData.end_date
-                          ? new Date(formData.end_date)
-                          : undefined
-                      }
-                      defaultMonth={
-                        formData.end_date
-                          ? new Date(formData.end_date)
-                          : formData.event_date
-                            ? new Date(formData.event_date)
+                <div className="relative">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal pr-12",
+                          !formData.end_date && "text-muted-foreground",
+                        )}
+                      >
+                        {formData.end_date ? (
+                          format(new Date(formData.end_date), "PPP", {
+                            locale: idLocale,
+                          })
+                        ) : (
+                          <span>Pilih tanggal selesai</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          formData.end_date
+                            ? new Date(formData.end_date)
                             : undefined
-                      }
-                      onSelect={(date) => handleDateSelect("end_date", date)}
-                      disabled={(date) => date < new Date("1900-01-01")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                        }
+                        defaultMonth={
+                          formData.end_date
+                            ? new Date(formData.end_date)
+                            : formData.event_date
+                              ? new Date(formData.event_date)
+                              : undefined
+                        }
+                        onSelect={(date) => handleDateSelect("end_date", date)}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {formData.end_date && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData((prev) => ({ ...prev, end_date: "" }));
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Location */}
               <div className="space-y-2">
                 <Label htmlFor="location">Lokasi</Label>
-                <Input
-                  type="text"
-                  name="location"
-                  id="location"
-                  required
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Contoh: GBK, Jakarta"
-                />
+                <div className="relative">
+                  <Input
+                    type="text"
+                    name="location"
+                    id="location"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="Contoh: GBK, Jakarta"
+                    className="pr-10"
+                  />
+                  {formData.location && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, location: "" }))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Distances */}
@@ -332,84 +402,153 @@ export default function CreateEventPage() {
                       <div className="space-y-4 pt-2">
                         <div className="space-y-2">
                           <Label className="text-xs">Nama Kategori</Label>
-                          <Input
-                            type="text"
-                            value={dist.name}
-                            onChange={(e) =>
-                              handleDistanceChange(idx, "name", e.target.value)
-                            }
-                            placeholder="5K"
-                            required
-                            className="bg-background"
-                          />
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              value={dist.name}
+                              onChange={(e) =>
+                                handleDistanceChange(
+                                  idx,
+                                  "name",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="5K"
+                              required
+                              className="bg-background pr-10"
+                            />
+                            {dist.name && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                                onClick={() =>
+                                  handleDistanceChange(idx, "name", "")
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="space-y-2 flex flex-col">
                           <Label className="text-xs">Tanggal</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal h-9",
-                                  !dist.date && "text-muted-foreground",
-                                )}
+                          <div className="relative">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal h-9 pr-12",
+                                    !dist.date && "text-muted-foreground",
+                                  )}
+                                >
+                                  {dist.date ? (
+                                    format(new Date(dist.date), "PPP", {
+                                      locale: idLocale,
+                                    })
+                                  ) : (
+                                    <span>Pilih tanggal</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
                               >
-                                {dist.date ? (
-                                  format(new Date(dist.date), "PPP", {
-                                    locale: idLocale,
-                                  })
-                                ) : (
-                                  <span>Pilih tanggal</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    dist.date ? new Date(dist.date) : undefined
+                                  }
+                                  defaultMonth={
+                                    dist.date
+                                      ? new Date(dist.date)
+                                      : formData.event_date
+                                        ? new Date(formData.event_date)
+                                        : undefined
+                                  }
+                                  onSelect={(date) =>
+                                    handleDistanceDateSelect(idx, date)
+                                  }
+                                  disabled={(date) =>
+                                    date < new Date("1900-01-01")
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            {dist.date && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDistanceChange(idx, "date", "");
+                                }}
+                              >
+                                <X className="h-4 w-4" />
                               </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={
-                                  dist.date ? new Date(dist.date) : undefined
-                                }
-                                defaultMonth={
-                                  dist.date
-                                    ? new Date(dist.date)
-                                    : formData.event_date
-                                      ? new Date(formData.event_date)
-                                      : undefined
-                                }
-                                onSelect={(date) =>
-                                  handleDistanceDateSelect(idx, date)
-                                }
-                                disabled={(date) =>
-                                  date < new Date("1900-01-01")
-                                }
-                              />
-                            </PopoverContent>
-                          </Popover>
+                            )}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-2">
                             <Label className="text-xs">Start Time</Label>
-                            <TimePicker
-                              value={dist.start_time}
-                              onChange={(val) =>
-                                handleDistanceChange(idx, "start_time", val)
-                              }
-                            />
+                            <div className="relative">
+                              <TimePicker
+                                value={dist.start_time}
+                                onChange={(val) =>
+                                  handleDistanceChange(idx, "start_time", val)
+                                }
+                                className="pr-10"
+                              />
+                              {dist.start_time && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDistanceChange(idx, "start_time", "");
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <Label className="text-xs">COT</Label>
-                            <TimePicker
-                              value={dist.cot}
-                              onChange={(val) =>
-                                handleDistanceChange(idx, "cot", val)
-                              }
-                            />
+                            <div className="relative">
+                              <TimePicker
+                                value={dist.cot}
+                                onChange={(val) =>
+                                  handleDistanceChange(idx, "cot", val)
+                                }
+                                className="pr-10"
+                              />
+                              {dist.cot && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDistanceChange(idx, "cot", "");
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -426,15 +565,30 @@ export default function CreateEventPage() {
               {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description">Deskripsi</Label>
-                <Textarea
-                  name="description"
-                  id="description"
-                  rows={4}
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Ceritakan tentang lomba ini..."
-                  className="resize-none"
-                />
+                <div className="relative">
+                  <Textarea
+                    name="description"
+                    id="description"
+                    rows={4}
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Ceritakan tentang lomba ini..."
+                    className="resize-none pr-10"
+                  />
+                  {formData.description && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-2 h-6 w-6 text-muted-foreground hover:text-foreground"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, description: "" }))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end pt-2">
