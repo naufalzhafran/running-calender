@@ -1,88 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Trash2,
-  Plus,
-  Save,
-  Edit,
-  X,
-  Calendar as CalendarIcon,
-} from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 import { Event, Participant, DistanceDetail } from "@/types";
-import { format } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { TimePicker } from "@/components/ui/time-picker";
+import { EventForm, EventFormData } from "@/components/admin/event-form";
+import { ParticipantManager } from "@/components/admin/participant-manager";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAlertModal } from "@/components/ui/alert-modal";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function EditEventPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventId, setEventId] = useState<string>("");
-  const { alertModal, showConfirm, showSuccess, showError } = useAlertModal();
-
-  // Event Form State
-  const [formData, setFormData] = useState<{
-    title: string;
-    slug: string;
-    event_date: string;
-    end_date: string;
-    location: string;
-    distances: DistanceDetail[];
-    description: string;
-  }>({
-    title: "",
-    slug: "",
-    event_date: "",
-    end_date: "",
-    location: "",
-    distances: [],
-    description: "",
-  });
-
-  // Participant Form State
-  const [newParticipant, setNewParticipant] = useState({
-    name: "",
-    distance: "",
-  });
+  const [initialFormData, setInitialFormData] = useState<EventFormData | null>(
+    null,
+  );
+  const { alertModal, showSuccess, showError } = useAlertModal();
 
   useEffect(() => {
     params.then((p) => {
@@ -97,21 +39,21 @@ export default function EditEventPage({
       if (resEvent.ok) {
         const data = await resEvent.json();
         setEvent(data);
-        const date = new Date(data.event_date);
-        const formattedDate = date.toISOString().slice(0, 10);
+        const formattedDate = new Date(data.event_date)
+          .toISOString()
+          .slice(0, 10);
 
         let formattedEndDate = "";
         if (data.end_date) {
-          const endDate = new Date(data.end_date);
-          formattedEndDate = endDate.toISOString().slice(0, 10);
+          formattedEndDate = new Date(data.end_date)
+            .toISOString()
+            .slice(0, 10);
         }
 
         const distancesArray: DistanceDetail[] = Array.isArray(data.distance)
           ? data.distance
           : [];
 
-        // Ensure each distance date is also formatted correctly from API
-        // if API returns ISO string with time
         const cleanDistances = distancesArray.map((d) => ({
           ...d,
           date: d.date
@@ -119,7 +61,7 @@ export default function EditEventPage({
             : formattedDate,
         }));
 
-        setFormData({
+        setInitialFormData({
           title: data.title,
           slug: data.slug,
           event_date: formattedDate,
@@ -144,59 +86,7 @@ export default function EditEventPage({
     }
   };
 
-  const handleAddDistance = () => {
-    setFormData((prev) => ({
-      ...prev,
-      distances: [
-        ...prev.distances,
-        {
-          name: "",
-          date: prev.event_date || "",
-          start_time: "",
-          cot: "",
-          price: "",
-        },
-      ],
-    }));
-  };
-
-  const handleRemoveDistance = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      distances: prev.distances.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleDistanceChange = (
-    index: number,
-    field: keyof DistanceDetail,
-    value: string,
-  ) => {
-    setFormData((prev) => {
-      const newDistances = [...prev.distances];
-      newDistances[index] = { ...newDistances[index], [field]: value };
-      return { ...prev, distances: newDistances };
-    });
-  };
-
-  const handleDateSelect = (
-    field: "event_date" | "end_date",
-    date: Date | undefined,
-  ) => {
-    if (!date) return;
-    setFormData((prev) => ({
-      ...prev,
-      [field]: format(date, "yyyy-MM-dd"),
-    }));
-  };
-
-  const handleDistanceDateSelect = (index: number, date: Date | undefined) => {
-    if (!date) return;
-    handleDistanceChange(index, "date", format(date, "yyyy-MM-dd"));
-  };
-
-  const handleEventUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEventUpdate = async (formData: EventFormData) => {
     if (!event) return;
 
     try {
@@ -209,7 +99,7 @@ export default function EditEventPage({
           event_date: formData.event_date,
           end_date: formData.end_date || null,
           location: formData.location,
-          distance: JSON.stringify(formData.distances), // API expects 'distance' as JSON string/object
+          distance: JSON.stringify(formData.distances),
           description: formData.description,
         }),
       });
@@ -220,67 +110,14 @@ export default function EditEventPage({
       } else {
         showError("Gagal memperbarui event");
       }
-    } catch (err) {
+    } catch {
       showError("Terjadi kesalahan saat memperbarui event");
     }
   };
 
-  const handleAddParticipant = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!event) return;
+  if (loading) return <LoadingSpinner />;
 
-    try {
-      const res = await fetch("/api/admin/participants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event_id: event.id,
-          name: newParticipant.name,
-
-          distance: newParticipant.distance,
-        }),
-      });
-
-      if (res.ok) {
-        setNewParticipant({ name: "", distance: "" });
-        fetchParticipants(event.id);
-      } else {
-        showError("Gagal menambahkan peserta");
-      }
-    } catch (err) {
-      showError("Terjadi kesalahan saat menambahkan peserta");
-    }
-  };
-
-  const confirmDeleteParticipant = (participantId: string) => {
-    showConfirm(
-      "Hapus peserta ini?",
-      () => handleDeleteParticipant(participantId),
-      { title: "Hapus Peserta" },
-    );
-  };
-
-  const handleDeleteParticipant = async (participantId: string) => {
-    try {
-      const res = await fetch(`/api/admin/participants/${participantId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        fetchParticipants(eventId);
-      }
-    } catch (err) {
-      showError("Gagal menghapus peserta");
-    }
-  };
-
-  if (loading)
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-
-  if (!event)
+  if (!event || !initialFormData)
     return (
       <div className="p-8 text-center text-foreground">
         Event tidak ditemukan
@@ -311,603 +148,24 @@ export default function EditEventPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleEventUpdate} className="space-y-4">
-                {/* Title */}
-                <div className="space-y-2">
-                  <Label>Judul Event</Label>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      placeholder="Judul"
-                      required
-                      className="pr-10"
-                    />
-                    {formData.title && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          setFormData({ ...formData, title: "", slug: "" })
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Date */}
-                <div className="space-y-2 flex flex-col">
-                  <Label>Tanggal</Label>
-                  <div className="relative">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal pr-12",
-                            !formData.event_date && "text-muted-foreground",
-                          )}
-                        >
-                          {formData.event_date ? (
-                            format(new Date(formData.event_date), "PPP", {
-                              locale: idLocale,
-                            })
-                          ) : (
-                            <span>Pilih tanggal</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={
-                            formData.event_date
-                              ? new Date(formData.event_date)
-                              : undefined
-                          }
-                          defaultMonth={
-                            formData.event_date
-                              ? new Date(formData.event_date)
-                              : undefined
-                          }
-                          onSelect={(date) =>
-                            handleDateSelect("event_date", date)
-                          }
-                          disabled={(date) => date < new Date("1900-01-01")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {formData.event_date && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDateSelect("event_date", undefined);
-                          // Actually handleDateSelect handles setting format, let's manually clear it
-                          setFormData((prev) => ({ ...prev, event_date: "" }));
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* End Date */}
-                <div className="space-y-2 flex flex-col">
-                  <Label>Tanggal Selesai (Opsional)</Label>
-                  <div className="relative">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal pr-12",
-                            !formData.end_date && "text-muted-foreground",
-                          )}
-                        >
-                          {formData.end_date ? (
-                            format(new Date(formData.end_date), "PPP", {
-                              locale: idLocale,
-                            })
-                          ) : (
-                            <span>Pilih tanggal selesai</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={
-                            formData.end_date
-                              ? new Date(formData.end_date)
-                              : undefined
-                          }
-                          defaultMonth={
-                            formData.end_date
-                              ? new Date(formData.end_date)
-                              : formData.event_date
-                                ? new Date(formData.event_date)
-                                : undefined
-                          }
-                          onSelect={(date) =>
-                            handleDateSelect("end_date", date)
-                          }
-                          disabled={(date) => date < new Date("1900-01-01")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {formData.end_date && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFormData((prev) => ({ ...prev, end_date: "" }));
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Location */}
-                <div className="space-y-2">
-                  <Label>Lokasi</Label>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={(e) =>
-                        setFormData({ ...formData, location: e.target.value })
-                      }
-                      placeholder="Lokasi"
-                      required
-                      className="pr-10"
-                    />
-                    {formData.location && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          setFormData({ ...formData, location: "" })
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-2">
-                  <div className="flex justify-between items-center">
-                    <Label>Kategori Jarak</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddDistance}
-                    >
-                      <Plus className="w-3 h-3 mr-1" /> Tambah
-                    </Button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {formData.distances.map((dist, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-lg border bg-muted/30 relative"
-                      >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive z-10"
-                          onClick={() => handleRemoveDistance(idx)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-
-                        <div className="space-y-3 pt-1">
-                          <div className="space-y-1">
-                            <Label className="text-xs">Nama Kategori</Label>
-                            <div className="relative">
-                              <Input
-                                type="text"
-                                value={dist.name}
-                                onChange={(e) =>
-                                  handleDistanceChange(
-                                    idx,
-                                    "name",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="5K"
-                                required
-                                className="bg-background h-8 text-sm pr-8"
-                              />
-                              {dist.name && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
-                                  onClick={() =>
-                                    handleDistanceChange(idx, "name", "")
-                                  }
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-1 flex flex-col">
-                            <Label className="text-xs">Tanggal</Label>
-                            <div className="relative">
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal h-8 text-sm pr-12",
-                                      !dist.date && "text-muted-foreground",
-                                    )}
-                                  >
-                                    {dist.date ? (
-                                      format(new Date(dist.date), "PPP", {
-                                        locale: idLocale,
-                                      })
-                                    ) : (
-                                      <span>Pilih tanggal</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-3 w-3 opacity-50" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                  className="w-auto p-0"
-                                  align="start"
-                                >
-                                  <Calendar
-                                    mode="single"
-                                    selected={
-                                      dist.date
-                                        ? new Date(dist.date)
-                                        : undefined
-                                    }
-                                    defaultMonth={
-                                      dist.date
-                                        ? new Date(dist.date)
-                                        : formData.event_date
-                                          ? new Date(formData.event_date)
-                                          : undefined
-                                    }
-                                    onSelect={(date) =>
-                                      handleDistanceDateSelect(idx, date)
-                                    }
-                                    disabled={(date) =>
-                                      date < new Date("1900-01-01")
-                                    }
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              {dist.date && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDistanceChange(idx, "date", "");
-                                  }}
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <Label className="text-xs">Start Time</Label>
-                              <div className="relative">
-                                <TimePicker
-                                  value={dist.start_time}
-                                  onChange={(val) =>
-                                    handleDistanceChange(idx, "start_time", val)
-                                  }
-                                  className="h-8 text-sm pr-10"
-                                />
-                                {dist.start_time && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-1 text-muted-foreground hover:text-foreground"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDistanceChange(
-                                        idx,
-                                        "start_time",
-                                        "",
-                                      );
-                                    }}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">COT</Label>
-                              <div className="relative">
-                                <TimePicker
-                                  value={dist.cot}
-                                  onChange={(val) =>
-                                    handleDistanceChange(idx, "cot", val)
-                                  }
-                                  className="h-8 text-sm pr-10"
-                                />
-                                {dist.cot && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-1 text-muted-foreground hover:text-foreground"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDistanceChange(idx, "cot", "");
-                                    }}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs">Harga</Label>
-                            <div className="relative">
-                              <Input
-                                type="text"
-                                value={dist.price}
-                                onChange={(e) =>
-                                  handleDistanceChange(
-                                    idx,
-                                    "price",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="150000"
-                                className="bg-background h-8 text-sm pr-8"
-                              />
-                              {dist.price && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
-                                  onClick={() =>
-                                    handleDistanceChange(idx, "price", "")
-                                  }
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {formData.distances.length === 0 && (
-                      <div className="text-center p-4 border border-dashed rounded-lg text-xs text-muted-foreground">
-                        Belum ada kategori jarak
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label>Deskripsi</Label>
-                  <div className="relative">
-                    <Textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={4}
-                      className="resize-none pr-10"
-                    />
-                    {formData.description && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-2 h-6 w-6 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          setFormData({ ...formData, description: "" })
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <Button type="submit" className="w-full">
-                    <Save className="w-4 h-4 mr-2" />
-                    Simpan Perubahan
-                  </Button>
-                </div>
-              </form>
+              <EventForm
+                key={event.id}
+                initialData={initialFormData}
+                onSubmit={handleEventUpdate}
+                submitLabel="Simpan Perubahan"
+                loadingLabel="Menyimpan..."
+                compact
+              />
             </CardContent>
           </Card>
 
           {/* Participants Management */}
-          <Card className="h-full flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div className="flex items-center gap-2">
-                <CardTitle>Peserta</CardTitle>
-                <Badge variant="secondary" className="rounded-full">
-                  {participants.length}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col gap-6">
-              {/* Add Participant Form */}
-              <div className="bg-muted/30 p-4 rounded-lg border">
-                <h3 className="text-sm font-medium mb-3">Tambah Peserta</h3>
-                <form
-                  onSubmit={handleAddParticipant}
-                  className="flex flex-col sm:flex-row gap-3"
-                >
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        placeholder="Nama"
-                        value={newParticipant.name}
-                        onChange={(e) =>
-                          setNewParticipant({
-                            ...newParticipant,
-                            name: e.target.value,
-                          })
-                        }
-                        className="bg-background pr-10"
-                        required
-                      />
-                      {newParticipant.name && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-                          onClick={() =>
-                            setNewParticipant({ ...newParticipant, name: "" })
-                          }
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-full sm:w-32 relative">
-                    <Select
-                      value={newParticipant.distance}
-                      onValueChange={(value) =>
-                        setNewParticipant({
-                          ...newParticipant,
-                          distance: value,
-                        })
-                      }
-                      required
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Pilih Jarak" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formData.distances.map((d, i) => (
-                          <SelectItem key={i} value={d.name}>
-                            {d.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {newParticipant.distance && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-6 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setNewParticipant({
-                            ...newParticipant,
-                            distance: "",
-                          });
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <Button type="submit" size="icon" className="shrink-0">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </form>
-              </div>
-
-              {/* Participants List */}
-              <div className="flex-1 overflow-auto border rounded-md max-h-[500px]">
-                {participants.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-                    <p className="text-sm">Belum ada peserta.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[80px]">Jarak</TableHead>
-                        <TableHead>Nama</TableHead>
-
-                        <TableHead className="w-[50px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {participants.map((p) => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-mono font-medium">
-                            {p.distance || "-"}
-                          </TableCell>
-                          <TableCell>{p.name}</TableCell>
-
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => confirmDeleteParticipant(p.id)}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <ParticipantManager
+            eventId={event.id}
+            participants={participants}
+            distances={initialFormData.distances}
+            onParticipantsChange={() => fetchParticipants(eventId)}
+          />
         </div>
       </div>
       {alertModal}

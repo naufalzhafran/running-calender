@@ -1,5 +1,5 @@
 import Link from "next/link";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
 import { Event } from "@/types";
 import { Calendar, MapPin } from "lucide-react";
 
@@ -17,15 +17,8 @@ import {
 export const dynamic = "force-dynamic";
 
 async function getEvents(): Promise<Event[]> {
-  const client = await pool.connect();
-  try {
-    const res = await client.query(
-      "SELECT * FROM events ORDER BY event_date ASC",
-    );
-    return res.rows;
-  } finally {
-    client.release();
-  }
+  const res = await query<Event>("SELECT * FROM events ORDER BY event_date ASC");
+  return res.rows;
 }
 
 export default async function Home() {

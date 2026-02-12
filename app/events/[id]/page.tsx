@@ -1,34 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
 import { Event, Participant } from "@/types";
 import { Calendar, MapPin, Ruler, ArrowLeft, Users, Clock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 async function getEvent(id: string): Promise<Event | null> {
-  const client = await pool.connect();
   try {
-    const res = await client.query("SELECT * FROM events WHERE id = $1", [id]);
+    const res = await query<Event>("SELECT * FROM events WHERE id = $1", [id]);
     return res.rows[0] || null;
-  } catch (err) {
+  } catch {
     return null;
-  } finally {
-    client.release();
   }
 }
 
 async function getParticipants(eventId: string): Promise<Participant[]> {
-  const client = await pool.connect();
-  try {
-    const res = await client.query(
-      "SELECT * FROM participants WHERE event_id = $1 ORDER BY name ASC",
-      [eventId],
-    );
-    return res.rows;
-  } finally {
-    client.release();
-  }
+  const res = await query<Participant>(
+    "SELECT * FROM participants WHERE event_id = $1 ORDER BY name ASC",
+    [eventId],
+  );
+  return res.rows;
 }
 
 interface PageProps {

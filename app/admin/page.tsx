@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAlertModal } from "@/components/ui/alert-modal";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -72,11 +73,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

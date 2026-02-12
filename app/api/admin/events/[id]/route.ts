@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const client = await pool.connect();
   try {
     const body = await req.json();
     const {
@@ -20,7 +19,7 @@ export async function PUT(
       description,
     } = body;
 
-    const res = await client.query(
+    const res = await query(
       "UPDATE events SET title = $1, slug = $2, event_date = $3, end_date = $4, location = $5, distance = $6, description = $7 WHERE id = $8 RETURNING *",
       [title, slug, event_date, end_date, location, distance, description, id],
     );
@@ -32,7 +31,6 @@ export async function PUT(
     return NextResponse.json(res.rows[0]);
   } catch (err: any) {
     if (err.code === "23505") {
-      // Unique violation for slug
       return NextResponse.json(
         { message: "Slug already exists" },
         { status: 400 },
@@ -42,8 +40,6 @@ export async function PUT(
       { message: "Internal Server Error" },
       { status: 500 },
     );
-  } finally {
-    client.release();
   }
 }
 
@@ -52,9 +48,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const client = await pool.connect();
   try {
-    const res = await client.query(
+    const res = await query(
       "DELETE FROM events WHERE id = $1 RETURNING *",
       [id],
     );
@@ -69,7 +64,5 @@ export async function DELETE(
       { message: "Internal Server Error" },
       { status: 500 },
     );
-  } finally {
-    client.release();
   }
 }

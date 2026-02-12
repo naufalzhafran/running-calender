@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { query } from "@/lib/db";
 
 export async function GET() {
-  const client = await pool.connect();
   try {
-    const res = await client.query(
+    const res = await query(
       "SELECT * FROM events ORDER BY event_date ASC",
     );
     return NextResponse.json(res.rows);
@@ -13,7 +12,5 @@ export async function GET() {
       { message: "Internal Server Error" },
       { status: 500 },
     );
-  } finally {
-    client.release();
   }
 }
