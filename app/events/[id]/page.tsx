@@ -149,10 +149,18 @@ export default async function EventPage({ params }: PageProps) {
                             {dist.start_time || "-"}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between border-b border-md-outline/5 pb-1">
                           <span>COT</span>
                           <span className="font-medium text-md-on-surface">
                             {dist.cot || "-"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Harga</span>
+                          <span className="font-medium text-md-on-surface">
+                            {dist.price
+                              ? `Rp ${Number(dist.price).toLocaleString("id-ID")}`
+                              : "-"}
                           </span>
                         </div>
                       </div>

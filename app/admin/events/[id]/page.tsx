@@ -154,6 +154,7 @@ export default function EditEventPage({
           date: prev.event_date || "",
           start_time: "",
           cot: "",
+          price: "",
         },
       ],
     }));
@@ -682,6 +683,38 @@ export default function EditEventPage({
                                   </Button>
                                 )}
                               </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs">Harga</Label>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                value={dist.price}
+                                onChange={(e) =>
+                                  handleDistanceChange(
+                                    idx,
+                                    "price",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="150000"
+                                className="bg-background h-8 text-sm pr-8"
+                              />
+                              {dist.price && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
+                                  onClick={() =>
+                                    handleDistanceChange(idx, "price", "")
+                                  }
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
