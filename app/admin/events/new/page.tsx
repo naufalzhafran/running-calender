@@ -93,6 +93,7 @@ export default function CreateEventPage() {
           date: prev.event_date || "",
           start_time: "",
           cot: "",
+          price: "",
         },
       ],
     }));
@@ -549,6 +550,38 @@ export default function CreateEventPage() {
                                 </Button>
                               )}
                             </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs">Harga</Label>
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              value={dist.price}
+                              onChange={(e) =>
+                                handleDistanceChange(
+                                  idx,
+                                  "price",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="150000"
+                              className="bg-background pr-10"
+                            />
+                            {dist.price && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
+                                onClick={() =>
+                                  handleDistanceChange(idx, "price", "")
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

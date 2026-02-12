@@ -3,6 +3,7 @@ export interface DistanceDetail {
   date: string; // YYYY-MM-DD
   start_time: string; // HH:mm
   cot: string; // HH:mm
+  price: string;
 }
 
 export interface Event {
