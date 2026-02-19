@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query } from "@/lib/db";
 import { Event, Participant } from "@/types";
-import { Calendar, MapPin, Ruler, ArrowLeft, Users, Clock } from "lucide-react";
+import { Calendar, MapPin, Ruler, ArrowLeft, Users, Clock, Ticket } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -36,120 +36,152 @@ export default async function EventPage({ params }: PageProps) {
   }
 
   const participants = await getParticipants(id);
+  const isPast = new Date(event.event_date) < new Date();
 
   return (
-    <div className="min-h-screen bg-md-background text-md-on-background pb-20 relative overflow-x-hidden">
-      {/* Ambient Backdrops */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-md-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali
+          </Link>
+        </div>
+      </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm font-medium text-md-secondary hover:text-md-on-surface mb-8 px-4 py-2 rounded-full hover:bg-md-secondary/5 transition-colors active:scale-95 ease-emphasized"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Kembali ke Daftar
-        </Link>
-
-        {/* Hero Card */}
-        <div className="bg-md-surface-container-low rounded-xl p-8 sm:p-12 mb-8 border border-md-outline/5 relative overflow-hidden">
-          {/* Decorative shape inside card */}
-          <div className="absolute -right-20 -top-20 w-64 h-64 bg-md-primary/10 rounded-full blur-2xl" />
-
-          <div className="relative z-10">
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        {/* Hero Section */}
+        <div className="bg-card rounded-3xl border border-border/50 overflow-hidden mb-6">
+          {/* Status Banner */}
+          {isPast && (
+            <div className="bg-muted px-6 py-2 text-center text-sm text-muted-foreground">
+              Event telah selesai
+            </div>
+          )}
+          
+          <div className="p-6 sm:p-8">
+            {/* Category Pills */}
             <div className="flex flex-wrap gap-2 mb-6">
               {Array.isArray(event.distance) &&
                 event.distance.map((d, i) => (
-                  <div
+                  <span
                     key={i}
-                    className="inline-flex items-center px-4 py-1.5 rounded-full bg-md-tertiary-container text-md-on-tertiary-container text-sm font-bold"
+                    className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
                   >
                     {d.name.trim()}
-                  </div>
+                  </span>
                 ))}
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-bold text-md-on-surface mb-6 tracking-tight">
+            {/* Title */}
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-6 tracking-tight">
               {event.title}
             </h1>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-12 text-md-on-surface-variant mb-8">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-md-surface-container-high flex items-center justify-center mr-4 text-md-primary">
-                  <Calendar className="w-5 h-5" />
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+              <div className="flex items-start gap-4 p-4 rounded-2xl bg-muted/50">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Calendar className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider opacity-70">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                     Tanggal
                   </p>
-                  <p className="text-lg font-medium text-md-on-surface">
-                    {new Date(event.event_date).toLocaleString("id-ID", {
-                      dateStyle: "medium",
+                  <p className="font-semibold text-foreground">
+                    {new Date(event.event_date).toLocaleDateString("id-ID", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
                     })}
                     {event.end_date && (
                       <>
-                        {" - "}
-                        {new Date(event.end_date).toLocaleString("id-ID", {
-                          dateStyle: "medium",
+                        <span className="mx-2 text-muted-foreground">—</span>
+                        {new Date(event.end_date).toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "long",
                         })}
                       </>
                     )}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-md-surface-container-high flex items-center justify-center mr-4 text-md-secondary">
-                  <MapPin className="w-5 h-5" />
+              
+              <div className="flex items-start gap-4 p-4 rounded-2xl bg-muted/50">
+                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                  <MapPin className="w-6 h-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider opacity-70">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                     Lokasi
                   </p>
-                  <p className="text-lg font-medium text-md-on-surface">
+                  <p className="font-semibold text-foreground">
                     {event.location}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Detailed Distances Grid */}
+            {/* Categories Section */}
             {Array.isArray(event.distance) && event.distance.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-md-on-surface mb-4 flex items-center gap-2">
-                  <Ruler className="w-5 h-5 text-md-tertiary" /> Information
-                  Kategori
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-primary" />
+                  Kategori & Harga
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {event.distance.map((dist, idx) => (
                     <div
                       key={idx}
-                      className="bg-md-surface p-4 rounded-xl border border-md-outline/10 hover:border-md-primary/20 transition-colors"
+                      className="p-4 rounded-2xl border border-border/50 bg-card hover:border-primary/20 hover:shadow-sm transition-all"
                     >
-                      <div className="font-bold text-xl text-md-primary mb-2">
+                      <div className="font-bold text-lg text-foreground mb-3">
                         {dist.name}
                       </div>
-                      <div className="space-y-2 text-sm text-md-on-surface-variant">
-                        <div className="flex justify-between border-b border-md-outline/5 pb-1">
-                          <span>Start</span>
-                          <span className="font-medium text-md-on-surface">
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Calendar className="w-4 h-4" />
+                            Tanggal
+                          </span>
+                          <span className="font-medium text-foreground">
                             {dist.date
                               ? new Date(dist.date).toLocaleDateString(
                                   "id-ID",
                                   { day: "numeric", month: "short" },
                                 )
-                              : "-"}{" "}
+                              : "-"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            Start
+                          </span>
+                          <span className="font-medium text-foreground">
                             {dist.start_time || "-"}
                           </span>
                         </div>
-                        <div className="flex justify-between border-b border-md-outline/5 pb-1">
-                          <span>COT</span>
-                          <span className="font-medium text-md-on-surface">
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            COT
+                          </span>
+                          <span className="font-medium text-foreground">
                             {dist.cot || "-"}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>Harga</span>
-                          <span className="font-medium text-md-on-surface">
+                        <div className="flex items-center justify-between py-2">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Ticket className="w-4 h-4" />
+                            Harga
+                          </span>
+                          <span className="font-bold text-primary">
                             {dist.price
                               ? `Rp ${Number(dist.price).toLocaleString("id-ID")}`
                               : "-"}
@@ -162,9 +194,13 @@ export default async function EventPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* Description */}
             {event.description && (
-              <div className="prose prose-lg text-md-on-surface-variant max-w-none border-t border-md-outline/10 pt-6">
-                <p className="whitespace-pre-wrap leading-relaxed">
+              <div className="border-t border-border/50 pt-6">
+                <h2 className="text-lg font-semibold text-foreground mb-3">
+                  Deskripsi
+                </h2>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {event.description}
                 </p>
               </div>
@@ -173,57 +209,52 @@ export default async function EventPage({ params }: PageProps) {
         </div>
 
         {/* Participants Section */}
-        <div className="bg-md-surface-container-low rounded-xl overflow-hidden border border-md-outline/5">
-          <div className="px-8 py-6 bg-md-surface-container flex justify-between items-center border-b border-md-outline/5">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-md-primary/10 flex items-center justify-center mr-3 text-md-primary">
-                <Users className="w-4 h-4" />
+        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+          <div className="px-6 py-4 bg-muted/30 border-b border-border/50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-md-on-surface">Peserta</h2>
+              <h2 className="text-lg font-semibold text-foreground">Peserta</h2>
             </div>
-            <span className="bg-md-secondary-container text-md-on-secondary-container px-4 py-1 rounded-full text-sm font-bold">
+            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
               {participants.length}
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left">
-              <thead className="bg-md-surface-container/50 text-md-on-surface-variant text-xs uppercase tracking-wider font-semibold">
-                <tr>
-                  <th className="px-8 py-4 w-32">Kategori</th>
-                  <th className="px-8 py-4">Nama</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-md-outline/5 text-md-on-surface text-sm">
-                {participants.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={2}
-                      className="px-8 py-12 text-center text-md-on-surface-variant"
-                    >
-                      Belum ada peserta terdaftar.
-                    </td>
-                  </tr>
-                ) : (
-                  participants.map((participant) => (
-                    <tr
-                      key={participant.id}
-                      className="hover:bg-md-surface-container-high/50 transition-colors"
-                    >
-                      <td className="px-8 py-4 font-mono text-md-primary font-bold">
-                        {participant.distance || "—"}
-                      </td>
-                      <td className="px-8 py-4 font-medium">
-                        {participant.name}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="divide-y divide-border/50">
+            {participants.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <Users className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
+                <p className="text-muted-foreground">
+                  Belum ada peserta terdaftar
+                </p>
+              </div>
+            ) : (
+              participants.map((participant) => (
+                <div
+                  key={participant.id}
+                  className="px-6 py-4 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                      {participant.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-medium text-foreground">
+                      {participant.name}
+                    </span>
+                  </div>
+                  {participant.distance && (
+                    <span className="text-sm px-3 py-1 rounded-full bg-muted text-muted-foreground">
+                      {participant.distance}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
