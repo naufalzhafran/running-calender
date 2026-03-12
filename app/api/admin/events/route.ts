@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json(res.rows[0], { status: 201 });
-  } catch (err: any) {
-    if (err.code === "23505") {
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && err.code === "23505") {
       return NextResponse.json(
         { message: "Slug already exists" },
         { status: 400 },

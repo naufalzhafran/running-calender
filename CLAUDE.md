@@ -7,6 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` — Start Next.js dev server
 - `npm run build` — Production build
 - `npm run lint` — Run ESLint
+- `npm run migrate up` — Apply all pending migrations
+- `npm run migrate down` — Rollback last migration
+- `npm run migrate create <name>` — Create a new migration file
+- `npm run db:push` — Push migrations to database (alias for migrate up)
 - No test framework is configured
 
 ## Architecture
@@ -36,6 +40,25 @@ Single admin user authenticated via `ADMIN_USER`/`ADMIN_PASS` env vars. JWT (HS2
 - `lib/` — `db.ts` (pg pool), `auth.ts` (JWT), `utils.ts` (cn helper)
 - `types/` — TypeScript interfaces (Event, Participant, DistanceDetail)
 - `scripts/` — Database migration scripts (run with Node.js directly)
+
+### Database Migrations
+
+Migrations are managed via **node-pg-migrate** and stored in `migrations/` directory. Use raw SQL or the migration API to define schema changes.
+
+**Creating a new migration:**
+```bash
+npm run migrate create add_new_column
+```
+
+**Running migrations:**
+```bash
+npm run migrate up
+```
+
+**Rolling back:**
+```bash
+npm run migrate down
+```
 
 ### Styling
 
