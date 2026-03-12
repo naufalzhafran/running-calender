@@ -28,10 +28,6 @@ This is a **Next.js 16 App Router** application for managing a running event cal
 
 Single admin user authenticated via `ADMIN_USER`/`ADMIN_PASS` env vars. JWT (HS256, 24h expiry) stored as HTTP-only cookie. Protected admin routes verify the token using `jose`.
 
-### Database
-
-PostgreSQL with raw `pg` pool queries. Schema defined in `schema.sql`, migrations in `scripts/`. The `distance` column on `events` is JSONB storing `DistanceDetail[]` (each race distance has name, date, start_time, cot, price). Types are in `types/index.ts`.
-
 ### Key Directories
 
 - `app/` — Pages and API routes (App Router)
