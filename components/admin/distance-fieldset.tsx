@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { format } from "date-fns";
 import { DistanceDetail } from "@/types";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,10 @@ export function DistanceFieldset({
 }: DistanceFieldsetProps) {
   const labelSize = compact ? "text-xs" : "text-xs";
   const inputHeight = compact ? "h-8 text-sm" : "";
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    onChange(index, "date", format(date, "yyyy-MM-dd"));
+  };
 
   return (
     <div className="p-4 rounded-lg border bg-muted/30 relative">
@@ -59,12 +64,7 @@ export function DistanceFieldset({
           <Label className={labelSize}>Tanggal</Label>
           <DatePickerField
             value={distance.date}
-            onChange={(date) => {
-              if (date) {
-                const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                onChange(index, "date", formatted);
-              }
-            }}
+            onChange={handleDateSelect}
             onClear={() => onChange(index, "date", "")}
             defaultMonth={
               distance.date

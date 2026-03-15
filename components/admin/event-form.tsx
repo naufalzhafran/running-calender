@@ -83,6 +83,13 @@ export function EventForm({
     }));
   };
 
+  const handleDateClear = (field: "event_date" | "end_date") => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: "",
+    }));
+  };
+
   const handleAddDistance = () => {
     setFormData((prev) => ({
       ...prev,
@@ -153,7 +160,7 @@ export function EventForm({
         <DatePickerField
           value={formData.event_date}
           onChange={(date) => handleDateSelect("event_date", date)}
-          onClear={() => setFormData((prev) => ({ ...prev, event_date: "" }))}
+          onClear={() => handleDateClear("event_date")}
         />
       </div>
 
@@ -163,7 +170,7 @@ export function EventForm({
         <DatePickerField
           value={formData.end_date}
           onChange={(date) => handleDateSelect("end_date", date)}
-          onClear={() => setFormData((prev) => ({ ...prev, end_date: "" }))}
+          onClear={() => handleDateClear("end_date")}
           placeholder="Pilih tanggal selesai"
           defaultMonth={
             formData.end_date

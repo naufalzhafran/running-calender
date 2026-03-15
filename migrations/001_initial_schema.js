@@ -1,13 +1,10 @@
 exports.up = (pgm) => {
-  pgm.execute(`
-    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-  `);
+  pgm.createExtension('pgcrypto', { ifNotExists: true });
 
   pgm.createTable('events', {
     id: {
       type: 'uuid',
       primaryKey: true,
-      default: 'gen_random_uuid()',
     },
     title: {
       type: 'varchar(255)',
@@ -39,11 +36,12 @@ exports.up = (pgm) => {
     },
   });
 
+  pgm.sql(`ALTER TABLE "events" ALTER COLUMN "id" SET DEFAULT gen_random_uuid()`);
+
   pgm.createTable('participants', {
     id: {
       type: 'uuid',
       primaryKey: true,
-      default: 'gen_random_uuid()',
     },
     event_id: {
       type: 'uuid',
@@ -66,10 +64,12 @@ exports.up = (pgm) => {
       default: 'NOW()',
     },
   });
+
+  pgm.sql(`ALTER TABLE "participants" ALTER COLUMN "id" SET DEFAULT gen_random_uuid()`);
 };
 
 exports.down = (pgm) => {
   pgm.dropTable('participants');
   pgm.dropTable('events');
-  pgm.execute('DROP EXTENSION IF EXISTS "pgcrypto"');
+  pgm.dropExtension('pgcrypto', { ifExists: true });
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { X, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -32,28 +33,34 @@ export function DatePickerField({
   buttonClassName,
   iconClassName,
 }: DatePickerFieldProps) {
+  const [open, setOpen] = React.useState(false);
   const selectedDate = value ? new Date(value) : undefined;
+
+  const handleSelect = (date: Date | undefined) => {
+    onChange(date);
+    if (date) {
+      setOpen(false);
+    }
+  };
 
   return (
     <div className="relative">
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             className={cn(
-              "w-full pl-3 text-left font-normal pr-12",
+              "w-full justify-start text-left font-normal px-3 h-10 pr-14",
               !value && "text-muted-foreground",
               buttonClassName,
             )}
           >
+            <CalendarIcon className={cn("mr-2 h-4 w-4 opacity-60", iconClassName)} />
             {value ? (
-              format(new Date(value), "PPP", { locale: idLocale })
+              format(new Date(value), "EEEE, d MMMM yyyy", { locale: idLocale })
             ) : (
               <span>{placeholder}</span>
             )}
-            <CalendarIcon
-              className={cn("ml-auto h-4 w-4 opacity-50", iconClassName)}
-            />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -61,8 +68,10 @@ export function DatePickerField({
             mode="single"
             selected={selectedDate}
             defaultMonth={defaultMonth ?? selectedDate}
-            onSelect={onChange}
-            disabled={(date) => date < new Date("1900-01-01")}
+            onSelect={handleSelect}
+            locale={idLocale}
+            initialFocus
+            disabled={(date: Date) => date < new Date("1900-01-01")}
           />
         </PopoverContent>
       </Popover>
@@ -71,13 +80,14 @@ export function DatePickerField({
           type="button"
           variant="ghost"
           size="icon"
-          className="absolute right-0 top-0 h-full px-2 text-muted-foreground hover:text-foreground"
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground hover:text-foreground"
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onClear();
           }}
         >
-          <X className="h-4 w-4" />
+          <X className="h-3 w-3" />
         </Button>
       )}
     </div>
