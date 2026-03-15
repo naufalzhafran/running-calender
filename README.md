@@ -71,50 +71,77 @@ Migration files are located in the `migrations/` directory. Each migration has `
 
 ## Deployment
 
+### Docker (Self-Hosted)
+
+This is the recommended way to deploy on a VPS or dedicated server. The app is containerized via Docker Compose and served through Nginx.
+
+**Prerequisites**
+- Ubuntu/Debian server
+- PostgreSQL accessible (the Docker Compose setup connects to the `postgres-docker_default` network by default — adjust in `docker-compose.yml` if your setup differs)
+
+#### First Deploy
+
+```bash
+# 1. Clone the repo on your server
+git clone <your-repo-url> ~/running-calender
+
+# 2. Set up environment variables
+cd ~/running-calender
+cp .env.example .env
+nano .env  # fill in all values
+
+# 3. Run the setup script
+sudo ./setup.sh your-domain.com ~/running-calender
+```
+
+The script will:
+- Install Docker and Nginx if not present
+- Build and start the Docker container (migrations run automatically on startup)
+- Configure Nginx to proxy traffic from port 80 to the app
+
+#### Re-deploy (after code changes)
+
+```bash
+cd ~/running-calender
+sudo ./setup.sh your-domain.com ~/running-calender
+```
+
+This pulls the latest changes, rebuilds the Docker image, and restarts the container.
+
+#### Enable HTTPS
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+#### `setup.sh` arguments
+
+```
+sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
+```
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `DOMAIN` | `running.yourdomain.com` | Domain name for Nginx config |
+| `SOURCE_DIR` | `~/running-calender` | Path to the cloned repository |
+
+---
+
 ### Deploy to Vercel
 
 1. **Push your code to GitHub**
-2. **Create a new project on Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-3. **Configure Environment Variables**
-   In the Vercel dashboard, add the following environment variables:
+2. **Create a new project on Vercel** and import your repository
+3. **Add environment variables** in the Vercel dashboard:
    ```
    DATABASE_URL=your_production_database_url
    ADMIN_USER=your_admin_username
    ADMIN_PASS=your_admin_password
    JWT_SECRET=your_jwt_secret_min_32_characters_long
    ```
-4. **Deploy**
-
-### Database Setup on Production
-
-1. **Create a PostgreSQL database**
-   - Use Vercel Postgres, Supabase, Neon, or any PostgreSQL hosting provider
-   - Get your connection string (DATABASE\_URL)
-2. **Run migrations**
-   - Option A: Run locally with production DATABASE\_URL
-     ```bash
-     DATABASE_URL=your_production_url npm run migrate up
-     ```
-   - Option B: Configure Vercel to run migrations on deploy (requires custom deployment script)
-
-### Self-Hosting
-
-If deploying to a custom server:
-
-1. Build the application:
+4. Run migrations manually against your production DB:
    ```bash
-   npm run build
-   ```
-2. Set environment variables on your server
-3. Run migrations:
-   ```bash
-   npm run migrate up
-   ```
-4. Start the production server:
-   ```bash
-   npm start
+   DATABASE_URL=your_production_url npm run migrate up
    ```
 
 ## Project Structure
