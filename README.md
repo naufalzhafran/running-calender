@@ -91,7 +91,7 @@ cp .env.example .env
 nano .env  # fill in all values
 
 # 3. Run the setup script
-sudo ./setup.sh your-domain.com ~/running-calender
+sudo ./setup.sh
 ```
 
 The script will:
@@ -103,7 +103,7 @@ The script will:
 
 ```bash
 cd ~/running-calender
-sudo ./setup.sh your-domain.com ~/running-calender
+sudo ./setup.sh
 ```
 
 This pulls the latest changes, rebuilds the Docker image, and restarts the container.
@@ -112,7 +112,7 @@ This pulls the latest changes, rebuilds the Docker image, and restarts the conta
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
+sudo certbot --nginx -d running.madebynz.xyz
 ```
 
 #### `setup.sh` arguments
@@ -123,26 +123,8 @@ sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `DOMAIN` | `running.yourdomain.com` | Domain name for Nginx config |
+| `DOMAIN` | `running.madebynz.xyz` | Domain name for Nginx config |
 | `SOURCE_DIR` | `~/running-calender` | Path to the cloned repository |
-
----
-
-### Deploy to Vercel
-
-1. **Push your code to GitHub**
-2. **Create a new project on Vercel** and import your repository
-3. **Add environment variables** in the Vercel dashboard:
-   ```
-   DATABASE_URL=your_production_database_url
-   ADMIN_USER=your_admin_username
-   ADMIN_PASS=your_admin_password
-   JWT_SECRET=your_jwt_secret_min_32_characters_long
-   ```
-4. Run migrations manually against your production DB:
-   ```bash
-   DATABASE_URL=your_production_url npm run migrate up
-   ```
 
 ## Project Structure
 

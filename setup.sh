@@ -10,7 +10,7 @@ ORIGINAL_USER="${SUDO_USER:-$(whoami)}"
 ORIGINAL_HOME=$(getent passwd "$ORIGINAL_USER" | cut -d: -f6)
 
 # Configuration
-DOMAIN="${1:-running.yourdomain.com}"
+DOMAIN="${1:-running.madebynz.xyz}"
 SOURCE_DIR="${2:-$ORIGINAL_HOME/running-calender}"
 
 APP_PORT=5678
