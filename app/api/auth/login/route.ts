@@ -3,6 +3,13 @@ import { signJWT } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.ADMIN_USER || !process.env.ADMIN_PASS) {
+      return NextResponse.json(
+        { message: "Admin credentials are not configured" },
+        { status: 500 },
+      );
+    }
+
     const { username, password } = await req.json();
 
     if (
@@ -27,7 +34,7 @@ export async function POST(req: NextRequest) {
       { message: "Invalid credentials" },
       { status: 401 },
     );
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 },

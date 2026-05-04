@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { requireAdminApi } from "@/lib/auth";
 import { query } from "@/lib/db";
 
 export async function DELETE(
@@ -7,6 +8,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const unauthorizedResponse = await requireAdminApi();
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   try {
     const res = await query(
       "DELETE FROM participants WHERE id = $1 RETURNING *",
@@ -21,7 +27,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: "Participant deleted successfully" });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { requireAdminApi } from "@/lib/auth";
 import { query } from "@/lib/db";
 
 export async function PUT(
@@ -7,6 +8,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const unauthorizedResponse = await requireAdminApi();
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   try {
     const body = await req.json();
     const {
@@ -30,7 +36,7 @@ export async function PUT(
 
     return NextResponse.json(res.rows[0]);
   } catch (err: unknown) {
-    if (err && typeof err === 'object' && 'code' in err && err.code === "23505") {
+    if (err && typeof err === "object" && "code" in err && err.code === "23505") {
       return NextResponse.json(
         { message: "Slug already exists" },
         { status: 400 },
@@ -48,6 +54,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const unauthorizedResponse = await requireAdminApi();
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   try {
     const res = await query(
       "DELETE FROM events WHERE id = $1 RETURNING *",
@@ -59,7 +70,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: "Event deleted successfully" });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 },

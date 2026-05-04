@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Trash2, Calendar, LogOut, MapPin } from "lucide-react";
+import { Plus, Edit, Trash2, LogOut } from "lucide-react";
 import { Event } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -36,7 +36,7 @@ export default function AdminDashboard() {
         const data = await res.json();
         setEvents(data);
       }
-    } catch (err) {
+    } catch {
       console.error("Failed to fetch events");
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
       } else {
         showError("Gagal menghapus event");
       }
-    } catch (err) {
+    } catch {
       showError("Terjadi kesalahan");
     }
   };

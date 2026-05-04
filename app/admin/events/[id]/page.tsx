@@ -26,12 +26,12 @@ export default function EditEventPage({
   );
   const { alertModal, showSuccess, showError } = useAlertModal();
 
-  useEffect(() => {
-    params.then((p) => {
-      setEventId(p.id);
-      fetchEventData(p.id);
-    });
-  }, [params]);
+  const fetchParticipants = async (id: string) => {
+    const res = await fetch(`/api/events/${id}/participants`);
+    if (res.ok) {
+      setParticipants(await res.json());
+    }
+  };
 
   const fetchEventData = async (id: string) => {
     try {
@@ -71,7 +71,7 @@ export default function EditEventPage({
           description: data.description || "",
         });
       }
-      fetchParticipants(id);
+      await fetchParticipants(id);
     } catch (err) {
       console.error("Error fetching data", err);
     } finally {
@@ -79,12 +79,17 @@ export default function EditEventPage({
     }
   };
 
-  const fetchParticipants = async (id: string) => {
-    const res = await fetch(`/api/events/${id}/participants`);
-    if (res.ok) {
-      setParticipants(await res.json());
-    }
-  };
+  useEffect(() => {
+    const initializePage = async () => {
+      const { id } = await params;
+      setEventId(id);
+      await fetchEventData(id);
+    };
+
+    void initializePage();
+    // `params` is stable for this route segment; this avoids reruns from helper re-creation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
   const handleEventUpdate = async (formData: EventFormData) => {
     if (!event) return;

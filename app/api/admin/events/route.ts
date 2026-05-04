@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { requireAdminApi } from "@/lib/auth";
 import { query } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
+  const unauthorizedResponse = await requireAdminApi();
+  if (unauthorizedResponse) {
+    return unauthorizedResponse;
+  }
+
   try {
     const body = await req.json();
     const {
@@ -22,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(res.rows[0], { status: 201 });
   } catch (err: unknown) {
-    if (err && typeof err === 'object' && 'code' in err && err.code === "23505") {
+    if (err && typeof err === "object" && "code" in err && err.code === "23505") {
       return NextResponse.json(
         { message: "Slug already exists" },
         { status: 400 },

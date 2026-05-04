@@ -13,7 +13,7 @@ export async function GET(
       [id],
     );
     return NextResponse.json(res.rows);
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 },
