@@ -27,8 +27,8 @@ This is a **Next.js 16 App Router** application for managing a running event cal
 
 ### API Routes (`app/api/`)
 
-- `/api/events` and `/api/events/[id]/participants` — Public read-only endpoints
-- `/api/admin/events` and `/api/admin/participants` — Protected CRUD endpoints (verify PocketBase auth cookie)
+- `/api/events` — Public read-only endpoint
+- `/api/admin/events` — Protected CRUD endpoints (verify PocketBase auth cookie)
 - `/api/auth/login` and `/api/auth/logout` — Auth endpoints
 
 ### Authentication (`lib/auth.ts`)
@@ -41,7 +41,7 @@ Admin users live in the PocketBase auth collection configured by `POCKETBASE_ADM
 - `app/admin/` — Protected admin pages (dashboard, event create/edit)
 - `components/ui/` — Shadcn UI components (Tailwind v4 + CVA variants)
 - `lib/` — `pocketbase.ts` (client helpers), `auth.ts` (auth cookie helpers), `data.ts` (record access), `utils.ts` (cn helper)
-- `types/` — TypeScript interfaces (Event, Participant, DistanceDetail)
+- `types/` — TypeScript interfaces (Event, DistanceDetail)
 - `pocketbase/` — collection and API rule setup notes
 
 ### Styling

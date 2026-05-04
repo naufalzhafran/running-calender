@@ -45,6 +45,28 @@ npm run dev
 
 Open <http://127.0.0.1:5678> with your browser.
 
+## Daily Countdown Wallpaper
+
+This app now exposes a dynamic PNG endpoint for iPhone Shortcuts:
+
+```text
+/api/wallpaper/:eventId?distance=10K&preset=iphone-16-pro
+```
+
+Example:
+
+```text
+http://127.0.0.1:5678/api/wallpaper/RECORD_ID?distance=Half%20Marathon&preset=iphone-16-pro-max
+```
+
+Notes:
+
+- `eventId` is the PocketBase record id from the `events` collection.
+- `distance` is optional. If omitted, the route uses the nearest available distance date, or the event date as fallback.
+- `preset` is optional. Supported values are `iphone-16-pro`, `iphone-16-pro-max`, `iphone-15-pro`, and `generic`.
+- The response is a generated PNG sized for a phone lock screen and is intended for automation tools like iOS Shortcuts.
+- On the public event detail page, each category card now includes a wallpaper URL generator with preset selection and copy button.
+
 ## Deployment
 
 ### Docker (Self-Hosted)
@@ -120,7 +142,7 @@ sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
 ├── lib/                    # Utility functions and libraries
 │   ├── pocketbase.ts       # PocketBase client helpers and record mappers
 │   ├── auth.ts             # PocketBase auth cookie helpers
-│   ├── data.ts             # Event and participant data access
+│   ├── data.ts             # Event data access
 │   └── utils.ts            # General utilities
 ├── pocketbase/             # PocketBase schema and rule setup notes
 ├── docker/pocketbase/      # PocketBase container build

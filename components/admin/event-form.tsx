@@ -100,7 +100,6 @@ export function EventForm({
           date: prev.event_date || "",
           start_time: "",
           cot: "",
-          price: "",
         },
       ],
     }));

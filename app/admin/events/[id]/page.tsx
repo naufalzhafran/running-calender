@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Edit } from "lucide-react";
-import { Event, Participant, DistanceDetail } from "@/types";
+import { Event, DistanceDetail } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EventForm, EventFormData } from "@/components/admin/event-form";
-import { ParticipantManager } from "@/components/admin/participant-manager";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAlertModal } from "@/components/ui/alert-modal";
 
@@ -18,20 +17,11 @@ export default function EditEventPage({
   params: Promise<{ id: string }>;
 }) {
   const [event, setEvent] = useState<Event | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [eventId, setEventId] = useState<string>("");
   const [initialFormData, setInitialFormData] = useState<EventFormData | null>(
     null,
   );
   const { alertModal, showSuccess, showError } = useAlertModal();
-
-  const fetchParticipants = async (id: string) => {
-    const res = await fetch(`/api/events/${id}/participants`);
-    if (res.ok) {
-      setParticipants(await res.json());
-    }
-  };
 
   const fetchEventData = async (id: string) => {
     try {
@@ -71,7 +61,6 @@ export default function EditEventPage({
           description: data.description || "",
         });
       }
-      await fetchParticipants(id);
     } catch (err) {
       console.error("Error fetching data", err);
     } finally {
@@ -82,13 +71,10 @@ export default function EditEventPage({
   useEffect(() => {
     const initializePage = async () => {
       const { id } = await params;
-      setEventId(id);
       await fetchEventData(id);
     };
 
     void initializePage();
-    // `params` is stable for this route segment; this avoids reruns from helper re-creation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   const handleEventUpdate = async (formData: EventFormData) => {
@@ -131,7 +117,7 @@ export default function EditEventPage({
 
   return (
     <div className="min-h-screen bg-md-background py-10 px-4">
-      <div className="container max-w-5xl mx-auto">
+      <div className="container max-w-3xl mx-auto">
         <Button
           variant="ghost"
           className="mb-6 pl-0 hover:bg-transparent hover:text-primary"
@@ -143,35 +129,24 @@ export default function EditEventPage({
           </Link>
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Edit Event Form */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Edit className="w-5 h-5" />
-                Edit Event
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EventForm
-                key={event.id}
-                initialData={initialFormData}
-                onSubmit={handleEventUpdate}
-                submitLabel="Simpan Perubahan"
-                loadingLabel="Menyimpan..."
-                compact
-              />
-            </CardContent>
-          </Card>
-
-          {/* Participants Management */}
-          <ParticipantManager
-            eventId={event.id}
-            participants={participants}
-            distances={initialFormData.distances}
-            onParticipantsChange={() => fetchParticipants(eventId)}
-          />
-        </div>
+        <Card className="h-fit">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5" />
+              Edit Event
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EventForm
+              key={event.id}
+              initialData={initialFormData}
+              onSubmit={handleEventUpdate}
+              submitLabel="Simpan Perubahan"
+              loadingLabel="Menyimpan..."
+              compact
+            />
+          </CardContent>
+        </Card>
       </div>
       {alertModal}
     </div>

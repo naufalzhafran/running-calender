@@ -1,6 +1,6 @@
 import PocketBase, { type RecordModel } from "pocketbase";
 
-import { type DistanceDetail, type Event, type Participant } from "@/types";
+import { type DistanceDetail, type Event } from "@/types";
 
 type EventRecord = RecordModel & {
   title: string;
@@ -13,18 +13,9 @@ type EventRecord = RecordModel & {
   created: string;
 };
 
-type ParticipantRecord = RecordModel & {
-  event_id: string;
-  name: string;
-  bib_number?: string;
-  distance?: string;
-  created: string;
-};
-
 export const PB_AUTH_COOKIE_NAME = "pb_auth";
 export const PB_ADMIN_COLLECTION = process.env.POCKETBASE_ADMIN_COLLECTION || "admins";
 export const PB_EVENTS_COLLECTION = "events";
-export const PB_PARTICIPANTS_COLLECTION = "participants";
 
 function getPocketBaseUrl() {
   const url = process.env.POCKETBASE_URL;
@@ -70,17 +61,6 @@ export function mapEvent(record: EventRecord): Event {
     location: record.location,
     distance: Array.isArray(record.distance) ? record.distance : [],
     description: record.description || null,
-    created_at: record.created,
-  };
-}
-
-export function mapParticipant(record: ParticipantRecord): Participant {
-  return {
-    id: record.id,
-    event_id: record.event_id,
-    name: record.name,
-    bib_number: record.bib_number || null,
-    distance: record.distance || null,
     created_at: record.created,
   };
 }

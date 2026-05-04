@@ -128,18 +128,6 @@ export function DistanceFieldset({
             </div>
           </div>
         </div>
-
-        <div className={`space-y-${compact ? "1" : "2"}`}>
-          <Label className={labelSize}>Harga</Label>
-          <ClearableInput
-            type="text"
-            value={distance.price}
-            onChange={(e) => onChange(index, "price", e.target.value)}
-            onClear={() => onChange(index, "price", "")}
-            placeholder="150000"
-            className={`bg-background ${inputHeight}`}
-          />
-        </div>
       </div>
     </div>
   );

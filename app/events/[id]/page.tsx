@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEventById, listParticipantsByEventId } from "@/lib/data";
-import { Event, Participant } from "@/types";
-import { Calendar, MapPin, Ruler, ArrowLeft, Users, Clock, Ticket } from "lucide-react";
+import { getEventById } from "@/lib/data";
+import { Event } from "@/types";
+import { Calendar, MapPin, Ruler, ArrowLeft, Clock } from "lucide-react";
+import { WallpaperUrlGenerator } from "@/components/event/wallpaper-url-generator";
 
 export const dynamic = "force-dynamic";
 
 async function getEvent(id: string): Promise<Event | null> {
   return getEventById(id);
-}
-
-async function getParticipants(eventId: string): Promise<Participant[]> {
-  return listParticipantsByEventId(eventId);
 }
 
 interface PageProps {
@@ -26,7 +23,6 @@ export default async function EventPage({ params }: PageProps) {
     notFound();
   }
 
-  const participants = await getParticipants(id);
   const isPast = new Date(event.event_date) < new Date();
 
   return (
@@ -123,7 +119,7 @@ export default async function EventPage({ params }: PageProps) {
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Ruler className="w-5 h-5 text-primary" />
-                  Kategori & Harga
+                  Kategori
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {event.distance.map((dist, idx) => (
@@ -167,18 +163,12 @@ export default async function EventPage({ params }: PageProps) {
                             {dist.cot || "-"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between py-2">
-                          <span className="flex items-center gap-2 text-muted-foreground">
-                            <Ticket className="w-4 h-4" />
-                            Harga
-                          </span>
-                          <span className="font-bold text-primary">
-                            {dist.price
-                              ? `Rp ${Number(dist.price).toLocaleString("id-ID")}`
-                              : "-"}
-                          </span>
-                        </div>
                       </div>
+
+                      <WallpaperUrlGenerator
+                        eventId={event.id}
+                        distanceName={dist.name}
+                      />
                     </div>
                   ))}
                 </div>
@@ -199,52 +189,6 @@ export default async function EventPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Participants Section */}
-        <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
-          <div className="px-6 py-4 bg-muted/30 border-b border-border/50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">Peserta</h2>
-            </div>
-            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-              {participants.length}
-            </span>
-          </div>
-
-          <div className="divide-y divide-border/50">
-            {participants.length === 0 ? (
-              <div className="px-6 py-12 text-center">
-                <Users className="w-10 h-10 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-muted-foreground">
-                  Belum ada peserta terdaftar
-                </p>
-              </div>
-            ) : (
-              participants.map((participant) => (
-                <div
-                  key={participant.id}
-                  className="px-6 py-4 flex items-center justify-between hover:bg-muted/20 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                      {participant.name.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="font-medium text-foreground">
-                      {participant.name}
-                    </span>
-                  </div>
-                  {participant.distance && (
-                    <span className="text-sm px-3 py-1 rounded-full bg-muted text-muted-foreground">
-                      {participant.distance}
-                    </span>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
       </main>
     </div>
   );
