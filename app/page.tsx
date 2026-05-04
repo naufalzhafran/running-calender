@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { query } from "@/lib/db";
+import { listEvents } from "@/lib/data";
 import { Event } from "@/types";
 import { Calendar, MapPin, Footprints } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 async function getEvents(): Promise<Event[]> {
-  const res = await query<Event>("SELECT * FROM events ORDER BY event_date ASC");
-  return res.rows;
+  return listEvents();
 }
 
 function getEventStatus(eventDate: Date | string) {

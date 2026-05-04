@@ -1,33 +1,39 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { requireAdminApi } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { ClientResponseError } from "pocketbase";
+import { requireAdminApi, withAuthCookie } from "@/lib/auth";
+import { deleteParticipant } from "@/lib/data";
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const unauthorizedResponse = await requireAdminApi();
-  if (unauthorizedResponse) {
+  const { pb, unauthorizedResponse } = await requireAdminApi();
+  if (unauthorizedResponse || !pb) {
     return unauthorizedResponse;
   }
 
   try {
-    const res = await query(
-      "DELETE FROM participants WHERE id = $1 RETURNING *",
-      [id],
-    );
-
-    if (res.rowCount === 0) {
+    const deleted = await deleteParticipant(pb, id);
+    if (!deleted) {
       return NextResponse.json(
         { message: "Participant not found" },
         { status: 404 },
       );
     }
 
-    return NextResponse.json({ message: "Participant deleted successfully" });
-  } catch {
+    return withAuthCookie(
+      NextResponse.json({ message: "Participant deleted successfully" }),
+      pb,
+    );
+  } catch (err) {
+    if (err instanceof ClientResponseError && err.status === 404) {
+      return NextResponse.json(
+        { message: "Participant not found" },
+        { status: 404 },
+      );
+    }
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 },

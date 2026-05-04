@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (res.ok) {
@@ -73,12 +73,12 @@ export default function LoginPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Input
-                    id="username"
-                    type="text"
+                    id="email"
+                    type="email"
                     required
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Email admin"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="h-12 bg-md-surface-container-highest/50 border-md-outline/10 focus-visible:ring-md-primary"
                   />
                 </div>

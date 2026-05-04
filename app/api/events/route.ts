@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { listEvents } from "@/lib/data";
 
 export async function GET() {
   try {
-    const res = await query(
-      "SELECT * FROM events ORDER BY event_date ASC",
-    );
-    return NextResponse.json(res.rows);
+    return NextResponse.json(await listEvents());
   } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },

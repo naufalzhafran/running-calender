@@ -10,12 +10,12 @@ export interface Event {
   id: string;
   title: string;
   slug: string;
-  event_date: Date;
-  end_date: Date | null;
+  event_date: string;
+  end_date: string | null;
   location: string;
   distance: DistanceDetail[];
   description: string | null;
-  created_at: Date;
+  created_at: string;
 }
 
 export interface Participant {
@@ -24,5 +24,5 @@ export interface Participant {
   name: string;
   bib_number: string | null;
   distance: string | null;
-  created_at: Date;
+  created_at: string;
 }

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { requireAdminApi } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { withAuthCookie, requireAdminApi } from "@/lib/auth";
+import { createEvent } from "@/lib/data";
+import { ClientResponseError } from "pocketbase";
 
 export async function POST(req: NextRequest) {
-  const unauthorizedResponse = await requireAdminApi();
-  if (unauthorizedResponse) {
+  const { pb, unauthorizedResponse } = await requireAdminApi();
+  if (unauthorizedResponse || !pb) {
     return unauthorizedResponse;
   }
 
@@ -21,14 +22,23 @@ export async function POST(req: NextRequest) {
       description,
     } = body;
 
-    const res = await query(
-      "INSERT INTO events (title, slug, event_date, end_date, location, distance, description) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [title, slug, event_date, end_date, location, distance, description],
-    );
+    const event = await createEvent(pb, {
+      title,
+      slug,
+      event_date,
+      end_date,
+      location,
+      distance: Array.isArray(distance) ? distance : [],
+      description,
+    });
 
-    return NextResponse.json(res.rows[0], { status: 201 });
+    return withAuthCookie(NextResponse.json(event, { status: 201 }), pb);
   } catch (err: unknown) {
-    if (err && typeof err === "object" && "code" in err && err.code === "23505") {
+    if (
+      err instanceof ClientResponseError &&
+      err.status === 400 &&
+      typeof err.response?.data?.slug?.message === "string"
+    ) {
       return NextResponse.json(
         { message: "Slug already exists" },
         { status: 400 },

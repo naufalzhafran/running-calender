@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { query } from "@/lib/db";
+import { getEventById } from "@/lib/data";
 
 export async function GET(
   req: NextRequest,
@@ -8,13 +8,11 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const res = await query("SELECT * FROM events WHERE id = $1", [id]);
-
-    if (res.rowCount === 0) {
+    const event = await getEventById(id);
+    if (!event) {
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
-
-    return NextResponse.json(res.rows[0]);
+    return NextResponse.json(event);
   } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },

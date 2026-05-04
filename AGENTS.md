@@ -14,58 +14,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` — Start Next.js dev server
 - `npm run build` — Production build
 - `npm run lint` — Run ESLint
-- `npm run migrate up` — Apply all pending migrations
-- `npm run migrate down` — Rollback last migration
-- `npm run migrate create <name>` — Create a new migration file
-- `npm run db:push` — Push migrations to database (alias for migrate up)
 - No test framework is configured
 
 ## Architecture
 
-This is a **Next.js 16 App Router** application for managing a running event calendar (Indonesian language UI). It uses **PostgreSQL** with raw SQL queries (no ORM), **JWT cookie-based auth**, and **Shadcn UI** components.
+This is a **Next.js 16 App Router** application for managing a running event calendar (Indonesian language UI). It uses **PocketBase** for data and auth, and **Shadcn UI** components.
 
 ### Data Flow
 
-- **Server Components** (default): Query PostgreSQL directly via the `pg` connection pool from `lib/db.ts`. Pages use `export const dynamic = "force-dynamic"` for real-time data.
+- **Server Components** (default): Fetch PocketBase data through helpers in `lib/data.ts`. Pages use `export const dynamic = "force-dynamic"` for real-time data.
 - **Client Components** (`"use client"`): Fetch data through `/api` route handlers. Used for interactive pages like admin dashboard, event forms, and login.
 
 ### API Routes (`app/api/`)
 
 - `/api/events` and `/api/events/[id]/participants` — Public read-only endpoints
-- `/api/admin/events` and `/api/admin/participants` — Protected CRUD endpoints (verify JWT from cookie)
+- `/api/admin/events` and `/api/admin/participants` — Protected CRUD endpoints (verify PocketBase auth cookie)
 - `/api/auth/login` and `/api/auth/logout` — Auth endpoints
 
 ### Authentication (`lib/auth.ts`)
 
-Single admin user authenticated via `ADMIN_USER`/`ADMIN_PASS` env vars. JWT (HS256, 24h expiry) stored as HTTP-only cookie. Protected admin routes verify the token using `jose`.
+Admin users live in the PocketBase auth collection configured by `POCKETBASE_ADMIN_COLLECTION` (default `admins`). The Next.js app stores the PocketBase auth state in the `pb_auth` HTTP-only cookie and refreshes it server-side.
 
 ### Key Directories
 
 - `app/` — Pages and API routes (App Router)
 - `app/admin/` — Protected admin pages (dashboard, event create/edit)
 - `components/ui/` — Shadcn UI components (Tailwind v4 + CVA variants)
-- `lib/` — `db.ts` (pg pool), `auth.ts` (JWT), `utils.ts` (cn helper)
+- `lib/` — `pocketbase.ts` (client helpers), `auth.ts` (auth cookie helpers), `data.ts` (record access), `utils.ts` (cn helper)
 - `types/` — TypeScript interfaces (Event, Participant, DistanceDetail)
-- `scripts/` — Database migration scripts (run with Node.js directly)
-
-### Database Migrations
-
-Migrations are managed via **node-pg-migrate** and stored in `migrations/` directory. Use raw SQL or the migration API to define schema changes.
-
-**Creating a new migration:**
-```bash
-npm run migrate create add_new_column
-```
-
-**Running migrations:**
-```bash
-npm run migrate up
-```
-
-**Rolling back:**
-```bash
-npm run migrate down
-```
+- `pocketbase/` — collection and API rule setup notes
 
 ### Styling
 
@@ -74,8 +51,6 @@ Tailwind CSS v4 with `@theme` directive in `globals.css` for CSS variables. Uses
 ## Environment Variables
 
 ```
-DATABASE_URL=postgresql://...
-ADMIN_USER=...
-ADMIN_PASS=...
-JWT_SECRET=...
+POCKETBASE_URL=http://127.0.0.1:8090
+POCKETBASE_ADMIN_COLLECTION=admins
 ```

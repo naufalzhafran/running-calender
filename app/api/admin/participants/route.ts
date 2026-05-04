@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
-import { requireAdminApi } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { createParticipant } from "@/lib/data";
+import { requireAdminApi, withAuthCookie } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const unauthorizedResponse = await requireAdminApi();
-  if (unauthorizedResponse) {
+  const { pb, unauthorizedResponse } = await requireAdminApi();
+  if (unauthorizedResponse || !pb) {
     return unauthorizedResponse;
   }
 
@@ -13,12 +13,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { event_id, name, bib_number, distance } = body;
 
-    const res = await query(
-      "INSERT INTO participants (event_id, name, bib_number, distance) VALUES ($1, $2, $3, $4) RETURNING *",
-      [event_id, name, bib_number, distance],
-    );
+    const participant = await createParticipant(pb, {
+      event_id,
+      name,
+      bib_number,
+      distance,
+    });
 
-    return NextResponse.json(res.rows[0], { status: 201 });
+    return withAuthCookie(NextResponse.json(participant, { status: 201 }), pb);
   } catch {
     return NextResponse.json(
       { message: "Internal Server Error" },

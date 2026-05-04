@@ -1,14 +1,14 @@
 # Running Calendar
 
-A Next.js 16 application for managing running event calendars with Indonesian language UI.
+A Next.js 16 application for managing running event calendars with Indonesian language UI, backed by PocketBase.
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Database**: PostgreSQL with raw SQL queries
-- **Authentication**: JWT cookie-based auth
+- **Backend**: PocketBase
+- **Authentication**: PocketBase auth collection with HTTP-only auth cookie
 - **UI**: Shadcn UI components with Tailwind CSS v4
-- **Migrations**: node-pg-migrate
+- **Schema Management**: PocketBase collections and rules
 
 ## Getting Started
 
@@ -23,61 +23,40 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Database connection string
-DATABASE_URL=postgresql://username:password@localhost:5432/running_calendar
-
-# Admin credentials (for logging into the admin dashboard)
-ADMIN_USER=your_admin_username
-ADMIN_PASS=your_admin_password
-
-# JWT secret for token signing (generate a secure random string)
-JWT_SECRET=your_jwt_secret_min_32_characters_long
+POCKETBASE_URL=http://127.0.0.1:8090
+POCKETBASE_ADMIN_COLLECTION=admins
 ```
 
-### 3. Run Development Server
+### 3. Start PocketBase
+
+Run PocketBase separately on port `8090`. The easiest local setup is:
+
+```bash
+docker compose up pocketbase
+```
+
+Then open `http://127.0.0.1:8090/_/`, create the first superuser, and configure the collections described in [pocketbase/README.md](./pocketbase/README.md).
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Open <http://localhost:3000> with your browser.
-
-## Database Migrations
-
-### Prerequisites
-
-- PostgreSQL database running
-- `DATABASE_URL` environment variable set
-
-### Available Commands
-
-```bash
-# Apply all pending migrations
-npm run migrate up
-
-# Rollback the last migration
-npm run migrate down
-
-# Create a new migration file
-npm run migrate create <migration_name>
-
-# Push migrations to database (alias for migrate up)
-npm run db:push
-```
-
-### Migration Files
-
-Migration files are located in the `migrations/` directory. Each migration has `up` and `down` functions to apply and rollback schema changes.
+Open <http://127.0.0.1:5678> with your browser.
 
 ## Deployment
 
 ### Docker (Self-Hosted)
 
-This is the recommended way to deploy on a VPS or dedicated server. The app is containerized via Docker Compose and served through Nginx.
+This repository now ships a 2-service Docker Compose setup:
+
+- `web` — the Next.js 16 frontend
+- `pocketbase` — the PocketBase backend on port `8090`
 
 **Prerequisites**
 - Ubuntu/Debian server
-- PostgreSQL accessible (the Docker Compose setup connects to the `postgres-docker_default` network by default — adjust in `docker-compose.yml` if your setup differs)
+- Docker / Docker Compose
 
 #### First Deploy
 
@@ -96,8 +75,10 @@ sudo ./setup.sh
 
 The script will:
 - Install Docker and Nginx if not present
-- Build and start the Docker container (migrations run automatically on startup)
+- Build and start the Docker containers
 - Configure Nginx to proxy traffic from port 80 to the app
+
+After the first deploy, visit `http://your-server:8090/_/` to bootstrap PocketBase and then apply the collection setup from [pocketbase/README.md](./pocketbase/README.md).
 
 #### Re-deploy (after code changes)
 
@@ -137,10 +118,12 @@ sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
 │   ├── admin/              # Admin-specific components
 │   └── ui/                 # Shadcn UI components
 ├── lib/                    # Utility functions and libraries
-│   ├── db.ts               # PostgreSQL connection pool
-│   ├── auth.ts             # JWT authentication
+│   ├── pocketbase.ts       # PocketBase client helpers and record mappers
+│   ├── auth.ts             # PocketBase auth cookie helpers
+│   ├── data.ts             # Event and participant data access
 │   └── utils.ts            # General utilities
-├── migrations/              # Database migration files
+├── pocketbase/             # PocketBase schema and rule setup notes
+├── docker/pocketbase/      # PocketBase container build
 └── types/                  # TypeScript type definitions
 ```
 
