@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { useAlertModal } from "@/components/ui/alert-modal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { formatDateInJakarta } from "@/lib/date";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -140,12 +141,20 @@ export default function AdminDashboard() {
                       </Link>
                       {/* Mobile-only details */}
                       <div className="md:hidden text-xs text-muted-foreground mt-1">
-                        {new Date(event.event_date).toLocaleDateString("id-ID")}{" "}
+                        {formatDateInJakarta(event.event_date, {
+                          day: "numeric",
+                          month: "numeric",
+                          year: "numeric",
+                        })}{" "}
                         • {event.location}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {new Date(event.event_date).toLocaleDateString("id-ID")}
+                      {formatDateInJakarta(event.event_date, {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      })}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {event.location}

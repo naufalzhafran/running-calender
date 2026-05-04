@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { format } from "date-fns";
 import { DistanceDetail } from "@/types";
+import { parseDateOnlyToLocalDate } from "@/lib/date";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -68,9 +69,9 @@ export function DistanceFieldset({
             onClear={() => onChange(index, "date", "")}
             defaultMonth={
               distance.date
-                ? new Date(distance.date)
+                ? parseDateOnlyToLocalDate(distance.date)
                 : eventDate
-                  ? new Date(eventDate)
+                  ? parseDateOnlyToLocalDate(eventDate)
                   : undefined
             }
             buttonClassName={compact ? "h-8 text-sm" : "h-9"}

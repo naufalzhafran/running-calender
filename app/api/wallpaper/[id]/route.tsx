@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { getEventById } from "@/lib/data";
 import { type DistanceDetail } from "@/types";
 import { getWallpaperPreset } from "@/lib/wallpaper";
+import { formatDateInJakarta } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -48,12 +49,12 @@ function getCountdown(targetDate: Date) {
 }
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("id-ID", {
+  return formatDateInJakarta(date, {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(date);
+  });
 }
 
 function formatRelativeLabel(daysLeft: number) {
@@ -78,6 +79,10 @@ function formatBigNumber(daysLeft: number) {
   }
 
   return daysLeft.toString();
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 export async function GET(
@@ -109,6 +114,23 @@ export async function GET(
     const timeLine = selectedDistance?.start_time
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
+    const horizontalPadding = Math.round(preset.width * 0.07);
+    const topInset = Math.round(preset.height * 0.055);
+    const footerInset = Math.round(preset.height * 0.075);
+    const titleTop = Math.round(preset.height * 0.255);
+    const countdownTop = Math.round(preset.height * 0.445);
+    const titleWidth = Math.round(preset.width * 0.74);
+    const footerTextWidth = Math.round(preset.width * 0.62);
+    const titleFontSize = clamp(Math.round(preset.width * 0.085), 84, 112);
+    const countdownFontSize = clamp(
+      Math.round(preset.width * 0.34),
+      340,
+      520,
+    );
+    const footerTitleSize = clamp(Math.round(preset.width * 0.052), 56, 74);
+    const bodyTextSize = clamp(Math.round(preset.width * 0.025), 26, 34);
+    const metaTextSize = clamp(Math.round(preset.width * 0.02), 20, 28);
+    const badgeSize = clamp(Math.round(preset.width * 0.105), 116, 140);
 
     return new ImageResponse(
       (
@@ -118,14 +140,12 @@ export async function GET(
             height: "100%",
             display: "flex",
             position: "relative",
-            flexDirection: "column",
-            justifyContent: "space-between",
             background:
-              "linear-gradient(180deg, #f4f1ea 0%, #e5dfd0 28%, #111111 28%, #050505 100%)",
+              "linear-gradient(180deg, #f2eee4 0%, #e6dece 41%, #151311 41%, #060606 100%)",
             color: "#f6f2e8",
-            padding: "96px 84px 110px",
             fontFamily:
               '"Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif',
+            overflow: "hidden",
           }}
         >
           <div
@@ -134,37 +154,63 @@ export async function GET(
               inset: 0,
               display: "flex",
               background:
-                "radial-gradient(circle at top right, rgba(255,255,255,0.16) 0, rgba(255,255,255,0) 36%), radial-gradient(circle at bottom left, rgba(214,168,76,0.12) 0, rgba(214,168,76,0) 28%)",
+                "radial-gradient(circle at top right, rgba(255,255,255,0.2) 0, rgba(255,255,255,0) 38%), radial-gradient(circle at 18% 22%, rgba(182,161,108,0.14) 0, rgba(182,161,108,0) 24%), radial-gradient(circle at bottom left, rgba(214,168,76,0.08) 0, rgba(214,168,76,0) 28%)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: Math.round(preset.height * 0.09),
+              left: "50%",
+              width: Math.round(preset.width * 0.56),
+              height: Math.round(preset.height * 0.16),
+              transform: "translateX(-50%)",
+              borderRadius: 9999,
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 36%, rgba(255,255,255,0) 78%)",
+              opacity: 0.32,
             }}
           />
 
           <div
             style={{
+              position: "absolute",
+              top: topInset,
+              left: horizontalPadding,
               display: "flex",
-              flexDirection: "column",
-              gap: 18,
-              position: "relative",
+              alignItems: "flex-start",
             }}
           >
             <div
               style={{
                 display: "flex",
-                fontSize: 36,
-                letterSpacing: 8,
+                fontSize: clamp(Math.round(preset.width * 0.026), 28, 36),
+                letterSpacing: 6,
                 color: "#6f8b7f",
                 fontWeight: 700,
               }}
             >
               DAILY COUNTDOWN
             </div>
+          </div>
+
+          <div
+            style={{
+              position: "absolute",
+              top: titleTop,
+              left: horizontalPadding,
+              maxWidth: titleWidth,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <div
               style={{
                 display: "flex",
-                maxWidth: 980,
-                fontSize: 112,
-                lineHeight: 1,
+                fontSize: titleFontSize,
+                lineHeight: 0.95,
                 fontWeight: 800,
-                color: "#0c0c0c",
+                color: "#161311",
                 textTransform: "uppercase",
                 letterSpacing: -4,
               }}
@@ -175,17 +221,20 @@ export async function GET(
 
           <div
             style={{
+              position: "absolute",
+              top: countdownTop,
+              left: horizontalPadding,
+              right: horizontalPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              gap: 8,
-              position: "relative",
+              gap: 10,
             }}
           >
             <div
               style={{
                 display: "flex",
-                fontSize: 34,
+                fontSize: clamp(Math.round(preset.width * 0.026), 28, 36),
                 letterSpacing: 6,
                 color: "#b9ab86",
                 fontWeight: 700,
@@ -203,7 +252,7 @@ export async function GET(
               <div
                 style={{
                   display: "flex",
-                  fontSize: 520,
+                  fontSize: countdownFontSize,
                   lineHeight: 0.82,
                   fontWeight: 800,
                   letterSpacing: -22,
@@ -215,11 +264,12 @@ export async function GET(
               <div
                 style={{
                   display: "flex",
-                  paddingBottom: 74,
-                  fontSize: 48,
+                  paddingBottom: Math.round(countdownFontSize * 0.14),
+                  fontSize: clamp(Math.round(preset.width * 0.037), 38, 48),
                   letterSpacing: 8,
                   color: "#c7b892",
                   fontWeight: 700,
+                  textTransform: "uppercase",
                 }}
               >
                 {numberCaption}
@@ -229,11 +279,14 @@ export async function GET(
 
           <div
             style={{
+              position: "absolute",
+              left: horizontalPadding,
+              right: horizontalPadding,
+              bottom: footerInset,
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
               gap: 48,
-              position: "relative",
             }}
           >
             <div
@@ -241,13 +294,13 @@ export async function GET(
                 display: "flex",
                 flexDirection: "column",
                 gap: 18,
-                maxWidth: 760,
+                maxWidth: footerTextWidth,
               }}
             >
               <div
                 style={{
                   display: "flex",
-                  fontSize: 74,
+                  fontSize: footerTitleSize,
                   lineHeight: 1.02,
                   fontWeight: 700,
                   textTransform: "uppercase",
@@ -259,7 +312,7 @@ export async function GET(
               <div
                 style={{
                   display: "flex",
-                  fontSize: 34,
+                  fontSize: bodyTextSize,
                   lineHeight: 1.25,
                   letterSpacing: 2,
                   color: "#c1c1c1",
@@ -270,7 +323,7 @@ export async function GET(
               <div
                 style={{
                   display: "flex",
-                  fontSize: 28,
+                  fontSize: metaTextSize,
                   letterSpacing: 3,
                   color: "#9d9d9d",
                   textTransform: "uppercase",
@@ -279,18 +332,17 @@ export async function GET(
                 {locationLine} · {timeLine}
               </div>
             </div>
-
             <div
               style={{
                 display: "flex",
-                width: 140,
-                height: 140,
+                width: badgeSize,
+                height: badgeSize,
                 borderRadius: 9999,
                 border: "2px solid rgba(255,255,255,0.16)",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#d4c198",
-                fontSize: 22,
+                fontSize: clamp(Math.round(preset.width * 0.017), 18, 22),
                 letterSpacing: 4,
                 textTransform: "uppercase",
               }}

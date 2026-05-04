@@ -2,6 +2,10 @@ import Link from "next/link";
 import { listEvents } from "@/lib/data";
 import { Event } from "@/types";
 import { Calendar, MapPin, Footprints } from "lucide-react";
+import {
+  formatDateInJakarta,
+  getDaysUntilDate,
+} from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -9,11 +13,9 @@ async function getEvents(): Promise<Event[]> {
   return listEvents();
 }
 
-function getEventStatus(eventDate: Date | string) {
-  const now = new Date();
-  const event = new Date(eventDate);
-  const diffDays = Math.ceil((event.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+function getEventStatus(eventDate: string) {
+  const diffDays = getDaysUntilDate(eventDate);
+
   if (diffDays < 0) return { label: "Selesai", variant: "completed" as const };
   if (diffDays <= 7) return { label: "Minggu Ini", variant: "this-week" as const };
   if (diffDays <= 30) return { label: "Coming Soon", variant: "soon" as const };
@@ -22,8 +24,8 @@ function getEventStatus(eventDate: Date | string) {
 
 export default async function Home() {
   const events = await getEvents();
-  const upcomingEvents = events.filter(e => new Date(e.event_date) >= new Date());
-  const pastEvents = events.filter(e => new Date(e.event_date) < new Date());
+  const upcomingEvents = events.filter((e) => getDaysUntilDate(e.event_date) >= 0);
+  const pastEvents = events.filter((e) => getDaysUntilDate(e.event_date) < 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -88,10 +90,10 @@ export default async function Home() {
                       <div className="flex items-stretch">
                         <div className="w-16 sm:w-20 bg-primary/5 flex flex-col items-center justify-center py-3 sm:py-4 border-r border-border/30">
                           <span className="text-xs font-medium text-primary uppercase">
-                            {new Date(event.event_date).toLocaleDateString("id-ID", { month: "short" })}
+                            {formatDateInJakarta(event.event_date, { month: "short" })}
                           </span>
                           <span className="text-xl sm:text-2xl font-bold text-primary leading-none">
-                            {new Date(event.event_date).getDate()}
+                            {formatDateInJakarta(event.event_date, { day: "numeric" })}
                           </span>
                         </div>
                         

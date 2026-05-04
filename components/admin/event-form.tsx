@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { DistanceDetail } from "@/types";
+import { parseDateOnlyToLocalDate } from "@/lib/date";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -173,9 +174,9 @@ export function EventForm({
           placeholder="Pilih tanggal selesai"
           defaultMonth={
             formData.end_date
-              ? new Date(formData.end_date)
+              ? parseDateOnlyToLocalDate(formData.end_date)
               : formData.event_date
-                ? new Date(formData.event_date)
+                ? parseDateOnlyToLocalDate(formData.event_date)
                 : undefined
           }
         />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Edit } from "lucide-react";
 import { Event, DistanceDetail } from "@/types";
+import { toDateInputValue } from "@/lib/date";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,15 +30,11 @@ export default function EditEventPage({
       if (resEvent.ok) {
         const data = await resEvent.json();
         setEvent(data);
-        const formattedDate = new Date(data.event_date)
-          .toISOString()
-          .slice(0, 10);
+        const formattedDate = toDateInputValue(data.event_date);
 
         let formattedEndDate = "";
         if (data.end_date) {
-          formattedEndDate = new Date(data.end_date)
-            .toISOString()
-            .slice(0, 10);
+          formattedEndDate = toDateInputValue(data.end_date);
         }
 
         const distancesArray: DistanceDetail[] = Array.isArray(data.distance)
@@ -46,9 +43,7 @@ export default function EditEventPage({
 
         const cleanDistances = distancesArray.map((d) => ({
           ...d,
-          date: d.date
-            ? new Date(d.date).toISOString().slice(0, 10)
-            : formattedDate,
+          date: d.date ? toDateInputValue(d.date) : formattedDate,
         }));
 
         setInitialFormData({

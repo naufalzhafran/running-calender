@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
 import { cn } from "@/lib/utils";
+import { parseDateOnlyToLocalDate } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -34,7 +35,7 @@ export function DatePickerField({
   iconClassName,
 }: DatePickerFieldProps) {
   const [open, setOpen] = React.useState(false);
-  const selectedDate = value ? new Date(value) : undefined;
+  const selectedDate = value ? parseDateOnlyToLocalDate(value) : undefined;
 
   const handleSelect = (date: Date | undefined) => {
     onChange(date);
@@ -57,7 +58,7 @@ export function DatePickerField({
           >
             <CalendarIcon className={cn("mr-2 h-4 w-4 opacity-60", iconClassName)} />
             {value ? (
-              format(new Date(value), "EEEE, d MMMM yyyy", { locale: idLocale })
+              format(selectedDate!, "EEEE, d MMMM yyyy", { locale: idLocale })
             ) : (
               <span>{placeholder}</span>
             )}

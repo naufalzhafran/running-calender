@@ -4,6 +4,7 @@ import { getEventById } from "@/lib/data";
 import { Event } from "@/types";
 import { Calendar, MapPin, Ruler, ArrowLeft, Clock } from "lucide-react";
 import { WallpaperUrlGenerator } from "@/components/event/wallpaper-url-generator";
+import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function EventPage({ params }: PageProps) {
     notFound();
   }
 
-  const isPast = new Date(event.event_date) < new Date();
+  const isPast = getDaysUntilDate(event.event_date) < 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
@@ -80,7 +81,7 @@ export default async function EventPage({ params }: PageProps) {
                     Tanggal
                   </p>
                   <p className="font-semibold text-foreground">
-                    {new Date(event.event_date).toLocaleDateString("id-ID", {
+                    {formatDateInJakarta(event.event_date, {
                       weekday: "long",
                       day: "numeric",
                       month: "long",
@@ -89,7 +90,7 @@ export default async function EventPage({ params }: PageProps) {
                     {event.end_date && (
                       <>
                         <span className="mx-2 text-muted-foreground">—</span>
-                        {new Date(event.end_date).toLocaleDateString("id-ID", {
+                        {formatDateInJakarta(event.end_date, {
                           day: "numeric",
                           month: "long",
                         })}
@@ -121,31 +122,38 @@ export default async function EventPage({ params }: PageProps) {
                   <Ruler className="w-5 h-5 text-primary" />
                   Kategori
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                   {event.distance.map((dist, idx) => (
                     <div
                       key={idx}
-                      className="p-4 rounded-2xl border border-border/50 bg-card hover:border-primary/20 hover:shadow-sm transition-all"
+                      className="rounded-3xl border border-border/50 bg-card p-5 shadow-sm transition-all hover:border-primary/20"
                     >
-                      <div className="font-bold text-lg text-foreground mb-3">
-                        {dist.name}
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-bold text-xl text-foreground">
+                            {dist.name}
+                          </div>
+                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                            Kategori Race
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-3 text-sm">
-                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                      <div className="rounded-2xl border border-border/50 bg-background/70 px-4 py-2">
+                        <div className="flex items-center justify-between gap-3 border-b border-border/50 py-3 text-sm">
                           <span className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="w-4 h-4" />
                             Tanggal
                           </span>
                           <span className="font-medium text-foreground">
                             {dist.date
-                              ? new Date(dist.date).toLocaleDateString(
-                                  "id-ID",
-                                  { day: "numeric", month: "short" },
-                                )
+                              ? formatDateInJakarta(dist.date, {
+                                  day: "numeric",
+                                  month: "short",
+                                })
                               : "-"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                        <div className="flex items-center justify-between gap-3 border-b border-border/50 py-3 text-sm">
                           <span className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4" />
                             Start
@@ -154,7 +162,7 @@ export default async function EventPage({ params }: PageProps) {
                             {dist.start_time || "-"}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                        <div className="flex items-center justify-between gap-3 py-3 text-sm">
                           <span className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4" />
                             COT
