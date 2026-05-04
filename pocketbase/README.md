@@ -24,8 +24,8 @@ Create at least one admin record in this collection. The Next.js login page uses
 
 - Name: `events`
 - Type: `base`
-- List rule: empty
-- View rule: empty
+- List rule: `""` (public)
+- View rule: `""` (public)
 - Create rule: `@request.auth.collectionName = "admins"`
 - Update rule: `@request.auth.collectionName = "admins"`
 - Delete rule: `@request.auth.collectionName = "admins"`
@@ -65,8 +65,8 @@ The `distance` JSON field should contain an array like:
 
 - Name: `participants`
 - Type: `base`
-- List rule: empty
-- View rule: empty
+- List rule: `""` (public)
+- View rule: `""` (public)
 - Create rule: `@request.auth.collectionName = "admins"`
 - Update rule: `@request.auth.collectionName = "admins"`
 - Delete rule: `@request.auth.collectionName = "admins"`
@@ -88,5 +88,6 @@ CREATE INDEX idx_participants_name ON participants (name);
 ## Notes
 
 - Public pages read `events` and `participants` anonymously, so the list/view rules must stay open.
+- In PocketBase exports/imports, public rules are `""`, not `null`.
 - Admin mutations rely on the logged-in `admins` record token stored in the `pb_auth` cookie.
 - If you rename the auth collection, set `POCKETBASE_ADMIN_COLLECTION` to match.

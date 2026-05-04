@@ -173,8 +173,8 @@
   },
   {
     "id": "eventsbase00001",
-    "listRule": null,
-    "viewRule": null,
+    "listRule": "",
+    "viewRule": "",
     "createRule": "@request.auth.collectionName = 'admins'",
     "updateRule": "@request.auth.collectionName = 'admins'",
     "deleteRule": "@request.auth.collectionName = 'admins'",
@@ -308,8 +308,8 @@
   },
   {
     "id": "partsbase000001",
-    "listRule": null,
-    "viewRule": null,
+    "listRule": "",
+    "viewRule": "",
     "createRule": "@request.auth.collectionName = 'admins'",
     "updateRule": "@request.auth.collectionName = 'admins'",
     "deleteRule": "@request.auth.collectionName = 'admins'",
