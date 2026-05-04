@@ -5,6 +5,7 @@ import { Check, Copy, Link as LinkIcon } from "lucide-react";
 
 import {
   buildWallpaperPath,
+  buildWallpaperSharePath,
   DEFAULT_WALLPAPER_PRESET,
   WALLPAPER_PRESETS,
   getWallpaperPreset,
@@ -31,9 +32,15 @@ export function WallpaperUrlGenerator({
   const [preset, setPreset] =
     useState<WallpaperPresetKey>(DEFAULT_WALLPAPER_PRESET);
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const selectedPreset = getWallpaperPreset(preset);
 
   const relativeUrl = buildWallpaperPath({
+    eventId,
+    distance: distanceName,
+    preset,
+  });
+  const shareRelativeUrl = buildWallpaperSharePath({
     eventId,
     distance: distanceName,
     preset,
@@ -48,6 +55,17 @@ export function WallpaperUrlGenerator({
     await navigator.clipboard.writeText(absoluteUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
+  };
+
+  const handleShareCopy = async () => {
+    const absoluteUrl =
+      typeof window === "undefined"
+        ? shareRelativeUrl
+        : `${window.location.origin}${shareRelativeUrl}`;
+
+    await navigator.clipboard.writeText(absoluteUrl);
+    setShareCopied(true);
+    window.setTimeout(() => setShareCopied(false), 1800);
   };
 
   return (
@@ -96,6 +114,25 @@ export function WallpaperUrlGenerator({
             {relativeUrl}
           </p>
         </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleShareCopy}
+          className="h-11 w-full rounded-2xl"
+        >
+          {shareCopied ? (
+            <>
+              <Check className="mr-2 h-4 w-4" />
+              Link Preview Tersalin
+            </>
+          ) : (
+            <>
+              <LinkIcon className="mr-2 h-4 w-4" />
+              Copy Link WhatsApp Preview
+            </>
+          )}
+        </Button>
 
         <Button
           type="button"

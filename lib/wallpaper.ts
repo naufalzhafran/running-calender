@@ -105,3 +105,22 @@ export function buildWallpaperPath(options: {
   const queryString = searchParams.toString();
   return `/api/wallpaper/${options.eventId}${queryString ? `?${queryString}` : ""}`;
 }
+
+export function buildWallpaperSharePath(options: {
+  eventId: string;
+  distance?: string;
+  preset?: string;
+}) {
+  const searchParams = new URLSearchParams();
+
+  if (options.distance) {
+    searchParams.set("distance", options.distance);
+  }
+
+  if (options.preset) {
+    searchParams.set("preset", options.preset);
+  }
+
+  const queryString = searchParams.toString();
+  return `/wallpaper/${options.eventId}${queryString ? `?${queryString}` : ""}`;
+}
