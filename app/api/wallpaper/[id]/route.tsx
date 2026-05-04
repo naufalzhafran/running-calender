@@ -117,7 +117,8 @@ export async function GET(
     const horizontalPadding = Math.round(preset.width * 0.07);
     const topInset = Math.round(preset.height * 0.055);
     const footerInset = Math.round(preset.height * 0.075);
-    const titleTop = Math.round(preset.height * 0.255);
+    const titleTop = Math.round(preset.height * 0.16);
+    const titleBottom = Math.round(preset.height * 0.625);
     const countdownTop = Math.round(preset.height * 0.445);
     const titleWidth = Math.round(preset.width * 0.74);
     const footerTextWidth = Math.round(preset.width * 0.62);
@@ -198,10 +199,12 @@ export async function GET(
             style={{
               position: "absolute",
               top: titleTop,
+              bottom: titleBottom,
               left: horizontalPadding,
               maxWidth: titleWidth,
               display: "flex",
               flexDirection: "column",
+              justifyContent: "flex-end",
             }}
           >
             <div
