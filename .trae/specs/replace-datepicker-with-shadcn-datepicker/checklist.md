@@ -1,6 +1,0 @@
-- [x] Shared date picker uses proper shadcn date picker composition
-- [x] Event form date fields use the updated shared date picker
-- [x] Distance/category date fields use the updated shared date picker
-- [x] Existing value format and optional/disabled behavior are preserved
-- [x] Date selection and clear interactions behave correctly in admin flows
-- [x] Relevant lint/type checks and targeted tests pass
