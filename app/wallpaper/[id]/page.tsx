@@ -123,9 +123,9 @@ export async function generateMetadata({
   const daysLeft = getDaysUntilDate(targetDate);
   const countdownLabel = getCountdownCopy(daysLeft);
   const title = `${countdownLabel} • ${context.event.title}${distanceLabel}`;
-  const description = `Wallpaper countdown untuk ${context.event.title}${
+  const description = `${countdownLabel} untuk ${context.event.title}${
     context.distance?.name ? ` kategori ${context.distance.name}` : ""
-  } pada ${formatDateInJakarta(targetDate, {
+  }. Tanggal event ${formatDateInJakarta(targetDate, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -173,7 +173,7 @@ export default async function WallpaperSharePage({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#f7f1e6_0%,#efe8d7_28%,#e8deca_42%,#f8f5ee_100%)] px-4 py-6 sm:px-6 lg:py-8">
+    <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:py-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <Link
           href={`/events/${context.event.id}`}
