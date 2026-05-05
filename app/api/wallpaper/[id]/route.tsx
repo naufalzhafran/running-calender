@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { unstable_cache } from "next/cache";
 import type { NextRequest } from "next/server";
 
 import { getEventById } from "@/lib/data";
@@ -7,6 +8,17 @@ import { getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
+
+const WALLPAPER_IMAGE_REVALIDATE_SECONDS = 15 * 60;
+const WALLPAPER_IMAGE_STALE_SECONDS = 24 * 60 * 60;
+
+const getCachedWallpaperEventById = unstable_cache(
+  async (id: string) => getEventById(id),
+  ["wallpaper-event-by-id"],
+  {
+    revalidate: WALLPAPER_IMAGE_REVALIDATE_SECONDS,
+  },
+);
 
 function normalizeDistanceName(value: string) {
   return value.trim().toLowerCase();
@@ -91,7 +103,7 @@ export async function GET(
 ) {
   try {
     const { id } = await ctx.params;
-    const event = await getEventById(id);
+    const event = await getCachedWallpaperEventById(id);
 
     if (!event) {
       return new Response("Event not found", { status: 404 });
@@ -336,7 +348,7 @@ export async function GET(
         width: preset.width,
         height: preset.height,
         headers: {
-          "Cache-Control": "no-store, max-age=0",
+          "Cache-Control": `public, max-age=0, s-maxage=${WALLPAPER_IMAGE_REVALIDATE_SECONDS}, stale-while-revalidate=${WALLPAPER_IMAGE_STALE_SECONDS}`,
         },
       },
     );
