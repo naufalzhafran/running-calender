@@ -115,7 +115,6 @@ export async function GET(
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
     const horizontalPadding = Math.round(preset.width * 0.07);
-    const topInset = Math.round(preset.height * 0.055);
     const footerInset = Math.round(preset.height * 0.075);
     const titleTop = Math.round(preset.height * 0.16);
     const titleBottom = Math.round(preset.height * 0.625);
@@ -172,28 +171,6 @@ export async function GET(
               opacity: 0.32,
             }}
           />
-
-          <div
-            style={{
-              position: "absolute",
-              top: topInset,
-              left: horizontalPadding,
-              display: "flex",
-              alignItems: "flex-start",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                fontSize: clamp(Math.round(preset.width * 0.026), 28, 36),
-                letterSpacing: 6,
-                color: "#6f8b7f",
-                fontWeight: 700,
-              }}
-            >
-              DAILY COUNTDOWN
-            </div>
-          </div>
 
           <div
             style={{

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, Image as ImageIcon, Link2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
+import { WallpaperShareExperience } from "@/components/event/wallpaper-share-experience";
 import { getEventById } from "@/lib/data";
 import { buildWallpaperPath, getWallpaperPreset } from "@/lib/wallpaper";
-import { formatDateInJakarta } from "@/lib/date";
+import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 import { type DistanceDetail } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,22 @@ function getAbsoluteUrl(path: string, headerList: Headers) {
   }
 
   return `${proto}://${host}${path}`;
+}
+
+function getCountdownCopy(daysLeft: number) {
+  if (daysLeft < 0) {
+    return `${Math.abs(daysLeft)} hari sejak event`;
+  }
+
+  if (daysLeft === 0) {
+    return "Hari ini event dimulai";
+  }
+
+  if (daysLeft === 1) {
+    return "1 hari lagi menuju event";
+  }
+
+  return `${daysLeft} hari lagi menuju event`;
 }
 
 async function getWallpaperContext(
@@ -102,16 +119,17 @@ export async function generateMetadata({
   const distanceLabel = context.distance?.name
     ? ` • ${context.distance.name}`
     : "";
-  const title = `${context.event.title}${distanceLabel}`;
-  const description = `Wallpaper lock screen untuk ${context.event.title}${
-    context.distance?.date
-      ? ` pada ${formatDateInJakarta(context.distance.date, {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`
-      : ""
-  }.`;
+  const targetDate = context.distance?.date ?? context.event.event_date;
+  const daysLeft = getDaysUntilDate(targetDate);
+  const countdownLabel = getCountdownCopy(daysLeft);
+  const title = `${countdownLabel} • ${context.event.title}${distanceLabel}`;
+  const description = `Wallpaper countdown untuk ${context.event.title}${
+    context.distance?.name ? ` kategori ${context.distance.name}` : ""
+  } pada ${formatDateInJakarta(targetDate, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })}.`;
 
   return {
     title,
@@ -142,23 +160,6 @@ export async function generateMetadata({
   };
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/60 bg-background px-4 py-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-right text-sm font-medium text-foreground">
-        {value}
-      </span>
-    </div>
-  );
-}
-
 export default async function WallpaperSharePage({
   params,
   searchParams,
@@ -172,8 +173,8 @@ export default async function WallpaperSharePage({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 px-4 py-6">
-      <div className="mx-auto max-w-3xl space-y-6">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#f7f1e6_0%,#efe8d7_28%,#e8deca_42%,#f8f5ee_100%)] px-4 py-6 sm:px-6 lg:py-8">
+      <div className="mx-auto max-w-6xl space-y-6">
         <Link
           href={`/events/${context.event.id}`}
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -182,67 +183,17 @@ export default async function WallpaperSharePage({
           Kembali ke detail event
         </Link>
 
-        <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm">
-          <div className="mb-6 flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ImageIcon className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                Wallpaper Share
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                URL halaman ini bisa dibagikan ke WhatsApp agar preview gambar
-                muncul otomatis.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <InfoRow label="Event" value={context.event.title} />
-            <InfoRow
-              label="Kategori"
-              value={context.distance?.name ?? "Default"}
-            />
-            <InfoRow
-              label="Tanggal"
-              value={
-                context.distance?.date
-                  ? formatDateInJakarta(context.distance.date, {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : formatDateInJakarta(context.event.event_date, {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-              }
-            />
-            <InfoRow
-              label="Ukuran"
-              value={`${context.preset.shortLabel} • ${context.preset.width}×${context.preset.height}`}
-            />
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <Link
-              href={context.imagePath}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Buka Gambar Langsung
-            </Link>
-            <Link
-              href={`/events/${context.event.id}`}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border/60 bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              <Link2 className="h-4 w-4" />
-              Lihat Event
-            </Link>
-          </div>
-        </section>
+        <WallpaperShareExperience
+          event={{
+            id: context.event.id,
+            title: context.event.title,
+            location: context.event.location,
+            event_date: context.event.event_date,
+          }}
+          distances={context.event.distance}
+          initialDistanceName={context.distance?.name}
+          initialPresetKey={context.preset.key}
+        />
       </div>
     </main>
   );

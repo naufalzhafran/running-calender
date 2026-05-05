@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/data";
 import { Event } from "@/types";
-import { Calendar, MapPin, Ruler, ArrowLeft, Clock } from "lucide-react";
-import { WallpaperUrlGenerator } from "@/components/event/wallpaper-url-generator";
+import { Calendar, MapPin, Ruler, ArrowLeft, Clock, ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { buildWallpaperSharePath } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 
 export const dynamic = "force-dynamic";
@@ -172,11 +173,17 @@ export default async function EventPage({ params }: PageProps) {
                           </span>
                         </div>
                       </div>
-
-                      <WallpaperUrlGenerator
-                        eventId={event.id}
-                        distanceName={dist.name}
-                      />
+                      <Button asChild className="mt-5 h-11 w-full rounded-2xl">
+                        <Link
+                          href={buildWallpaperSharePath({
+                            eventId: event.id,
+                            distance: dist.name,
+                          })}
+                        >
+                          <ImageIcon className="w-4 h-4" />
+                          Buka Wallpaper Preview
+                        </Link>
+                      </Button>
                     </div>
                   ))}
                 </div>
