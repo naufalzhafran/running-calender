@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -8,6 +7,7 @@ import { WallpaperShareExperience } from "@/components/event/wallpaper-share-exp
 import { getEventById } from "@/lib/data";
 import { buildWallpaperPath, getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
+import { buildAbsoluteSiteUrl } from "@/lib/site-url";
 import { type DistanceDetail } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -44,17 +44,6 @@ function pickDistance(
   return upcoming[0] ?? distances[0] ?? null;
 }
 
-function getAbsoluteUrl(path: string, headerList: Headers) {
-  const proto = headerList.get("x-forwarded-proto") ?? "https";
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-
-  if (!host) {
-    return path;
-  }
-
-  return `${proto}://${host}${path}`;
-}
-
 function getCountdownCopy(daysLeft: number) {
   if (daysLeft < 0) {
     return `${Math.abs(daysLeft)} hari sejak event`;
@@ -70,7 +59,6 @@ function getCountdownCopy(daysLeft: number) {
 
   return `${daysLeft} hari lagi menuju event`;
 }
-
 async function getWallpaperContext(
   id: string,
   distanceName?: string,
@@ -107,14 +95,12 @@ export async function generateMetadata({
     };
   }
 
-  const headerList = await headers();
-  const imageUrl = getAbsoluteUrl(context.imagePath, headerList);
-  const pageUrl = getAbsoluteUrl(
+  const imageUrl = buildAbsoluteSiteUrl(context.imagePath);
+  const pageUrl = buildAbsoluteSiteUrl(
     `/wallpaper/${context.event.id}?${new URLSearchParams({
       ...(context.distance?.name ? { distance: context.distance.name } : {}),
       preset: context.preset.key,
     }).toString()}`,
-    headerList,
   );
   const distanceLabel = context.distance?.name
     ? ` • ${context.distance.name}`

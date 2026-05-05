@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { withAuthCookie, requireAdminApi } from "@/lib/auth";
 import { createEvent } from "@/lib/data";
 import { ClientResponseError } from "pocketbase";
+import { eventPayloadSchema } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
   const { pb, unauthorizedResponse } = await requireAdminApi();
@@ -11,7 +12,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
+    const parsed = eventPayloadSchema.safeParse(await req.json());
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { message: "Invalid event payload" },
+        { status: 400 },
+      );
+    }
+
     const {
       title,
       slug,
@@ -20,7 +29,7 @@ export async function POST(req: NextRequest) {
       location,
       distance,
       description,
-    } = body;
+    } = parsed.data;
 
     const event = await createEvent(pb, {
       title,
@@ -28,7 +37,7 @@ export async function POST(req: NextRequest) {
       event_date,
       end_date,
       location,
-      distance: Array.isArray(distance) ? distance : [],
+      distance,
       description,
     });
 

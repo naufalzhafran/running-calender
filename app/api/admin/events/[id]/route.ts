@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { ClientResponseError } from "pocketbase";
 import { requireAdminApi, withAuthCookie } from "@/lib/auth";
 import { deleteEvent, updateEvent } from "@/lib/data";
+import { eventPayloadSchema } from "@/lib/validation";
 
 export async function PUT(
   req: NextRequest,
@@ -15,7 +16,15 @@ export async function PUT(
   }
 
   try {
-    const body = await req.json();
+    const parsed = eventPayloadSchema.safeParse(await req.json());
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { message: "Invalid event payload" },
+        { status: 400 },
+      );
+    }
+
     const {
       title,
       slug,
@@ -24,7 +33,7 @@ export async function PUT(
       location,
       distance,
       description,
-    } = body;
+    } = parsed.data;
 
     const event = await updateEvent(pb, id, {
       title,
@@ -32,7 +41,7 @@ export async function PUT(
       event_date,
       end_date,
       location,
-      distance: Array.isArray(distance) ? distance : [],
+      distance,
       description,
     });
 
