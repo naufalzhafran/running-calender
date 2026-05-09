@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ReminderActions } from "@/components/event/reminder-actions";
 import {
   Select,
   SelectContent,
@@ -89,6 +90,7 @@ export function WallpaperShareExperience({
     [distances, selectedDistanceName],
   );
   const selectedPreset = getWallpaperPreset(selectedPresetKey);
+  const distanceTitle = selectedDistance?.name ?? "Kategori";
   const selectedDate = selectedDistance?.date ?? event.event_date;
   const daysLeft = getDaysUntilDate(selectedDate);
   const imagePath = buildWallpaperPath({
@@ -160,7 +162,7 @@ export function WallpaperShareExperience({
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Wallpaper ${event.title}`,
+          title: `${distanceTitle} - ${event.title}`,
           text: `${event.title}${selectedDistance ? ` • ${selectedDistance.name}` : ""}`,
           url: absoluteShareUrl,
         });
@@ -174,24 +176,30 @@ export function WallpaperShareExperience({
   }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white">
-      <div className="border-b border-stone-200/80 px-4 py-5 sm:px-8 sm:py-6">
+    <section className="overflow-hidden rounded-3xl border border-border/50 bg-card">
+      <div className="border-b border-border/50 px-6 py-6 sm:px-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-black uppercase leading-[0.92] tracking-[-0.06em] text-stone-950 sm:text-5xl">
-              {event.title}
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Detail Kategori
+            </p>
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+              {distanceTitle}
             </h1>
+            <p className="mt-2 text-base font-medium text-muted-foreground">
+              {event.title}
+            </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+          <div className="rounded-2xl border border-border/50 bg-muted/50 px-5 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Countdown
             </p>
             <div className="mt-2 flex items-end gap-2">
-              <span className="text-4xl font-black leading-none tracking-[-0.06em] text-stone-950">
+              <span className="text-4xl font-bold leading-none text-primary">
                 {Math.abs(daysLeft)}
               </span>
-              <span className="pb-1 text-sm text-stone-600">
+              <span className="pb-1 text-sm text-muted-foreground">
                 {daysLeft < 0 ? "hari berlalu" : "hari lagi"}
               </span>
             </div>
@@ -201,8 +209,8 @@ export function WallpaperShareExperience({
 
       <div className="grid gap-6 p-4 sm:p-8 xl:grid-cols-[minmax(0,1fr)_28rem] xl:items-start">
         <div className="min-w-0 space-y-4 xl:order-2 xl:sticky xl:top-24">
-          <div className="min-w-0 rounded-[1.6rem] border border-stone-200 bg-stone-50 p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+          <div className="min-w-0 rounded-3xl border border-border/50 bg-muted/50 p-4 sm:p-5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Kategori
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -218,8 +226,8 @@ export function WallpaperShareExperience({
                     onClick={() => handleDistanceChange(distance.name)}
                     className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
                       isActive
-                        ? "border-stone-950 bg-stone-950 text-white"
-                        : "border-stone-300 bg-white text-stone-700 hover:border-stone-500 hover:text-stone-950"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-foreground"
                     }`}
                   >
                     {distance.name}
@@ -229,27 +237,27 @@ export function WallpaperShareExperience({
             </div>
           </div>
 
-          <div className="min-w-0 rounded-[1.6rem] border border-stone-200 bg-stone-50 p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+          <div className="min-w-0 rounded-3xl border border-border/50 bg-muted/50 p-4 sm:p-5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Device
             </p>
             <Select value={selectedPresetKey} onValueChange={handlePresetChange}>
-              <SelectTrigger className="mt-4 h-auto min-h-14 w-full min-w-0 rounded-2xl border-stone-300 bg-white py-3 text-left">
+              <SelectTrigger className="mt-4 h-auto min-h-14 w-full min-w-0 rounded-2xl bg-background py-3 text-left">
                 <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Smartphone className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-semibold text-stone-950">
+                    <p className="truncate text-sm font-semibold text-foreground">
                       {selectedPreset.label}
                     </p>
-                    <p className="text-xs text-stone-500">
+                    <p className="text-xs text-muted-foreground">
                       {selectedPreset.width}×{selectedPreset.height}
                     </p>
                   </div>
                 </div>
               </SelectTrigger>
-              <SelectContent className="max-w-[min(calc(100vw-2rem),var(--radix-popper-anchor-width))] rounded-2xl border-stone-200 bg-white">
+              <SelectContent className="max-w-[min(calc(100vw-2rem),var(--radix-popper-anchor-width))] rounded-2xl">
                 {Object.entries(WALLPAPER_PRESETS).map(([key, preset]) => (
                   <SelectItem
                     key={key}
@@ -268,9 +276,17 @@ export function WallpaperShareExperience({
             </Select>
           </div>
 
-          <div className="min-w-0 rounded-[1.6rem] border border-stone-200 bg-white p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
-              Actions
+          {selectedDistance && (
+            <ReminderActions
+              eventId={event.id}
+              eventTitle={event.title}
+              distances={[selectedDistance]}
+            />
+          )}
+
+          <div className="min-w-0 rounded-3xl border border-border/50 bg-card p-4 sm:p-5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Wallpaper
             </p>
             <div className="mt-4 space-y-3">
               <Button
@@ -280,7 +296,7 @@ export function WallpaperShareExperience({
                 disabled={isPending}
               >
                 <Share2 className="h-4 w-4" />
-                Bagikan Link Preview
+                Bagikan Detail Kategori
               </Button>
 
               <Button
@@ -292,12 +308,12 @@ export function WallpaperShareExperience({
                 {copiedState === "share" ? (
                   <>
                     <Check className="h-4 w-4" />
-                    Link Preview Tersalin
+                    Link Detail Tersalin
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    Copy Link Preview
+                    Copy Link Detail
                   </>
                 )}
               </Button>
@@ -336,21 +352,21 @@ export function WallpaperShareExperience({
               </Button>
             </div>
           </div>
-
-          <Button asChild variant="ghost" className="h-11 w-full rounded-2xl">
-            <Link href={`/events/${event.id}`}>Kembali ke Event</Link>
-          </Button>
         </div>
 
         <div className="min-w-0">
-          <div className="relative overflow-hidden rounded-[1.8rem] border border-stone-200 bg-[#090909]">
+          <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-card">
             <div className="absolute inset-x-0 top-0 h-[41%] bg-[#e6dece]" />
+            <div className="absolute inset-x-0 bottom-0 h-[59%] bg-[#090909]" />
             <div className="relative p-4 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="max-w-xl">
-                  <h2 className="text-2xl font-black uppercase leading-[0.95] tracking-[-0.05em] text-stone-950 sm:text-4xl">
-                    {event.title}
+                  <h2 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                    {distanceTitle}
                   </h2>
+                  <p className="mt-2 text-sm font-medium text-muted-foreground">
+                    {event.title}
+                  </p>
                 </div>
                 <div className="rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-medium text-stone-100">
                   {selectedDistance?.name ?? "-"} • {selectedPreset.width}×
@@ -401,23 +417,23 @@ export function WallpaperShareExperience({
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
+              <div className="mt-8 grid gap-3">
+                <div className="rounded-2xl border border-border/50 bg-black/20 p-4 text-stone-100">
+                  <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
                     Countdown
                   </p>
-                  <p className="mt-3 text-4xl font-black leading-none">
+                  <p className="mt-3 text-4xl font-bold leading-none text-primary">
                     {Math.abs(daysLeft)}
                   </p>
                   <p className="mt-2 text-sm text-stone-300">
                     {daysLeft < 0 ? "hari berlalu" : "hari lagi"}
                   </p>
                 </div>
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
+                <div className="rounded-2xl border border-border/50 bg-black/20 p-4 text-stone-100">
+                  <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
                     Tanggal
                   </p>
-                  <p className="mt-3 text-base font-semibold">
+                  <p className="mt-3 text-base font-semibold text-stone-100">
                     {formatDateInJakarta(selectedDate, {
                       day: "numeric",
                       month: "long",
@@ -425,11 +441,11 @@ export function WallpaperShareExperience({
                     })}
                   </p>
                 </div>
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
+                <div className="rounded-2xl border border-border/50 bg-black/20 p-4 text-stone-100">
+                  <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
                     Lokasi
                   </p>
-                  <p className="mt-3 text-base font-semibold">{event.location}</p>
+                  <p className="mt-3 text-base font-semibold text-stone-100">{event.location}</p>
                 </div>
               </div>
             </div>

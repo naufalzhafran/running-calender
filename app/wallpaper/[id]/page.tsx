@@ -108,7 +108,7 @@ export async function generateMetadata({
   const targetDate = context.distance?.date ?? context.event.event_date;
   const daysLeft = getDaysUntilDate(targetDate);
   const countdownLabel = getCountdownCopy(daysLeft);
-  const title = `${countdownLabel} • ${context.event.title}${distanceLabel}`;
+  const title = `Detail kategori${distanceLabel} • ${context.event.title}`;
   const description = `${countdownLabel} untuk ${context.event.title}${
     context.distance?.name ? ` kategori ${context.distance.name}` : ""
   }. Tanggal event ${formatDateInJakarta(targetDate, {
@@ -159,16 +159,20 @@ export default async function WallpaperSharePage({
   }
 
   return (
-    <main className="min-h-screen bg-white px-4 py-6 sm:px-6 lg:py-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <Link
-          href={`/events/${context.event.id}`}
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali ke detail event
-        </Link>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-4">
+          <Link
+            href={`/events/${context.event.id}`}
+            className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kembali
+          </Link>
+        </div>
+      </header>
 
+      <main className="mx-auto max-w-4xl px-4 py-6">
         <WallpaperShareExperience
           event={{
             id: context.event.id,
@@ -180,7 +184,7 @@ export default async function WallpaperSharePage({
           initialDistanceName={context.distance?.name}
           initialPresetKey={context.preset.key}
         />
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

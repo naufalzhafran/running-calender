@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/data";
 import { Event } from "@/types";
-import { Calendar, MapPin, Ruler, ArrowLeft, Clock, ImageIcon } from "lucide-react";
+import { Calendar, MapPin, Ruler, ArrowLeft, Clock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { buildWallpaperSharePath } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
@@ -182,8 +182,8 @@ export default async function EventPage({ params }: PageProps) {
                           className: "mt-5 h-11 w-full rounded-2xl",
                         })}
                       >
-                        <ImageIcon className="w-4 h-4" />
-                        Buka Wallpaper Preview
+                        <Ruler className="w-4 h-4" />
+                        Lihat Detail Kategori
                       </Link>
                     </div>
                   ))}
