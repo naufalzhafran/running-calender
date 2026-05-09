@@ -237,45 +237,6 @@ export function WallpaperShareExperience({
             </div>
           </div>
 
-          <div className="min-w-0 rounded-3xl border border-border/50 bg-muted/50 p-4 sm:p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Device
-            </p>
-            <Select value={selectedPresetKey} onValueChange={handlePresetChange}>
-              <SelectTrigger className="mt-4 h-auto min-h-14 w-full min-w-0 rounded-2xl bg-background py-3 text-left">
-                <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Smartphone className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {selectedPreset.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedPreset.width}×{selectedPreset.height}
-                    </p>
-                  </div>
-                </div>
-              </SelectTrigger>
-              <SelectContent className="max-w-[min(calc(100vw-2rem),var(--radix-popper-anchor-width))] rounded-2xl">
-                {Object.entries(WALLPAPER_PRESETS).map(([key, preset]) => (
-                  <SelectItem
-                    key={key}
-                    value={key}
-                    className="items-start rounded-xl py-3"
-                  >
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate font-medium">{preset.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {preset.width}×{preset.height}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {selectedDistance && (
             <ReminderActions
               eventId={event.id}
@@ -288,15 +249,202 @@ export function WallpaperShareExperience({
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Wallpaper
             </p>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-4">
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Device
+                </p>
+                <Select value={selectedPresetKey} onValueChange={handlePresetChange}>
+                  <SelectTrigger className="h-auto min-h-14 w-full min-w-0 rounded-2xl bg-background py-3 text-left">
+                    <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Smartphone className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {selectedPreset.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedPreset.width}×{selectedPreset.height}
+                        </p>
+                      </div>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="w-[min(calc(100vw-2rem),22rem)]">
+                    {Object.entries(WALLPAPER_PRESETS).map(([key, preset]) => (
+                      <SelectItem
+                        key={key}
+                        value={key}
+                        className="items-start py-3.5 data-[selected]:bg-primary/10 data-[selected]:text-foreground"
+                      >
+                        <div className="flex min-w-0 flex-col">
+                          <span className="whitespace-normal font-semibold leading-snug">
+                            {preset.label}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {preset.width}×{preset.height}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-3">
+                <Button asChild className="h-11 w-full rounded-2xl">
+                  <a href={imagePath} download>
+                    <Download className="h-4 w-4" />
+                    Download Wallpaper
+                  </a>
+                </Button>
+
+                <Button asChild variant="outline" className="h-11 w-full rounded-2xl">
+                  <Link href={imagePath} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Buka Resolusi Penuh
+                  </Link>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => copyAbsoluteUrl("image")}
+                  className="h-11 w-full rounded-2xl"
+                >
+                  {copiedState === "image" ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      URL Gambar Tersalin
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4" />
+                      Copy URL Gambar
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="rounded-2xl border border-border/50 bg-muted/50 p-4">
+                <p className="text-sm font-semibold text-foreground">
+                  Pakai dengan iOS Shortcut
+                </p>
+                <div className="mt-3 space-y-4 text-sm leading-6 text-muted-foreground">
+                  <div>
+                    <p className="font-medium text-foreground">
+                      Buat shortcut sekali
+                    </p>
+                    <ol className="mt-2 list-decimal space-y-2 pl-4">
+                      <li>Pilih device di atas sesuai iPhone kamu.</li>
+                      <li>
+                        Tap{" "}
+                        <span className="font-medium text-foreground">
+                          Copy URL Gambar
+                        </span>
+                        .
+                      </li>
+                      <li>
+                        Buka app{" "}
+                        <span className="font-medium text-foreground">
+                          Shortcuts
+                        </span>
+                        , lalu tap <span className="font-medium text-foreground">+</span>.
+                      </li>
+                      <li>
+                        Tambah aksi{" "}
+                        <span className="font-medium text-foreground">
+                          URL
+                        </span>
+                        , lalu paste URL gambar yang sudah dicopy.
+                      </li>
+                      <li>
+                        Tambah aksi{" "}
+                        <span className="font-medium text-foreground">
+                          Get Contents of URL
+                        </span>
+                        . Input-nya pakai hasil dari aksi URL.
+                      </li>
+                      <li>
+                        Tambah aksi{" "}
+                        <span className="font-medium text-foreground">
+                          Convert Image
+                        </span>
+                        . Ubah hasil URL menjadi PNG.
+                      </li>
+                      <li>
+                        Tambah aksi{" "}
+                        <span className="font-medium text-foreground">
+                          Set Wallpaper
+                        </span>
+                        . Input-nya pakai Converted Image, lalu pilih Lock Screen,
+                        Home Screen, atau keduanya.
+                      </li>
+                      <li>
+                        Matikan opsi preview/konfirmasi jika kamu ingin shortcut
+                        langsung memasang wallpaper.
+                      </li>
+                      <li>
+                        Jalankan shortcut. Saat diminta izin akses web, tap Allow.
+                      </li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-foreground">
+                      Biar update otomatis
+                    </p>
+                    <ol className="mt-2 list-decimal space-y-2 pl-4">
+                      <li>
+                        Buka tab{" "}
+                        <span className="font-medium text-foreground">
+                          Automation
+                        </span>{" "}
+                        di Shortcuts.
+                      </li>
+                      <li>
+                        Pilih waktu harian, misalnya setiap pagi jam 06:00.
+                      </li>
+                      <li>
+                        Pilih{" "}
+                        <span className="font-medium text-foreground">
+                          Run Immediately
+                        </span>{" "}
+                        jika tersedia.
+                      </li>
+                      <li>
+                        Tambahkan aksi{" "}
+                        <span className="font-medium text-foreground">
+                          Run Shortcut
+                        </span>{" "}
+                        dan pilih shortcut wallpaper tadi.
+                      </li>
+                    </ol>
+                  </div>
+
+                  <p>
+                    Catatan: URL gambar ini dinamis, jadi countdown akan ikut
+                    berubah saat shortcut mengambil gambar terbaru dari server.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-0 rounded-3xl border border-border/50 bg-card p-4 sm:p-5">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Bagikan
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
               <Button
                 type="button"
+                variant="outline"
                 onClick={handleShare}
                 className="h-11 w-full rounded-2xl"
                 disabled={isPending}
               >
                 <Share2 className="h-4 w-4" />
-                Bagikan Detail Kategori
+                Share
               </Button>
 
               <Button
@@ -308,48 +456,16 @@ export function WallpaperShareExperience({
                 {copiedState === "share" ? (
                   <>
                     <Check className="h-4 w-4" />
-                    Link Detail Tersalin
+                    Link
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    Copy Link Detail
+                    Link
                   </>
                 )}
               </Button>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => copyAbsoluteUrl("image")}
-                className="h-11 w-full rounded-2xl"
-              >
-                {copiedState === "image" ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    URL Gambar Tersalin
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="h-4 w-4" />
-                    Copy URL Gambar
-                  </>
-                )}
-              </Button>
-
-              <Button asChild variant="outline" className="h-11 w-full rounded-2xl">
-                <a href={imagePath} download>
-                  <Download className="h-4 w-4" />
-                  Download Wallpaper
-                </a>
-              </Button>
-
-              <Button asChild variant="outline" className="h-11 w-full rounded-2xl">
-                <Link href={imagePath} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Buka Resolusi Penuh
-                </Link>
-              </Button>
             </div>
           </div>
         </div>
