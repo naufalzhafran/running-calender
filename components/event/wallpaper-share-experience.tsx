@@ -162,7 +162,7 @@ export function WallpaperShareExperience({
   }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white shadow-[0_30px_80px_-48px_rgba(15,23,42,0.24)]">
+    <section className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white">
       <div className="border-b border-stone-200/80 px-4 py-5 sm:px-8 sm:py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -256,7 +256,7 @@ export function WallpaperShareExperience({
             </Select>
           </div>
 
-          <div className="min-w-0 rounded-[1.6rem] border border-stone-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="min-w-0 rounded-[1.6rem] border border-stone-200 bg-white p-4 sm:p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
               Actions
             </p>
@@ -332,7 +332,7 @@ export function WallpaperShareExperience({
                     {event.title}
                   </h2>
                 </div>
-                <div className="rounded-full border border-white/20 bg-black/10 px-4 py-2 text-sm font-medium text-stone-100 backdrop-blur">
+                <div className="rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-medium text-stone-100">
                   {selectedDistance?.name ?? "-"} • {selectedPreset.width}×
                   {selectedPreset.height}
                 </div>
@@ -340,7 +340,7 @@ export function WallpaperShareExperience({
 
               <div className="mt-8 flex justify-center">
                 <div className="w-full max-w-[19rem]">
-                  <div className="rounded-[2.35rem] border border-black/10 bg-stone-300/85 p-3 shadow-[0_30px_70px_-44px_rgba(0,0,0,0.65)]">
+                  <div className="rounded-[2.35rem] border border-black/10 bg-stone-300/85 p-3">
                     <div className="rounded-[2rem] border border-black/25 bg-[#1b1815] p-2">
                       <div className="mb-2 flex justify-center">
                         <div className="h-6 w-28 rounded-full border border-white/10 bg-black/30" />
@@ -368,7 +368,7 @@ export function WallpaperShareExperience({
               </div>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/14 p-4 text-stone-100 backdrop-blur">
+                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
                     Countdown
                   </p>
@@ -379,7 +379,7 @@ export function WallpaperShareExperience({
                     {daysLeft < 0 ? "hari berlalu" : "hari lagi"}
                   </p>
                 </div>
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/14 p-4 text-stone-100 backdrop-blur">
+                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
                     Tanggal
                   </p>
@@ -391,7 +391,7 @@ export function WallpaperShareExperience({
                     })}
                   </p>
                 </div>
-                <div className="rounded-[1.4rem] border border-white/12 bg-black/14 p-4 text-stone-100 backdrop-blur">
+                <div className="rounded-[1.4rem] border border-white/12 bg-black/20 p-4 text-stone-100">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400">
                     Lokasi
                   </p>

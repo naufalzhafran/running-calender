@@ -39,16 +39,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-md-background text-md-on-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Ambient Backdrops */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-md-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 -z-10" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-md-secondary/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 -z-10" />
-
+    <div className="min-h-screen bg-md-background text-md-on-background flex items-center justify-center p-4">
       <div className="max-w-md w-full relative z-10">
-        <div className="bg-md-surface-container-low rounded-xl p-8 border border-md-outline/5 relative overflow-hidden">
-          {/* Decorative shape inside card */}
-          <div className="absolute -right-20 -top-20 w-64 h-64 bg-md-primary/5 rounded-full blur-2xl pointer-events-none" />
-
+        <div className="bg-md-surface-container-low rounded-xl p-8 border border-md-outline/10">
           <div className="relative z-10">
             {/* Header with Icon */}
             <div className="flex flex-col items-center mb-8">
@@ -99,7 +92,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-full font-medium text-sm tracking-wide shadow-sm"
+                className="w-full h-12 rounded-full font-medium text-sm tracking-wide"
               >
                 {loading ? "Signing in..." : "Sign In"}
               </Button>

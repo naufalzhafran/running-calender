@@ -186,16 +186,11 @@
 .stagger-6 { animation-delay: 0.3s; }
 
 .card-hover {
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-}
-
-.card-hover:active {
-  transform: translateY(0);
+  border-color: hsl(var(--primary) / 0.24);
 }
 
 @layer utilities {

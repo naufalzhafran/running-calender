@@ -30,7 +30,7 @@ export default async function EventPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <header className="sticky top-0 z-50 bg-background border-b border-border/50">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link
             href="/"
@@ -127,7 +127,7 @@ export default async function EventPage({ params }: PageProps) {
                   {event.distance.map((dist, idx) => (
                     <div
                       key={idx}
-                      className="rounded-3xl border border-border/50 bg-card p-5 shadow-sm transition-all hover:border-primary/20"
+                      className="rounded-3xl border border-border/50 bg-card p-5 transition-colors hover:border-primary/20"
                     >
                       <div className="mb-4 flex items-start justify-between gap-3">
                         <div>

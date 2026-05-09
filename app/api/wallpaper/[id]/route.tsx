@@ -215,16 +215,22 @@ export async function GET(
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
     const horizontalPadding = Math.round(preset.width * 0.07);
-    const verticalPadding = Math.round(preset.height * 0.08);
-    const titleFontSize = clamp(Math.round(preset.width * 0.082), 80, 108);
+    const footerInset = Math.round(preset.height * 0.075);
+    const titleTop = Math.round(preset.height * 0.16);
+    const titleBottom = Math.round(preset.height * 0.625);
+    const countdownTop = Math.round(preset.height * 0.445);
+    const titleWidth = Math.round(preset.width * 0.74);
+    const footerTextWidth = Math.round(preset.width * 0.62);
+    const titleFontSize = clamp(Math.round(preset.width * 0.085), 84, 112);
     const countdownFontSize = clamp(
       Math.round(preset.width * 0.34),
       340,
       520,
     );
-    const footerTitleSize = clamp(Math.round(preset.width * 0.05), 54, 70);
+    const footerTitleSize = clamp(Math.round(preset.width * 0.052), 56, 74);
     const bodyTextSize = clamp(Math.round(preset.width * 0.025), 26, 34);
     const metaTextSize = clamp(Math.round(preset.width * 0.02), 20, 28);
+    const badgeSize = clamp(Math.round(preset.width * 0.105), 116, 140);
 
     const renderStartedAt = performance.now();
     const { entry, cacheStatus } = await renderAndCacheWallpaperResponse(
@@ -237,29 +243,45 @@ export async function GET(
             width: "100%",
             height: "100%",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            background: "#0b0b0b",
+            position: "relative",
+            background: "#060606",
             color: "#f5f1e8",
             fontFamily:
               '"Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif',
-            padding: `${verticalPadding}px ${horizontalPadding}px`,
+            overflow: "hidden",
           }}
         >
           <div
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "41%",
+              display: "flex",
+              background: "#e6dece",
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              top: titleTop,
+              bottom: titleBottom,
+              left: horizontalPadding,
+              maxWidth: titleWidth,
               display: "flex",
               flexDirection: "column",
-              gap: 28,
+              justifyContent: "flex-end",
             }}
           >
             <div
               style={{
                 display: "flex",
                 fontSize: titleFontSize,
-                lineHeight: 0.98,
+                lineHeight: 0.95,
                 fontWeight: 800,
-                color: "#f5f1e8",
+                color: "#161311",
                 textTransform: "uppercase",
                 letterSpacing: -4,
               }}
@@ -270,10 +292,14 @@ export async function GET(
 
           <div
             style={{
+              position: "absolute",
+              top: countdownTop,
+              left: horizontalPadding,
+              right: horizontalPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              gap: 18,
+              gap: 10,
             }}
           >
             <div
@@ -324,52 +350,75 @@ export async function GET(
 
           <div
             style={{
+              position: "absolute",
+              left: horizontalPadding,
+              right: horizontalPadding,
+              bottom: footerInset,
               display: "flex",
-              flexDirection: "column",
-              gap: 18,
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              gap: 48,
             }}
           >
             <div
               style={{
                 display: "flex",
-                width: "100%",
-                height: 2,
-                background: "#d5c49c",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                fontSize: footerTitleSize,
-                lineHeight: 1.02,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                color: "#ffffff",
+                flexDirection: "column",
+                gap: 18,
+                maxWidth: footerTextWidth,
               }}
             >
-              {categoryLine}
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: footerTitleSize,
+                  lineHeight: 1.02,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "#ffffff",
+                }}
+              >
+                {categoryLine}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: bodyTextSize,
+                  lineHeight: 1.25,
+                  letterSpacing: 2,
+                  color: "#cfcfcf",
+                }}
+              >
+                {formatDate(targetDate)}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: metaTextSize,
+                  letterSpacing: 3,
+                  color: "#a5a5a5",
+                  textTransform: "uppercase",
+                }}
+              >
+                {locationLine} · {timeLine}
+              </div>
             </div>
             <div
               style={{
                 display: "flex",
-                fontSize: bodyTextSize,
-                lineHeight: 1.25,
-                letterSpacing: 2,
-                color: "#cfcfcf",
-              }}
-            >
-              {formatDate(targetDate)}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: metaTextSize,
-                letterSpacing: 3,
-                color: "#a5a5a5",
+                width: badgeSize,
+                height: badgeSize,
+                borderRadius: 9999,
+                border: "2px solid rgba(255,255,255,0.16)",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#d4c198",
+                fontSize: clamp(Math.round(preset.width * 0.017), 18, 22),
+                letterSpacing: 4,
                 textTransform: "uppercase",
               }}
             >
-              {locationLine} · {timeLine}
+              Run
             </div>
           </div>
         </div>
