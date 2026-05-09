@@ -37,7 +37,7 @@ function buildWallpaperCacheKey(options: {
   requestedDistance: string | null;
 }) {
   return [
-    "wallpaper",
+    "wallpaper-v2",
     options.id,
     options.presetKey,
     normalizeDistanceName(options.requestedDistance ?? ""),
@@ -215,7 +215,7 @@ export async function GET(
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
     const horizontalPadding = Math.round(preset.width * 0.07);
-    const footerInset = Math.round(preset.height * 0.075);
+    const footerInset = Math.round(preset.height * 0.055);
     const titleTop = Math.round(preset.height * 0.16);
     const titleBottom = Math.round(preset.height * 0.625);
     const countdownTop = Math.round(preset.height * 0.445);

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/data";
 import { Event } from "@/types";
 import { Calendar, MapPin, Ruler, ArrowLeft, Clock, ImageIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { buildWallpaperSharePath } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 
@@ -173,17 +173,18 @@ export default async function EventPage({ params }: PageProps) {
                           </span>
                         </div>
                       </div>
-                      <Button asChild className="mt-5 h-11 w-full rounded-2xl">
-                        <Link
-                          href={buildWallpaperSharePath({
-                            eventId: event.id,
-                            distance: dist.name,
-                          })}
-                        >
-                          <ImageIcon className="w-4 h-4" />
-                          Buka Wallpaper Preview
-                        </Link>
-                      </Button>
+                      <Link
+                        href={buildWallpaperSharePath({
+                          eventId: event.id,
+                          distance: dist.name,
+                        })}
+                        className={buttonVariants({
+                          className: "mt-5 h-11 w-full rounded-2xl",
+                        })}
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        Buka Wallpaper Preview
+                      </Link>
                     </div>
                   ))}
                 </div>

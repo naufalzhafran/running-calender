@@ -324,8 +324,9 @@ export function WallpaperShareExperience({
         </div>
 
         <div className="min-w-0">
-          <div className="overflow-hidden rounded-[1.8rem] border border-stone-200 bg-[radial-gradient(circle_at_top,#f5efe3_0%,#ede4d3_35%,#e2d7c4_48%,#14120f_48%,#090909_100%)]">
-            <div className="p-4 sm:p-8">
+          <div className="relative overflow-hidden rounded-[1.8rem] border border-stone-200 bg-[#090909]">
+            <div className="absolute inset-x-0 top-0 h-[41%] bg-[#e6dece]" />
+            <div className="relative p-4 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="max-w-xl">
                   <h2 className="text-2xl font-black uppercase leading-[0.95] tracking-[-0.05em] text-stone-950 sm:text-4xl">
