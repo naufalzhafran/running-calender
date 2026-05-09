@@ -12,6 +12,7 @@ import {
   ImageIcon,
   Share2,
   Smartphone,
+  ChevronDown,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,22 @@ function getSelectedDistance(
   );
 }
 
+const SHORTCUT_STEPS = [
+  {
+    action: "Get Contents of URL",
+    detail: "Paste URL gambar ke field URL.",
+  },
+  {
+    action: "Convert Image",
+    detail: "Convert hasil URL ke PNG.",
+  },
+  {
+    action: "Set Wallpaper",
+    detail:
+      "Pakai Converted Image, pilih Lock Screen/Home Screen, lalu matikan Show Preview.",
+  },
+];
+
 export function WallpaperShareExperience({
   event,
   distances,
@@ -76,6 +93,7 @@ export function WallpaperShareExperience({
     useState<WallpaperPresetKey>(initialPresetKey);
   const [copiedState, setCopiedState] = useState<"share" | "image" | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(true);
+  const [showShortcutGuide, setShowShortcutGuide] = useState(false);
 
   useEffect(() => {
     setSelectedDistanceName(initialDistanceName ?? distances[0]?.name ?? "");
@@ -177,13 +195,13 @@ export function WallpaperShareExperience({
 
   return (
     <section className="overflow-hidden rounded-3xl border border-border/50 bg-card">
-      <div className="border-b border-border/50 px-6 py-6 sm:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="border-b border-border/50 px-4 py-5 sm:px-8 sm:py-6">
+        <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground sm:mb-3">
               Detail Kategori
             </p>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
               {distanceTitle}
             </h1>
             <p className="mt-2 text-base font-medium text-muted-foreground">
@@ -191,12 +209,12 @@ export function WallpaperShareExperience({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border/50 bg-muted/50 px-5 py-4">
+          <div className="w-full rounded-2xl border border-border/50 bg-muted/50 px-4 py-3 sm:w-auto sm:px-5 sm:py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Countdown
             </p>
             <div className="mt-2 flex items-end gap-2">
-              <span className="text-4xl font-bold leading-none text-primary">
+              <span className="text-3xl font-bold leading-none text-primary sm:text-4xl">
                 {Math.abs(daysLeft)}
               </span>
               <span className="pb-1 text-sm text-muted-foreground">
@@ -207,13 +225,13 @@ export function WallpaperShareExperience({
         </div>
       </div>
 
-      <div className="grid gap-6 p-4 sm:p-8 xl:grid-cols-[minmax(0,1fr)_28rem] xl:items-start">
-        <div className="min-w-0 space-y-4 xl:order-2 xl:sticky xl:top-24">
+      <div className="grid gap-5 p-4 sm:gap-6 sm:p-8 xl:grid-cols-[minmax(0,1fr)_28rem] xl:items-start">
+        <div className="order-2 min-w-0 space-y-4 xl:order-2 xl:sticky xl:top-24">
           <div className="min-w-0 rounded-3xl border border-border/50 bg-muted/50 p-4 sm:p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Kategori
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="-mx-1 mt-4 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
               {distances.map((distance) => {
                 const isActive =
                   normalizeDistanceName(distance.name) ===
@@ -224,7 +242,7 @@ export function WallpaperShareExperience({
                     key={`${distance.name}-${distance.date}`}
                     type="button"
                     onClick={() => handleDistanceChange(distance.name)}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${
                       isActive
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-foreground"
@@ -326,107 +344,140 @@ export function WallpaperShareExperience({
                 </Button>
               </div>
 
-              <div className="rounded-2xl border border-border/50 bg-muted/50 p-4">
-                <p className="text-sm font-semibold text-foreground">
-                  Pakai dengan iOS Shortcut
-                </p>
-                <div className="mt-3 space-y-4 text-sm leading-6 text-muted-foreground">
+              <div className="overflow-hidden rounded-2xl border border-border/50 bg-muted/50">
+                <button
+                  type="button"
+                  onClick={() => setShowShortcutGuide((current) => !current)}
+                  className="flex w-full items-center justify-between gap-3 p-4 text-left"
+                  aria-expanded={showShortcutGuide}
+                >
                   <div>
-                    <p className="font-medium text-foreground">
-                      Buat shortcut sekali
+                    <p className="text-sm font-semibold text-foreground">
+                      Shortcut Instruction
                     </p>
-                    <ol className="mt-2 list-decimal space-y-2 pl-4">
-                      <li>Pilih device di atas sesuai iPhone kamu.</li>
-                      <li>
-                        Tap{" "}
-                        <span className="font-medium text-foreground">
-                          Copy URL Gambar
-                        </span>
-                        .
-                      </li>
-                      <li>
-                        Buka app{" "}
-                        <span className="font-medium text-foreground">
-                          Shortcuts
-                        </span>
-                        , lalu tap <span className="font-medium text-foreground">+</span>.
-                      </li>
-                      <li>
-                        Tambah aksi{" "}
-                        <span className="font-medium text-foreground">
-                          URL
-                        </span>
-                        , lalu paste URL gambar yang sudah dicopy.
-                      </li>
-                      <li>
-                        Tambah aksi{" "}
-                        <span className="font-medium text-foreground">
-                          Get Contents of URL
-                        </span>
-                        . Input-nya pakai hasil dari aksi URL.
-                      </li>
-                      <li>
-                        Tambah aksi{" "}
-                        <span className="font-medium text-foreground">
-                          Convert Image
-                        </span>
-                        . Ubah hasil URL menjadi PNG.
-                      </li>
-                      <li>
-                        Tambah aksi{" "}
-                        <span className="font-medium text-foreground">
-                          Set Wallpaper
-                        </span>
-                        . Input-nya pakai Converted Image, lalu pilih Lock Screen,
-                        Home Screen, atau keduanya.
-                      </li>
-                      <li>
-                        Matikan opsi preview/konfirmasi jika kamu ingin shortcut
-                        langsung memasang wallpaper.
-                      </li>
-                      <li>
-                        Jalankan shortcut. Saat diminta izin akses web, tap Allow.
-                      </li>
-                    </ol>
-                  </div>
-
-                  <div>
-                    <p className="font-medium text-foreground">
-                      Biar update otomatis
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Setup manual sekali untuk update wallpaper dari URL.
                     </p>
-                    <ol className="mt-2 list-decimal space-y-2 pl-4">
-                      <li>
-                        Buka tab{" "}
-                        <span className="font-medium text-foreground">
-                          Automation
-                        </span>{" "}
-                        di Shortcuts.
-                      </li>
-                      <li>
-                        Pilih waktu harian, misalnya setiap pagi jam 06:00.
-                      </li>
-                      <li>
-                        Pilih{" "}
-                        <span className="font-medium text-foreground">
-                          Run Immediately
-                        </span>{" "}
-                        jika tersedia.
-                      </li>
-                      <li>
-                        Tambahkan aksi{" "}
-                        <span className="font-medium text-foreground">
-                          Run Shortcut
-                        </span>{" "}
-                        dan pilih shortcut wallpaper tadi.
-                      </li>
-                    </ol>
                   </div>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                      showShortcutGuide ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
 
-                  <p>
-                    Catatan: URL gambar ini dinamis, jadi countdown akan ikut
-                    berubah saat shortcut mengambil gambar terbaru dari server.
-                  </p>
-                </div>
+                {showShortcutGuide && (
+                  <div className="border-t border-border/50 p-4 pt-3">
+                    <div className="space-y-4 text-sm leading-6 text-muted-foreground">
+                      <div className="rounded-xl bg-background p-3">
+                        <p className="font-medium text-foreground">
+                          Sebelum mulai
+                        </p>
+                        <div className="mt-2 grid gap-2">
+                          <div className="flex gap-2">
+                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                              1
+                            </span>
+                            <p>Pilih device/resolusi yang sesuai.</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                              2
+                            </span>
+                            <p>
+                              Tap{" "}
+                              <span className="font-medium text-foreground">
+                                Copy URL Gambar
+                              </span>
+                              .
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground">
+                          Buat shortcut
+                        </p>
+                        <div className="mt-2 space-y-2">
+                          {SHORTCUT_STEPS.map((step, index) => (
+                            <div
+                              key={step.action}
+                              className="rounded-xl border border-border/50 bg-background p-3"
+                            >
+                              <div className="flex items-start gap-3">
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                                  {index + 1}
+                                </span>
+                                <div>
+                                  <p className="font-semibold text-foreground">
+                                    {step.action}
+                                  </p>
+                                  <p className="mt-0.5">{step.detail}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl bg-background p-3">
+                        <p className="font-medium text-foreground">
+                          Opsional: otomatis harian
+                        </p>
+                        <ol className="mt-2 list-decimal space-y-2 pl-4">
+                          <li>
+                            Jalankan shortcut manual sekali sampai wallpaper
+                            berhasil berubah.
+                          </li>
+                          <li>
+                            Jika muncul izin akses web atau wallpaper, pilih{" "}
+                            <span className="font-medium text-foreground">
+                              Allow
+                            </span>
+                            .
+                          </li>
+                          <li>
+                            Buka tab{" "}
+                            <span className="font-medium text-foreground">
+                              Automation
+                            </span>{" "}
+                            di Shortcuts, lalu buat automation waktu harian.
+                          </li>
+                          <li>
+                            Tambahkan aksi{" "}
+                            <span className="font-medium text-foreground">
+                              Run Shortcut
+                            </span>{" "}
+                            dan pilih shortcut wallpaper ini.
+                          </li>
+                          <li>
+                            Pilih{" "}
+                            <span className="font-medium text-foreground">
+                              Run Immediately
+                            </span>{" "}
+                            jika tersedia. Matikan{" "}
+                            <span className="font-medium text-foreground">
+                              Ask Before Running
+                            </span>{" "}
+                            jika iOS menampilkan opsi itu.
+                          </li>
+                          <li>
+                            Setelah jadwal lewat, cek Lock Screen/Home Screen.
+                            Jika belum berubah, buka tab Automation dan pastikan
+                            automation tidak dalam kondisi disabled dan Show
+                            Preview di aksi Set Wallpaper sudah mati.
+                          </li>
+                        </ol>
+                      </div>
+
+                      <p>
+                        URL gambar bersifat dinamis. Saat shortcut mengambil URL
+                        yang sama, countdown wallpaper akan memakai data terbaru.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -470,14 +521,14 @@ export function WallpaperShareExperience({
           </div>
         </div>
 
-        <div className="min-w-0">
+        <div className="order-1 min-w-0">
           <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-card">
             <div className="absolute inset-x-0 top-0 h-[41%] bg-[#e6dece]" />
             <div className="absolute inset-x-0 bottom-0 h-[59%] bg-[#090909]" />
             <div className="relative p-4 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="max-w-xl">
-                  <h2 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                  <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
                     {distanceTitle}
                   </h2>
                   <p className="mt-2 text-sm font-medium text-muted-foreground">
@@ -490,8 +541,8 @@ export function WallpaperShareExperience({
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-center">
-                <div className="w-full max-w-[19rem]">
+              <div className="mt-6 flex justify-center sm:mt-8">
+                <div className="w-full max-w-[16.5rem] sm:max-w-[19rem]">
                   <div className="rounded-[2.35rem] border border-black/10 bg-stone-300/85 p-3">
                     <div className="rounded-[2rem] border border-black/25 bg-[#1b1815] p-2">
                       <div className="mb-2 flex justify-center">
@@ -533,7 +584,7 @@ export function WallpaperShareExperience({
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-3">
+              <div className="mt-6 grid gap-3 sm:mt-8">
                 <div className="rounded-2xl border border-border/50 bg-black/20 p-4 text-stone-100">
                   <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
                     Countdown
