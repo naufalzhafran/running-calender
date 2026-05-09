@@ -5,12 +5,19 @@ import type { NextRequest } from "next/server";
 import { getEventById } from "@/lib/data";
 import { type DistanceDetail } from "@/types";
 import { getWallpaperPreset } from "@/lib/wallpaper";
-import { formatDateInJakarta } from "@/lib/date";
+import { formatDateInJakarta, getJakartaTodayDateString } from "@/lib/date";
+import {
+  getCachedWallpaperResponse,
+  setCachedWallpaperResponse,
+} from "@/lib/wallpaper-response-cache";
 
 export const dynamic = "force-dynamic";
 
 const WALLPAPER_IMAGE_REVALIDATE_SECONDS = 15 * 60;
 const WALLPAPER_IMAGE_STALE_SECONDS = 24 * 60 * 60;
+const WALLPAPER_IMAGE_REVALIDATE_MS =
+  WALLPAPER_IMAGE_REVALIDATE_SECONDS * 1000;
+const WALLPAPER_IMAGE_CACHE_CONTROL = `public, max-age=0, s-maxage=${WALLPAPER_IMAGE_REVALIDATE_SECONDS}, stale-while-revalidate=${WALLPAPER_IMAGE_STALE_SECONDS}`;
 
 const getCachedWallpaperEventById = unstable_cache(
   async (id: string) => getEventById(id),
@@ -22,6 +29,40 @@ const getCachedWallpaperEventById = unstable_cache(
 
 function normalizeDistanceName(value: string) {
   return value.trim().toLowerCase();
+}
+
+function buildWallpaperCacheKey(options: {
+  id: string;
+  presetKey: string;
+  requestedDistance: string | null;
+}) {
+  return [
+    "wallpaper",
+    options.id,
+    options.presetKey,
+    normalizeDistanceName(options.requestedDistance ?? ""),
+    getJakartaTodayDateString(),
+  ].join(":");
+}
+
+function createWallpaperResponse(
+  body: ArrayBuffer | null,
+  etag?: string,
+  status = 200,
+) {
+  const headers = new Headers({
+    "Cache-Control": WALLPAPER_IMAGE_CACHE_CONTROL,
+    "Content-Type": "image/png",
+  });
+
+  if (etag) {
+    headers.set("ETag", etag);
+  }
+
+  return new Response(body?.slice(0) ?? null, {
+    status,
+    headers,
+  });
 }
 
 function pickDistance(
@@ -103,16 +144,34 @@ export async function GET(
 ) {
   try {
     const { id } = await ctx.params;
+    const requestedDistance = request.nextUrl.searchParams.get("distance");
+    const preset = getWallpaperPreset(
+      request.nextUrl.searchParams.get("preset"),
+    );
+    const responseCacheKey = buildWallpaperCacheKey({
+      id,
+      presetKey: preset.key,
+      requestedDistance,
+    });
+    const cachedResponse = getCachedWallpaperResponse(
+      responseCacheKey,
+      WALLPAPER_IMAGE_REVALIDATE_MS,
+    );
+
+    if (cachedResponse) {
+      if (request.headers.get("if-none-match") === cachedResponse.etag) {
+        return createWallpaperResponse(null, cachedResponse.etag, 304);
+      }
+
+      return createWallpaperResponse(cachedResponse.body, cachedResponse.etag);
+    }
+
     const event = await getCachedWallpaperEventById(id);
 
     if (!event) {
       return new Response("Event not found", { status: 404 });
     }
 
-    const requestedDistance = request.nextUrl.searchParams.get("distance");
-    const preset = getWallpaperPreset(
-      request.nextUrl.searchParams.get("preset"),
-    );
     const selectedDistance = pickDistance(event.distance, requestedDistance);
     const selectedDateString = selectedDistance?.date || event.event_date;
     const selectedTime = selectedDistance?.start_time || "00:00";
@@ -144,7 +203,7 @@ export async function GET(
     const metaTextSize = clamp(Math.round(preset.width * 0.02), 20, 28);
     const badgeSize = clamp(Math.round(preset.width * 0.105), 116, 140);
 
-    return new ImageResponse(
+    const image = new ImageResponse(
       (
         <div
           style={{
@@ -347,11 +406,12 @@ export async function GET(
       {
         width: preset.width,
         height: preset.height,
-        headers: {
-          "Cache-Control": `public, max-age=0, s-maxage=${WALLPAPER_IMAGE_REVALIDATE_SECONDS}, stale-while-revalidate=${WALLPAPER_IMAGE_STALE_SECONDS}`,
-        },
       },
     );
+    const body = await image.arrayBuffer();
+    const cached = setCachedWallpaperResponse(responseCacheKey, body);
+
+    return createWallpaperResponse(body, cached.etag);
   } catch (error) {
     console.error(error);
     return new Response("Failed to generate wallpaper", { status: 500 });
