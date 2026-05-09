@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="logo-mark-title logo-mark-desc">
+  <title id="logo-mark-title">Kalender Lari icon</title>
+  <desc id="logo-mark-desc">A compact green calendar icon with route lines.</desc>
+  <rect x="28" y="28" width="200" height="200" rx="52" fill="#24a96b"/>
+  <path d="M93 58v44M163 58v44" stroke="#0f7d51" stroke-width="15" stroke-linecap="round"/>
+  <rect x="62" y="80" width="132" height="110" rx="26" fill="#fff"/>
+  <path d="M88 124c25-18 55-18 80 0M88 157c25-18 55-18 80 0" fill="none" stroke="#24a96b" stroke-width="13" stroke-linecap="round"/>
+</svg>

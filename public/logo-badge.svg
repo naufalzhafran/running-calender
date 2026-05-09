@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="logo-badge-title logo-badge-desc">
+  <title id="logo-badge-title">Kalender Lari badge logo</title>
+  <desc id="logo-badge-desc">A circular badge with the Kalender Lari calendar and route symbol.</desc>
+  <defs>
+    <style>
+      .kl-badge-text{fill:#0f172a;font-family:Avenir Next,Segoe UI,Arial,sans-serif;font-weight:800}
+      .kl-badge-small{fill:#64748b;font-family:Avenir Next,Segoe UI,Arial,sans-serif;font-weight:700}
+    </style>
+  </defs>
+  <circle cx="160" cy="160" r="136" fill="#f8fafc"/>
+  <circle cx="160" cy="160" r="128" fill="none" stroke="#24a96b" stroke-width="16"/>
+  <g id="symbol" transform="translate(114 94) scale(.76)">
+    <rect x="0" y="0" width="120" height="120" rx="31" fill="#24a96b"/>
+    <path d="M39 18v26M81 18v26" stroke="#0f7d51" stroke-width="9" stroke-linecap="round"/>
+    <rect x="20" y="31" width="80" height="66" rx="16" fill="#fff"/>
+    <path d="M36 57c15-11 33-11 48 0M36 77c15-11 33-11 48 0" fill="none" stroke="#24a96b" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <text class="kl-badge-text" x="160" y="218" font-size="24" text-anchor="middle" letter-spacing="0">Kalender Lari</text>
+  <text class="kl-badge-small" x="160" y="243" font-size="10" text-anchor="middle" letter-spacing="1.2">RUNNING EVENTS</text>
+</svg>

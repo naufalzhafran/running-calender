@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 120" role="img" aria-labelledby="logo-horizontal-title logo-horizontal-desc">
+  <title id="logo-horizontal-title">Kalender Lari logo</title>
+  <desc id="logo-horizontal-desc">A green calendar and running track symbol beside the Kalender Lari wordmark.</desc>
+  <defs>
+    <style>
+      .kl-text-primary{fill:#0f172a;font-family:Avenir Next,Segoe UI,Arial,sans-serif;font-weight:800}
+      .kl-text-secondary{fill:#64748b;font-family:Avenir Next,Segoe UI,Arial,sans-serif;font-weight:600}
+    </style>
+  </defs>
+  <g id="symbol">
+    <rect x="14" y="14" width="92" height="92" rx="24" fill="#24a96b"/>
+    <path d="M44 28v20M76 28v20" stroke="#0f7d51" stroke-width="7" stroke-linecap="round"/>
+    <rect x="30" y="38" width="60" height="50" rx="12" fill="#fff"/>
+    <path d="M42 58c11-8 25-8 36 0M42 73c11-8 25-8 36 0" fill="none" stroke="#24a96b" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g id="wordmark">
+    <text class="kl-text-primary" x="128" y="58" font-size="34" letter-spacing="0">Kalender Lari</text>
+    <text class="kl-text-secondary" x="130" y="84" font-size="15" letter-spacing="1.4">INDONESIA RUNNING EVENTS</text>
+  </g>
+</svg>
