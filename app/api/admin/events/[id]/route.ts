@@ -4,7 +4,7 @@ import { ClientResponseError } from "pocketbase";
 import { requireAdminApi, withAuthCookie } from "@/lib/auth";
 import { deleteEvent, updateEvent } from "@/lib/data";
 import { eventPayloadSchema } from "@/lib/validation";
-import { clearWallpaperResponseCache } from "@/lib/wallpaper-response-cache";
+import { clearWallpaperResponseCacheForEvent } from "@/lib/wallpaper-response-cache";
 
 export async function PUT(
   req: NextRequest,
@@ -45,7 +45,7 @@ export async function PUT(
       distance,
       description,
     });
-    clearWallpaperResponseCache();
+    clearWallpaperResponseCacheForEvent(id);
 
     return withAuthCookie(NextResponse.json(event), pb);
   } catch (err: unknown) {
@@ -84,7 +84,7 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
-    clearWallpaperResponseCache();
+    clearWallpaperResponseCacheForEvent(id);
     return withAuthCookie(
       NextResponse.json({ message: "Event deleted successfully" }),
       pb,

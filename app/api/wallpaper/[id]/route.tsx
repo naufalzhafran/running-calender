@@ -8,7 +8,7 @@ import { getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getJakartaTodayDateString } from "@/lib/date";
 import {
   getCachedWallpaperResponse,
-  setCachedWallpaperResponse,
+  renderAndCacheWallpaperResponse,
 } from "@/lib/wallpaper-response-cache";
 
 export const dynamic = "force-dynamic";
@@ -47,22 +47,34 @@ function buildWallpaperCacheKey(options: {
 
 function createWallpaperResponse(
   body: ArrayBuffer | null,
-  etag?: string,
-  status = 200,
+  options: {
+    cacheStatus: "hit" | "miss" | "deduped" | "not-modified";
+    etag?: string;
+    serverTiming: string;
+    status?: number;
+  },
 ) {
   const headers = new Headers({
     "Cache-Control": WALLPAPER_IMAGE_CACHE_CONTROL,
     "Content-Type": "image/png",
+    "Server-Timing": options.serverTiming,
+    "X-Wallpaper-Cache": options.cacheStatus,
   });
 
-  if (etag) {
-    headers.set("ETag", etag);
+  if (options.etag) {
+    headers.set("ETag", options.etag);
   }
 
   return new Response(body?.slice(0) ?? null, {
-    status,
+    status: options.status ?? 200,
     headers,
   });
+}
+
+function createServerTiming(timings: Record<string, number>) {
+  return Object.entries(timings)
+    .map(([name, duration]) => `${name};dur=${Math.max(0, duration).toFixed(1)}`)
+    .join(", ");
 }
 
 function pickDistance(
@@ -142,6 +154,8 @@ export async function GET(
   request: NextRequest,
   ctx: RouteContext<"/api/wallpaper/[id]">,
 ) {
+  const startedAt = performance.now();
+
   try {
     const { id } = await ctx.params;
     const requestedDistance = request.nextUrl.searchParams.get("distance");
@@ -159,14 +173,29 @@ export async function GET(
     );
 
     if (cachedResponse) {
+      const serverTiming = createServerTiming({
+        total: performance.now() - startedAt,
+      });
+
       if (request.headers.get("if-none-match") === cachedResponse.etag) {
-        return createWallpaperResponse(null, cachedResponse.etag, 304);
+        return createWallpaperResponse(null, {
+          cacheStatus: "not-modified",
+          etag: cachedResponse.etag,
+          serverTiming,
+          status: 304,
+        });
       }
 
-      return createWallpaperResponse(cachedResponse.body, cachedResponse.etag);
+      return createWallpaperResponse(cachedResponse.body, {
+        cacheStatus: "hit",
+        etag: cachedResponse.etag,
+        serverTiming,
+      });
     }
 
+    const dataStartedAt = performance.now();
     const event = await getCachedWallpaperEventById(id);
+    const dataDuration = performance.now() - dataStartedAt;
 
     if (!event) {
       return new Response("Event not found", { status: 404 });
@@ -186,82 +215,51 @@ export async function GET(
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
     const horizontalPadding = Math.round(preset.width * 0.07);
-    const footerInset = Math.round(preset.height * 0.075);
-    const titleTop = Math.round(preset.height * 0.16);
-    const titleBottom = Math.round(preset.height * 0.625);
-    const countdownTop = Math.round(preset.height * 0.445);
-    const titleWidth = Math.round(preset.width * 0.74);
-    const footerTextWidth = Math.round(preset.width * 0.62);
-    const titleFontSize = clamp(Math.round(preset.width * 0.085), 84, 112);
+    const verticalPadding = Math.round(preset.height * 0.08);
+    const titleFontSize = clamp(Math.round(preset.width * 0.082), 80, 108);
     const countdownFontSize = clamp(
       Math.round(preset.width * 0.34),
       340,
       520,
     );
-    const footerTitleSize = clamp(Math.round(preset.width * 0.052), 56, 74);
+    const footerTitleSize = clamp(Math.round(preset.width * 0.05), 54, 70);
     const bodyTextSize = clamp(Math.round(preset.width * 0.025), 26, 34);
     const metaTextSize = clamp(Math.round(preset.width * 0.02), 20, 28);
-    const badgeSize = clamp(Math.round(preset.width * 0.105), 116, 140);
 
-    const image = new ImageResponse(
+    const renderStartedAt = performance.now();
+    const { entry, cacheStatus } = await renderAndCacheWallpaperResponse(
+      responseCacheKey,
+      async () => {
+        const image = new ImageResponse(
       (
         <div
           style={{
             width: "100%",
             height: "100%",
             display: "flex",
-            position: "relative",
-            background:
-              "linear-gradient(180deg, #f2eee4 0%, #e6dece 41%, #151311 41%, #060606 100%)",
-            color: "#f6f2e8",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            background: "#0b0b0b",
+            color: "#f5f1e8",
             fontFamily:
               '"Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif',
-            overflow: "hidden",
+            padding: `${verticalPadding}px ${horizontalPadding}px`,
           }}
         >
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              background:
-                "radial-gradient(circle at top right, rgba(255,255,255,0.2) 0, rgba(255,255,255,0) 38%), radial-gradient(circle at 18% 22%, rgba(182,161,108,0.14) 0, rgba(182,161,108,0) 24%), radial-gradient(circle at bottom left, rgba(214,168,76,0.08) 0, rgba(214,168,76,0) 28%)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: Math.round(preset.height * 0.09),
-              left: "50%",
-              width: Math.round(preset.width * 0.56),
-              height: Math.round(preset.height * 0.16),
-              transform: "translateX(-50%)",
-              borderRadius: 9999,
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 36%, rgba(255,255,255,0) 78%)",
-              opacity: 0.32,
-            }}
-          />
-
-          <div
-            style={{
-              position: "absolute",
-              top: titleTop,
-              bottom: titleBottom,
-              left: horizontalPadding,
-              maxWidth: titleWidth,
               display: "flex",
               flexDirection: "column",
-              justifyContent: "flex-end",
+              gap: 28,
             }}
           >
             <div
               style={{
                 display: "flex",
                 fontSize: titleFontSize,
-                lineHeight: 0.95,
+                lineHeight: 0.98,
                 fontWeight: 800,
-                color: "#161311",
+                color: "#f5f1e8",
                 textTransform: "uppercase",
                 letterSpacing: -4,
               }}
@@ -272,14 +270,10 @@ export async function GET(
 
           <div
             style={{
-              position: "absolute",
-              top: countdownTop,
-              left: horizontalPadding,
-              right: horizontalPadding,
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
-              gap: 10,
+              gap: 18,
             }}
           >
             <div
@@ -287,7 +281,7 @@ export async function GET(
                 display: "flex",
                 fontSize: clamp(Math.round(preset.width * 0.026), 28, 36),
                 letterSpacing: 6,
-                color: "#b9ab86",
+                color: "#d5c49c",
                 fontWeight: 700,
               }}
             >
@@ -307,7 +301,7 @@ export async function GET(
                   lineHeight: 0.82,
                   fontWeight: 800,
                   letterSpacing: -22,
-                  color: "#f4efe4",
+                  color: "#ffffff",
                 }}
               >
                 {bigNumber}
@@ -318,7 +312,7 @@ export async function GET(
                   paddingBottom: Math.round(countdownFontSize * 0.14),
                   fontSize: clamp(Math.round(preset.width * 0.037), 38, 48),
                   letterSpacing: 8,
-                  color: "#c7b892",
+                  color: "#d5c49c",
                   fontWeight: 700,
                   textTransform: "uppercase",
                 }}
@@ -330,75 +324,52 @@ export async function GET(
 
           <div
             style={{
-              position: "absolute",
-              left: horizontalPadding,
-              right: horizontalPadding,
-              bottom: footerInset,
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              gap: 48,
+              flexDirection: "column",
+              gap: 18,
             }}
           >
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 18,
-                maxWidth: footerTextWidth,
+                width: "100%",
+                height: 2,
+                background: "#d5c49c",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                fontSize: footerTitleSize,
+                lineHeight: 1.02,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                color: "#ffffff",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: footerTitleSize,
-                  lineHeight: 1.02,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "#ffffff",
-                }}
-              >
-                {categoryLine}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: bodyTextSize,
-                  lineHeight: 1.25,
-                  letterSpacing: 2,
-                  color: "#c1c1c1",
-                }}
-              >
-                {formatDate(targetDate)}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: metaTextSize,
-                  letterSpacing: 3,
-                  color: "#9d9d9d",
-                  textTransform: "uppercase",
-                }}
-              >
-                {locationLine} · {timeLine}
-              </div>
+              {categoryLine}
             </div>
             <div
               style={{
                 display: "flex",
-                width: badgeSize,
-                height: badgeSize,
-                borderRadius: 9999,
-                border: "2px solid rgba(255,255,255,0.16)",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#d4c198",
-                fontSize: clamp(Math.round(preset.width * 0.017), 18, 22),
-                letterSpacing: 4,
+                fontSize: bodyTextSize,
+                lineHeight: 1.25,
+                letterSpacing: 2,
+                color: "#cfcfcf",
+              }}
+            >
+              {formatDate(targetDate)}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                fontSize: metaTextSize,
+                letterSpacing: 3,
+                color: "#a5a5a5",
                 textTransform: "uppercase",
               }}
             >
-              Run
+              {locationLine} · {timeLine}
             </div>
           </div>
         </div>
@@ -408,10 +379,21 @@ export async function GET(
         height: preset.height,
       },
     );
-    const body = await image.arrayBuffer();
-    const cached = setCachedWallpaperResponse(responseCacheKey, body);
 
-    return createWallpaperResponse(body, cached.etag);
+        return image.arrayBuffer();
+      },
+    );
+    const renderDuration = performance.now() - renderStartedAt;
+
+    return createWallpaperResponse(entry.body, {
+      cacheStatus,
+      etag: entry.etag,
+      serverTiming: createServerTiming({
+        data: dataDuration,
+        render: renderDuration,
+        total: performance.now() - startedAt,
+      }),
+    });
   } catch (error) {
     console.error(error);
     return new Response("Failed to generate wallpaper", { status: 500 });

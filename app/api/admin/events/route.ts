@@ -4,7 +4,6 @@ import { withAuthCookie, requireAdminApi } from "@/lib/auth";
 import { createEvent } from "@/lib/data";
 import { ClientResponseError } from "pocketbase";
 import { eventPayloadSchema } from "@/lib/validation";
-import { clearWallpaperResponseCache } from "@/lib/wallpaper-response-cache";
 
 export async function POST(req: NextRequest) {
   const { pb, unauthorizedResponse } = await requireAdminApi();
@@ -41,7 +40,6 @@ export async function POST(req: NextRequest) {
       distance,
       description,
     });
-    clearWallpaperResponseCache();
 
     return withAuthCookie(NextResponse.json(event, { status: 201 }), pb);
   } catch (err: unknown) {
