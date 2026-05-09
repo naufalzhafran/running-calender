@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   Check,
   Copy,
+  Download,
   ExternalLink,
   ImageIcon,
   Share2,
@@ -73,6 +74,7 @@ export function WallpaperShareExperience({
   const [selectedPresetKey, setSelectedPresetKey] =
     useState<WallpaperPresetKey>(initialPresetKey);
   const [copiedState, setCopiedState] = useState<"share" | "image" | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(true);
 
   useEffect(() => {
     setSelectedDistanceName(initialDistanceName ?? distances[0]?.name ?? "");
@@ -94,11 +96,21 @@ export function WallpaperShareExperience({
     distance: selectedDistance?.name,
     preset: selectedPreset.key,
   });
+  const previewImagePath = buildWallpaperPath({
+    eventId: event.id,
+    distance: selectedDistance?.name,
+    preset: selectedPreset.key,
+    preview: true,
+  });
   const sharePath = buildWallpaperSharePath({
     eventId: event.id,
     distance: selectedDistance?.name,
     preset: selectedPreset.key,
   });
+
+  useEffect(() => {
+    setIsPreviewLoading(true);
+  }, [previewImagePath]);
 
   function syncUrl(nextDistanceName: string, nextPresetKey: WallpaperPresetKey) {
     const nextPath = buildWallpaperSharePath({
@@ -310,6 +322,13 @@ export function WallpaperShareExperience({
               </Button>
 
               <Button asChild variant="outline" className="h-11 w-full rounded-2xl">
+                <a href={imagePath} download>
+                  <Download className="h-4 w-4" />
+                  Download Wallpaper
+                </a>
+              </Button>
+
+              <Button asChild variant="outline" className="h-11 w-full rounded-2xl">
                 <Link href={imagePath} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" />
                   Buka Resolusi Penuh
@@ -351,16 +370,30 @@ export function WallpaperShareExperience({
                         style={{
                           aspectRatio: `${selectedPreset.width} / ${selectedPreset.height}`,
                         }}
+                        aria-busy={isPreviewLoading}
                       >
+                        <div
+                          className={`absolute inset-0 z-10 flex items-center justify-center bg-stone-950/75 transition-opacity ${
+                            isPreviewLoading
+                              ? "opacity-100"
+                              : "pointer-events-none opacity-0"
+                          }`}
+                        >
+                          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                        </div>
                         <Image
-                          key={imagePath}
-                          src={imagePath}
+                          key={previewImagePath}
+                          src={previewImagePath}
                           alt={`Preview wallpaper ${event.title}`}
                           fill
                           priority
                           unoptimized
                           sizes="(max-width: 768px) 84vw, 19rem"
-                          className="object-cover"
+                          className={`object-cover transition-opacity duration-300 ${
+                            isPreviewLoading ? "opacity-60" : "opacity-100"
+                          }`}
+                          onLoad={() => setIsPreviewLoading(false)}
+                          onError={() => setIsPreviewLoading(false)}
                         />
                       </div>
                     </div>

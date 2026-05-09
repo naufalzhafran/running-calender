@@ -18,6 +18,7 @@ const WALLPAPER_IMAGE_STALE_SECONDS = 24 * 60 * 60;
 const WALLPAPER_IMAGE_REVALIDATE_MS =
   WALLPAPER_IMAGE_REVALIDATE_SECONDS * 1000;
 const WALLPAPER_IMAGE_CACHE_CONTROL = `public, max-age=0, s-maxage=${WALLPAPER_IMAGE_REVALIDATE_SECONDS}, stale-while-revalidate=${WALLPAPER_IMAGE_STALE_SECONDS}`;
+const WALLPAPER_PREVIEW_MAX_WIDTH = 828;
 
 const getCachedWallpaperEventById = unstable_cache(
   async (id: string) => getEventById(id),
@@ -35,11 +36,14 @@ function buildWallpaperCacheKey(options: {
   id: string;
   presetKey: string;
   requestedDistance: string | null;
+  width: number;
+  height: number;
 }) {
   return [
     "wallpaper-v2",
     options.id,
     options.presetKey,
+    `${options.width}x${options.height}`,
     normalizeDistanceName(options.requestedDistance ?? ""),
     getJakartaTodayDateString(),
   ].join(":");
@@ -162,10 +166,19 @@ export async function GET(
     const preset = getWallpaperPreset(
       request.nextUrl.searchParams.get("preset"),
     );
+    const isPreview = request.nextUrl.searchParams.get("preview") === "1";
+    const renderWidth = isPreview
+      ? Math.min(preset.width, WALLPAPER_PREVIEW_MAX_WIDTH)
+      : preset.width;
+    const renderHeight = isPreview
+      ? Math.round((renderWidth / preset.width) * preset.height)
+      : preset.height;
     const responseCacheKey = buildWallpaperCacheKey({
       id,
       presetKey: preset.key,
       requestedDistance,
+      width: renderWidth,
+      height: renderHeight,
     });
     const cachedResponse = getCachedWallpaperResponse(
       responseCacheKey,
@@ -214,23 +227,23 @@ export async function GET(
     const timeLine = selectedDistance?.start_time
       ? `START ${selectedDistance.start_time}`
       : "START TBA";
-    const horizontalPadding = Math.round(preset.width * 0.07);
-    const footerInset = Math.round(preset.height * 0.055);
-    const titleTop = Math.round(preset.height * 0.16);
-    const titleBottom = Math.round(preset.height * 0.625);
-    const countdownTop = Math.round(preset.height * 0.445);
-    const titleWidth = Math.round(preset.width * 0.74);
-    const footerTextWidth = Math.round(preset.width * 0.62);
-    const titleFontSize = clamp(Math.round(preset.width * 0.085), 84, 112);
+    const horizontalPadding = Math.round(renderWidth * 0.07);
+    const footerInset = Math.round(renderHeight * 0.055);
+    const titleTop = Math.round(renderHeight * 0.16);
+    const titleBottom = Math.round(renderHeight * 0.625);
+    const countdownTop = Math.round(renderHeight * 0.445);
+    const titleWidth = Math.round(renderWidth * 0.74);
+    const footerTextWidth = Math.round(renderWidth * 0.62);
+    const titleFontSize = clamp(Math.round(renderWidth * 0.085), 84, 112);
     const countdownFontSize = clamp(
-      Math.round(preset.width * 0.34),
+      Math.round(renderWidth * 0.34),
       340,
       520,
     );
-    const footerTitleSize = clamp(Math.round(preset.width * 0.052), 56, 74);
-    const bodyTextSize = clamp(Math.round(preset.width * 0.025), 26, 34);
-    const metaTextSize = clamp(Math.round(preset.width * 0.02), 20, 28);
-    const badgeSize = clamp(Math.round(preset.width * 0.105), 116, 140);
+    const footerTitleSize = clamp(Math.round(renderWidth * 0.052), 56, 74);
+    const bodyTextSize = clamp(Math.round(renderWidth * 0.025), 26, 34);
+    const metaTextSize = clamp(Math.round(renderWidth * 0.02), 20, 28);
+    const badgeSize = clamp(Math.round(renderWidth * 0.105), 116, 140);
 
     const renderStartedAt = performance.now();
     const { entry, cacheStatus } = await renderAndCacheWallpaperResponse(
@@ -305,7 +318,7 @@ export async function GET(
             <div
               style={{
                 display: "flex",
-                fontSize: clamp(Math.round(preset.width * 0.026), 28, 36),
+                fontSize: clamp(Math.round(renderWidth * 0.026), 28, 36),
                 letterSpacing: 6,
                 color: "#d5c49c",
                 fontWeight: 700,
@@ -336,7 +349,7 @@ export async function GET(
                 style={{
                   display: "flex",
                   paddingBottom: Math.round(countdownFontSize * 0.14),
-                  fontSize: clamp(Math.round(preset.width * 0.037), 38, 48),
+                  fontSize: clamp(Math.round(renderWidth * 0.037), 38, 48),
                   letterSpacing: 8,
                   color: "#d5c49c",
                   fontWeight: 700,
@@ -413,7 +426,7 @@ export async function GET(
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#d4c198",
-                fontSize: clamp(Math.round(preset.width * 0.017), 18, 22),
+                fontSize: clamp(Math.round(renderWidth * 0.017), 18, 22),
                 letterSpacing: 4,
                 textTransform: "uppercase",
               }}
@@ -424,8 +437,8 @@ export async function GET(
         </div>
       ),
       {
-        width: preset.width,
-        height: preset.height,
+        width: renderWidth,
+        height: renderHeight,
       },
     );
 

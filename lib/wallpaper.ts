@@ -91,6 +91,7 @@ export function buildWallpaperPath(options: {
   eventId: string;
   distance?: string;
   preset?: string;
+  preview?: boolean;
 }) {
   const searchParams = new URLSearchParams();
 
@@ -100,6 +101,10 @@ export function buildWallpaperPath(options: {
 
   if (options.preset) {
     searchParams.set("preset", options.preset);
+  }
+
+  if (options.preview) {
+    searchParams.set("preview", "1");
   }
 
   const queryString = searchParams.toString();
