@@ -1,7 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { listEvents } from "@/lib/data";
 import { Event } from "@/types";
-import { Calendar, MapPin, Footprints } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import {
   formatDateInJakarta,
   getDaysUntilDate,
@@ -33,9 +34,15 @@ export default async function Home() {
       <header className="sticky top-0 z-50 bg-background border-b border-border/50">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Footprints className="w-5 h-5 text-primary" />
-            </div>
+            <Image
+              src="/logo-mark.svg"
+              alt=""
+              width={40}
+              height={40}
+              unoptimized
+              className="h-10 w-10 shrink-0"
+              priority
+            />
             <div>
               <h1 className="text-xl font-bold text-foreground leading-tight">Kalender Lari</h1>
               <p className="text-xs text-muted-foreground">Indonesia Running Events</p>
