@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
@@ -9,7 +10,7 @@ import {
   notFoundResponse,
 } from "@/lib/api-responses";
 import { requireAdminApi, withAuthCookie } from "@/lib/auth";
-import { deleteEvent, updateEvent } from "@/lib/data";
+import { deleteEvent, EVENTS_TAG, eventTag, updateEvent } from "@/lib/data";
 import { eventPayloadSchema } from "@/lib/validation";
 import { clearWallpaperResponseCacheForEvent } from "@/lib/wallpaper-response-cache";
 
@@ -32,6 +33,8 @@ export async function PUT(
 
     const event = await updateEvent(pb, id, parsed.data);
     clearWallpaperResponseCacheForEvent(id);
+    revalidateTag(EVENTS_TAG, "max");
+    revalidateTag(eventTag(id), "max");
 
     return withAuthCookie(NextResponse.json(event), pb);
   } catch (err: unknown) {
@@ -65,6 +68,8 @@ export async function DELETE(
     }
 
     clearWallpaperResponseCacheForEvent(id);
+    revalidateTag(EVENTS_TAG, "max");
+    revalidateTag(eventTag(id), "max");
     return withAuthCookie(
       NextResponse.json({ message: "Event deleted successfully" }),
       pb,

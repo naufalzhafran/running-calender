@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { createEventAction } from "@/app/admin/actions";
 import { EventForm } from "@/components/admin/event-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,18 +26,15 @@ export default function CreateEventPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/admin/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toEventRequestBody(formData)),
-      });
+      const result = await createEventAction(toEventRequestBody(formData));
 
-      if (res.ok) {
+      if (result.ok) {
         router.push("/admin");
-      } else {
-        const data = await res.json();
-        setError(data.message || "Gagal membuat event");
+        router.refresh();
+        return;
       }
+
+      setError(result.message);
     } catch {
       setError("Terjadi kesalahan");
     }

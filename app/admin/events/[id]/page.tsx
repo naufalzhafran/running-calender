@@ -1,3 +1,6 @@
+import { notFound } from "next/navigation";
+
+import { getEventById } from "@/lib/data";
 import { EditEventPageClient } from "./edit-event-page-client";
 
 type PageProps = {
@@ -6,5 +9,11 @@ type PageProps = {
 
 export default async function EditEventPage({ params }: PageProps) {
   const { id } = await params;
-  return <EditEventPageClient eventId={id} />;
+  const event = await getEventById(id);
+
+  if (!event) {
+    notFound();
+  }
+
+  return <EditEventPageClient event={event} />;
 }

@@ -16,6 +16,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` — Run ESLint
 - No test framework is configured
 
+## Workflow Rules
+
+- Do not start the dev server automatically after code changes, plan execution, or verification. Only run `npm run dev` when the user explicitly asks for a local server.
+- Prefer `npm run lint` and `npm run build` for automated verification unless the user requests manual browser/dev-server testing.
+
 ## Architecture
 
 This is a **Next.js 16 App Router** application for managing a running event calendar (Indonesian language UI). It uses **PocketBase** for data and auth, and **Shadcn UI** components.

@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 import { Calendar, MapPin } from "lucide-react";
 
 import { formatDateInJakarta } from "@/lib/date";
@@ -9,10 +12,12 @@ import {
   type EventStatus,
 } from "@/lib/event-utils";
 import { cn } from "@/lib/utils";
-import { listEvents } from "@/lib/data";
+import { EVENTS_TAG, listEvents } from "@/lib/data";
 import { type Event } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const unstable_instant = {
+  prefetch: "static",
+};
 
 const STAGGER_CLASSES = [
   "stagger-1",
@@ -235,21 +240,48 @@ function EventList({ events }: { events: Event[] }) {
   );
 }
 
-export default async function Home() {
+async function HomeEventContent() {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(EVENTS_TAG);
+
   const events = await listEvents();
   const { upcomingEvents, pastEvents } = splitEventsBySchedule(events);
 
   return (
+    <>
+      <StatsGrid
+        upcomingCount={upcomingEvents.length}
+        pastCount={pastEvents.length}
+      />
+
+      {events.length === 0 ? <EmptyEventsState /> : <EventList events={events} />}
+    </>
+  );
+}
+
+async function ConnectionMarker() {
+  await connection();
+  return null;
+}
+
+function DynamicMarker() {
+  return (
+    <Suspense>
+      <ConnectionMarker />
+    </Suspense>
+  );
+}
+
+export default function Home() {
+  return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <DynamicMarker />
       <HomeHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
-        <StatsGrid
-          upcomingCount={upcomingEvents.length}
-          pastCount={pastEvents.length}
-        />
-
-        {events.length === 0 ? <EmptyEventsState /> : <EventList events={events} />}
+        <HomeEventContent />
       </main>
     </div>
   );

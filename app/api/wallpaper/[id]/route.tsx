@@ -1,5 +1,4 @@
 import { ImageResponse } from "next/og";
-import { unstable_cache } from "next/cache";
 import type { NextRequest } from "next/server";
 
 import { getEventById } from "@/lib/data";
@@ -12,8 +11,6 @@ import {
 } from "@/lib/wallpaper-response-cache";
 import { type DistanceDetail, type Event } from "@/types";
 
-export const dynamic = "force-dynamic";
-
 const WALLPAPER_IMAGE_REVALIDATE_SECONDS = 15 * 60;
 const WALLPAPER_IMAGE_STALE_SECONDS = 24 * 60 * 60;
 const WALLPAPER_IMAGE_REVALIDATE_MS =
@@ -23,14 +20,6 @@ const WALLPAPER_PREVIEW_MAX_WIDTH = 828;
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
 const WALLPAPER_FONT_FAMILY =
   '"Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif';
-
-const getCachedWallpaperEventById = unstable_cache(
-  async (id: string) => getEventById(id),
-  ["wallpaper-event-by-id"],
-  {
-    revalidate: WALLPAPER_IMAGE_REVALIDATE_SECONDS,
-  },
-);
 
 function buildWallpaperCacheKey(options: {
   id: string;
@@ -436,7 +425,7 @@ export async function GET(
     }
 
     const dataStartedAt = performance.now();
-    const event = await getCachedWallpaperEventById(id);
+    const event = await getEventById(id);
     const dataDuration = performance.now() - dataStartedAt;
 
     if (!event) {

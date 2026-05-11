@@ -1,90 +1,49 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit } from "lucide-react";
 
+import { updateEventAction } from "@/app/admin/actions";
 import { EventForm } from "@/components/admin/event-form";
 import { useAlertModal } from "@/components/ui/alert-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { eventToFormData, toEventRequestBody } from "@/lib/event-form";
 import { type Event, type EventFormData } from "@/types";
 
 type EditEventPageClientProps = {
-  eventId: string;
+  event: Event;
 };
 
-async function fetchEvent(eventId: string) {
-  const response = await fetch(`/api/events/${eventId}`);
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return (await response.json()) as Event;
-}
-
-export function EditEventPageClient({ eventId }: EditEventPageClientProps) {
-  const [event, setEvent] = useState<Event | null>(null);
-  const [initialFormData, setInitialFormData] =
-    useState<EventFormData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function EditEventPageClient({ event }: EditEventPageClientProps) {
+  const router = useRouter();
+  const [currentEvent, setCurrentEvent] = useState(event);
+  const [initialFormData, setInitialFormData] = useState<EventFormData>(
+    eventToFormData(event),
+  );
   const { alertModal, showSuccess, showError } = useAlertModal();
 
-  const loadEvent = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const nextEvent = await fetchEvent(eventId);
-      setEvent(nextEvent);
-      setInitialFormData(nextEvent ? eventToFormData(nextEvent) : null);
-    } catch {
-      showError("Terjadi kesalahan saat mengambil data event");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [eventId, showError]);
-
-  useEffect(() => {
-    void loadEvent();
-  }, [loadEvent]);
-
   async function handleEventUpdate(formData: EventFormData) {
-    if (!event) {
-      return;
-    }
-
     try {
-      const response = await fetch(`/api/admin/events/${event.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toEventRequestBody(formData)),
-      });
+      const result = await updateEventAction(
+        currentEvent.id,
+        toEventRequestBody(formData),
+      );
 
-      if (response.ok) {
+      if (result.ok) {
+        setCurrentEvent(result.event);
+        setInitialFormData(eventToFormData(result.event));
         showSuccess("Event berhasil diperbarui");
-        await loadEvent();
+        router.refresh();
         return;
       }
 
-      showError("Gagal memperbarui event");
+      showError(result.message);
     } catch {
       showError("Terjadi kesalahan saat memperbarui event");
     }
-  }
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!event || !initialFormData) {
-    return (
-      <div className="p-8 text-center text-foreground">
-        Event tidak ditemukan
-      </div>
-    );
   }
 
   return (
@@ -110,7 +69,7 @@ export function EditEventPageClient({ eventId }: EditEventPageClientProps) {
           </CardHeader>
           <CardContent>
             <EventForm
-              key={event.id}
+              key={`${currentEvent.id}-${initialFormData.slug}`}
               initialData={initialFormData}
               onSubmit={handleEventUpdate}
               submitLabel="Simpan Perubahan"

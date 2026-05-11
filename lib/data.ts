@@ -1,3 +1,4 @@
+import { cacheLife, cacheTag } from "next/cache";
 import { ClientResponseError } from "pocketbase";
 
 import {
@@ -8,6 +9,12 @@ import {
 } from "@/lib/pocketbase";
 import { type DistanceDetail } from "@/types";
 
+export const EVENTS_TAG = "events";
+
+export function eventTag(id: string) {
+  return `event:${id}`;
+}
+
 function createPublicClient() {
   return createPocketBaseClient();
 }
@@ -17,6 +24,11 @@ function isNotFoundError(error: unknown) {
 }
 
 export async function listEvents() {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(EVENTS_TAG);
+
   const pb = createPublicClient();
   const records = await pb
     .collection(PB_EVENTS_COLLECTION)
@@ -29,6 +41,11 @@ export async function listEvents() {
 }
 
 export async function getEventById(id: string) {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(EVENTS_TAG, eventTag(id));
+
   const pb = createPublicClient();
 
   try {

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Clock, MapPin, Ruler } from "lucide-react";
@@ -9,7 +10,10 @@ import { cn } from "@/lib/utils";
 import { buildWallpaperSharePath } from "@/lib/wallpaper";
 import { type DistanceDetail, type Event } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const unstable_instant = {
+  prefetch: "static",
+  samples: [{ params: { id: "sample-event-id" } }],
+};
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -251,8 +255,26 @@ function EventDescription({ description }: { description: string | null }) {
   );
 }
 
-export default async function EventPage({ params }: PageProps) {
-  const { id } = await params;
+function EventDetailsFallback() {
+  return (
+    <div className="mb-6 overflow-hidden rounded-3xl border border-border/50 bg-card">
+      <div className="space-y-6 p-6 sm:p-8">
+        <div className="h-7 w-40 animate-pulse rounded-full bg-muted" />
+        <div className="h-10 w-3/4 animate-pulse rounded-lg bg-muted" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+          <div className="h-24 animate-pulse rounded-2xl bg-muted/70" />
+          <div className="h-24 animate-pulse rounded-2xl bg-muted/70" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="h-64 animate-pulse rounded-3xl bg-muted/70" />
+          <div className="h-64 animate-pulse rounded-3xl bg-muted/70" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+async function EventDetails({ id }: { id: string }) {
   const event = await getEventById(id);
 
   if (!event) {
@@ -262,29 +284,39 @@ export default async function EventPage({ params }: PageProps) {
   const isPast = getDaysUntilDate(event.event_date) < 0;
 
   return (
+    <div className="mb-6 overflow-hidden rounded-3xl border border-border/50 bg-card">
+      {isPast && (
+        <div className="bg-muted px-6 py-2 text-center text-sm text-muted-foreground">
+          Event telah selesai
+        </div>
+      )}
+
+      <div className="p-6 sm:p-8">
+        <DistancePills distances={event.distance} />
+
+        <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+          {event.title}
+        </h1>
+
+        <EventInfoGrid event={event} />
+        <DistanceSection event={event} />
+        <EventDescription description={event.description} />
+      </div>
+    </div>
+  );
+}
+
+export default function EventPage({ params }: PageProps) {
+  return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
       <BackHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
-        <div className="mb-6 overflow-hidden rounded-3xl border border-border/50 bg-card">
-          {isPast && (
-            <div className="bg-muted px-6 py-2 text-center text-sm text-muted-foreground">
-              Event telah selesai
-            </div>
-          )}
-
-          <div className="p-6 sm:p-8">
-            <DistancePills distances={event.distance} />
-
-            <h1 className="mb-6 text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-              {event.title}
-            </h1>
-
-            <EventInfoGrid event={event} />
-            <DistanceSection event={event} />
-            <EventDescription description={event.description} />
-          </div>
-        </div>
+        <Suspense fallback={<EventDetailsFallback />}>
+          {params.then(({ id }) => (
+            <EventDetails id={id} />
+          ))}
+        </Suspense>
       </main>
     </div>
   );

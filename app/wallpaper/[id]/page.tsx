@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { ArrowLeft } from "lucide-react";
 
 import { WallpaperShareExperience } from "@/components/event/wallpaper-share-experience";
@@ -10,7 +12,15 @@ import { buildWallpaperPath, getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 import { buildAbsoluteSiteUrl } from "@/lib/site-url";
 
-export const dynamic = "force-dynamic";
+export const unstable_instant = {
+  prefetch: "static",
+  samples: [
+    {
+      params: { id: "sample-event-id" },
+      searchParams: { distance: null, preset: null },
+    },
+  ],
+};
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -104,12 +114,44 @@ export async function generateMetadata({
   };
 }
 
-export default async function WallpaperSharePage({
-  params,
-  searchParams,
-}: PageProps) {
-  const { id } = await params;
-  const { distance, preset } = await searchParams;
+function WallpaperShareFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-4">
+          <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-4xl px-4 py-6">
+        <div className="h-[620px] animate-pulse rounded-3xl bg-muted/70" />
+      </main>
+    </div>
+  );
+}
+
+async function ConnectionMarker() {
+  await connection();
+  return null;
+}
+
+function DynamicMarker() {
+  return (
+    <Suspense>
+      <ConnectionMarker />
+    </Suspense>
+  );
+}
+
+async function WallpaperShareContent({
+  id,
+  distance,
+  preset,
+}: {
+  id: string;
+  distance?: string;
+  preset?: string;
+}) {
   const context = await getWallpaperContext(id, distance, preset);
 
   if (!context) {
@@ -144,5 +186,20 @@ export default async function WallpaperSharePage({
         />
       </main>
     </div>
+  );
+}
+
+export default function WallpaperSharePage(props: PageProps) {
+  return (
+    <>
+      <DynamicMarker />
+      <Suspense fallback={<WallpaperShareFallback />}>
+        {Promise.all([props.params, props.searchParams]).then(
+          ([{ id }, { distance, preset }]) => (
+            <WallpaperShareContent id={id} distance={distance} preset={preset} />
+          ),
+        )}
+      </Suspense>
+    </>
   );
 }

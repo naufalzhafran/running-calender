@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
@@ -7,7 +8,7 @@ import {
   jsonError,
 } from "@/lib/api-responses";
 import { withAuthCookie, requireAdminApi } from "@/lib/auth";
-import { createEvent } from "@/lib/data";
+import { createEvent, EVENTS_TAG, eventTag } from "@/lib/data";
 import { eventPayloadSchema } from "@/lib/validation";
 
 export async function POST(req: NextRequest) {
@@ -24,6 +25,8 @@ export async function POST(req: NextRequest) {
     }
 
     const event = await createEvent(pb, parsed.data);
+    revalidateTag(EVENTS_TAG, "max");
+    revalidateTag(eventTag(event.id), "max");
 
     return withAuthCookie(NextResponse.json(event, { status: 201 }), pb);
   } catch (err: unknown) {

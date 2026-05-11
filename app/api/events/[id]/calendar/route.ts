@@ -2,8 +2,6 @@ import { buildEventCalendar } from "@/lib/calendar";
 import { getEventById } from "@/lib/data";
 import { createSlug } from "@/lib/event-utils";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(
   request: Request,
   ctx: RouteContext<"/api/events/[id]/calendar">,
