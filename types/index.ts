@@ -16,3 +16,13 @@ export interface Event {
   description: string | null;
   created_at: string;
 }
+
+export interface EventFormData {
+  title: string;
+  slug: string;
+  event_date: string;
+  end_date: string;
+  location: string;
+  distances: DistanceDetail[];
+  description: string;
+}

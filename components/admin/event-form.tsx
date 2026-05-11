@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { X, Plus } from "lucide-react";
 import { format } from "date-fns";
-import { DistanceDetail } from "@/types";
+import { type DistanceDetail, type EventFormData } from "@/types";
+import { createSlug } from "@/lib/event-utils";
 import { parseDateOnlyToLocalDate } from "@/lib/date";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,16 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ClearableInput } from "@/components/ui/clearable-input";
 import { DatePickerField } from "@/components/admin/date-picker-field";
 import { DistanceFieldset } from "@/components/admin/distance-fieldset";
-
-export interface EventFormData {
-  title: string;
-  slug: string;
-  event_date: string;
-  end_date: string;
-  location: string;
-  distances: DistanceDetail[];
-  description: string;
-}
 
 interface EventFormProps {
   initialData?: EventFormData;
@@ -40,13 +32,6 @@ const defaultFormData: EventFormData = {
   distances: [],
   description: "",
 };
-
-function generateSlug(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export function EventForm({
   initialData,
@@ -67,7 +52,7 @@ export function EventForm({
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
       if (name === "title") {
-        newData.slug = generateSlug(value);
+        newData.slug = createSlug(value);
       }
       return newData;
     });
@@ -207,7 +192,7 @@ export function EventForm({
             size="sm"
             onClick={handleAddDistance}
           >
-            <Plus className={`${compact ? "w-3 h-3" : "w-4 h-4"} mr-1`} />
+            <Plus className={cn("mr-1", compact ? "h-3 w-3" : "h-4 w-4")} />
             Tambah
           </Button>
         </div>
@@ -225,7 +210,12 @@ export function EventForm({
             />
           ))}
           {formData.distances.length === 0 && (
-            <div className={`text-center ${compact ? "p-4" : "p-6"} border border-dashed rounded-lg text-${compact ? "xs" : "sm"} text-muted-foreground`}>
+            <div
+              className={cn(
+                "rounded-lg border border-dashed text-center text-muted-foreground",
+                compact ? "p-4 text-xs" : "p-6 text-sm",
+              )}
+            >
               Belum ada kategori jarak{compact ? "" : " ditambahkan"}
             </div>
           )}
@@ -261,7 +251,7 @@ export function EventForm({
         </div>
       </div>
 
-      <div className={`flex justify-end ${compact ? "pt-4" : "pt-2"}`}>
+      <div className={cn("flex justify-end", compact ? "pt-4" : "pt-2")}>
         <Button
           type="submit"
           disabled={loading}

@@ -2,7 +2,7 @@ import PocketBase, { type RecordModel } from "pocketbase";
 
 import { type DistanceDetail, type Event } from "@/types";
 
-type EventRecord = RecordModel & {
+export type EventRecord = RecordModel & {
   title: string;
   slug: string;
   event_date: string;

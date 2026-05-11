@@ -1,6 +1,13 @@
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
-import { ClientResponseError } from "pocketbase";
+import { NextResponse, type NextRequest } from "next/server";
+
+import {
+  internalServerError,
+  invalidPayloadResponse,
+  isPocketBaseNotFound,
+  isPocketBaseSlugConflict,
+  jsonError,
+  notFoundResponse,
+} from "@/lib/api-responses";
 import { requireAdminApi, withAuthCookie } from "@/lib/auth";
 import { deleteEvent, updateEvent } from "@/lib/data";
 import { eventPayloadSchema } from "@/lib/validation";
@@ -20,57 +27,28 @@ export async function PUT(
     const parsed = eventPayloadSchema.safeParse(await req.json());
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { message: "Invalid event payload" },
-        { status: 400 },
-      );
+      return invalidPayloadResponse();
     }
 
-    const {
-      title,
-      slug,
-      event_date,
-      end_date,
-      location,
-      distance,
-      description,
-    } = parsed.data;
-
-    const event = await updateEvent(pb, id, {
-      title,
-      slug,
-      event_date,
-      end_date,
-      location,
-      distance,
-      description,
-    });
+    const event = await updateEvent(pb, id, parsed.data);
     clearWallpaperResponseCacheForEvent(id);
 
     return withAuthCookie(NextResponse.json(event), pb);
   } catch (err: unknown) {
-    if (err instanceof ClientResponseError && err.status === 404) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
+    if (isPocketBaseNotFound(err)) {
+      return notFoundResponse();
     }
-    if (
-      err instanceof ClientResponseError &&
-      err.status === 400 &&
-      typeof err.response?.data?.slug?.message === "string"
-    ) {
-      return NextResponse.json(
-        { message: "Slug already exists" },
-        { status: 400 },
-      );
+
+    if (isPocketBaseSlugConflict(err)) {
+      return jsonError("Slug already exists", 400);
     }
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+
+    return internalServerError();
   }
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -81,21 +59,21 @@ export async function DELETE(
 
   try {
     const deleted = await deleteEvent(pb, id);
+
     if (!deleted) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
+      return notFoundResponse();
     }
+
     clearWallpaperResponseCacheForEvent(id);
     return withAuthCookie(
       NextResponse.json({ message: "Event deleted successfully" }),
       pb,
     );
   } catch (err) {
-    if (err instanceof ClientResponseError && err.status === 404) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
+    if (isPocketBaseNotFound(err)) {
+      return notFoundResponse();
     }
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+
+    return internalServerError();
   }
 }

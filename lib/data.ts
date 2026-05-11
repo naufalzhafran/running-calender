@@ -2,6 +2,7 @@ import { ClientResponseError } from "pocketbase";
 
 import {
   createPocketBaseClient,
+  type EventRecord,
   mapEvent,
   PB_EVENTS_COLLECTION,
 } from "@/lib/pocketbase";
@@ -17,12 +18,14 @@ function isNotFoundError(error: unknown) {
 
 export async function listEvents() {
   const pb = createPublicClient();
-  const records = await pb.collection(PB_EVENTS_COLLECTION).getFullList({
-    sort: "event_date",
-    requestKey: null,
-  });
+  const records = await pb
+    .collection(PB_EVENTS_COLLECTION)
+    .getFullList<EventRecord>({
+      sort: "event_date",
+      requestKey: null,
+    });
 
-  return records.map((record) => mapEvent(record as never));
+  return records.map(mapEvent);
 }
 
 export async function getEventById(id: string) {
@@ -33,7 +36,7 @@ export async function getEventById(id: string) {
       requestKey: null,
     });
 
-    return mapEvent(record as never);
+    return mapEvent(record as EventRecord);
   } catch (error) {
     if (isNotFoundError(error)) {
       return null;
@@ -65,13 +68,16 @@ function normalizeEventPayload(input: EventInput) {
   };
 }
 
-export async function createEvent(pb: ReturnType<typeof createPocketBaseClient>, input: EventInput) {
+export async function createEvent(
+  pb: ReturnType<typeof createPocketBaseClient>,
+  input: EventInput,
+) {
   const record = await pb.collection(PB_EVENTS_COLLECTION).create(
     normalizeEventPayload(input),
     { requestKey: null },
   );
 
-  return mapEvent(record as never);
+  return mapEvent(record as EventRecord);
 }
 
 export async function updateEvent(
@@ -85,9 +91,12 @@ export async function updateEvent(
     { requestKey: null },
   );
 
-  return mapEvent(record as never);
+  return mapEvent(record as EventRecord);
 }
 
-export async function deleteEvent(pb: ReturnType<typeof createPocketBaseClient>, id: string) {
+export async function deleteEvent(
+  pb: ReturnType<typeof createPocketBaseClient>,
+  id: string,
+) {
   return pb.collection(PB_EVENTS_COLLECTION).delete(id, { requestKey: null });
 }

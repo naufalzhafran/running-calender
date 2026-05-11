@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Edit, Trash2, LogOut } from "lucide-react";
-import { Event } from "@/types";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -19,30 +19,53 @@ import {
 import { useAlertModal } from "@/components/ui/alert-modal";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatDateInJakarta } from "@/lib/date";
+import { type Event } from "@/types";
+
+async function fetchEvents() {
+  const response = await fetch("/api/events");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch events");
+  }
+
+  return (await response.json()) as Event[];
+}
+
+function DistanceBadges({ event }: { event: Event }) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {event.distance.map((distance, index) => (
+        <Badge
+          key={`${distance.name}-${index}`}
+          variant="secondary"
+          className="text-xs font-normal"
+        >
+          {distance.name}
+        </Badge>
+      ))}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { alertModal, showConfirm, showError } = useAlertModal();
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
-      const res = await fetch("/api/events");
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data);
-      }
+      setEvents(await fetchEvents());
     } catch {
-      console.error("Failed to fetch events");
+      showError("Gagal mengambil daftar event");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    void loadEvents();
+  }, [loadEvents]);
 
   const confirmDelete = (id: string) => {
     showConfirm(
@@ -59,7 +82,7 @@ export default function AdminDashboard() {
       });
 
       if (res.ok) {
-        fetchEvents();
+        await loadEvents();
       } else {
         showError("Gagal menghapus event");
       }
@@ -73,7 +96,7 @@ export default function AdminDashboard() {
     router.push("/login");
   };
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
@@ -139,7 +162,6 @@ export default function AdminDashboard() {
                       >
                         {event.title}
                       </Link>
-                      {/* Mobile-only details */}
                       <div className="md:hidden text-xs text-muted-foreground mt-1">
                         {formatDateInJakarta(event.event_date, {
                           day: "numeric",
@@ -160,26 +182,7 @@ export default function AdminDashboard() {
                       {event.location}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {Array.isArray(event.distance) ? (
-                          event.distance.map((d, i) => (
-                            <Badge
-                              key={i}
-                              variant="secondary"
-                              className="font-normal text-xs"
-                            >
-                              {d.name}
-                            </Badge>
-                          ))
-                        ) : (
-                          <Badge
-                            variant="secondary"
-                            className="font-normal text-xs"
-                          >
-                            {event.distance}
-                          </Badge>
-                        )}
-                      </div>
+                      <DistanceBadges event={event} />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

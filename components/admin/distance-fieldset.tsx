@@ -2,8 +2,9 @@
 
 import { X } from "lucide-react";
 import { format } from "date-fns";
-import { DistanceDetail } from "@/types";
+import { type DistanceDetail } from "@/types";
 import { parseDateOnlyToLocalDate } from "@/lib/date";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -28,8 +29,11 @@ export function DistanceFieldset({
   onRemove,
   compact,
 }: DistanceFieldsetProps) {
-  const labelSize = compact ? "text-xs" : "text-xs";
+  const fieldSpacing = compact ? "space-y-3 pt-1" : "space-y-4 pt-2";
+  const inputSpacing = compact ? "space-y-1" : "space-y-2";
   const inputHeight = compact ? "h-8 text-sm" : "";
+  const iconSize = compact ? "h-3 w-3" : "h-4 w-4";
+
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
     onChange(index, "date", format(date, "yyyy-MM-dd"));
@@ -44,12 +48,12 @@ export function DistanceFieldset({
         className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive z-10"
         onClick={() => onRemove(index)}
       >
-        <X className={compact ? "w-3 h-3" : "w-4 h-4"} />
+        <X className={iconSize} />
       </Button>
 
-      <div className={`space-y-${compact ? "3" : "4"} pt-${compact ? "1" : "2"}`}>
-        <div className={`space-y-${compact ? "1" : "2"}`}>
-          <Label className={labelSize}>Nama Kategori</Label>
+      <div className={fieldSpacing}>
+        <div className={inputSpacing}>
+          <Label className="text-xs">Nama Kategori</Label>
           <ClearableInput
             type="text"
             value={distance.name}
@@ -57,12 +61,12 @@ export function DistanceFieldset({
             onClear={() => onChange(index, "name", "")}
             placeholder="5K"
             required
-            className={`bg-background ${inputHeight}`}
+            className={cn("bg-background", inputHeight)}
           />
         </div>
 
-        <div className={`space-y-${compact ? "1" : "2"} flex flex-col`}>
-          <Label className={labelSize}>Tanggal</Label>
+        <div className={cn("flex flex-col", inputSpacing)}>
+          <Label className="text-xs">Tanggal</Label>
           <DatePickerField
             value={distance.date}
             onChange={handleDateSelect}
@@ -79,9 +83,9 @@ export function DistanceFieldset({
           />
         </div>
 
-        <div className={`grid grid-cols-2 gap-${compact ? "2" : "3"}`}>
-          <div className={`space-y-${compact ? "1" : "2"}`}>
-            <Label className={labelSize}>Start Time</Label>
+        <div className={cn("grid grid-cols-2", compact ? "gap-2" : "gap-3")}>
+          <div className={inputSpacing}>
+            <Label className="text-xs">Start Time</Label>
             <div className="relative">
               <TimePicker
                 value={distance.start_time}
@@ -99,13 +103,13 @@ export function DistanceFieldset({
                     onChange(index, "start_time", "");
                   }}
                 >
-                  <X className={compact ? "h-3 w-3" : "h-4 w-4"} />
+                  <X className={iconSize} />
                 </Button>
               )}
             </div>
           </div>
-          <div className={`space-y-${compact ? "1" : "2"}`}>
-            <Label className={labelSize}>COT</Label>
+          <div className={inputSpacing}>
+            <Label className="text-xs">COT</Label>
             <div className="relative">
               <TimePicker
                 value={distance.cot}
@@ -123,7 +127,7 @@ export function DistanceFieldset({
                     onChange(index, "cot", "");
                   }}
                 >
-                  <X className={compact ? "h-3 w-3" : "h-4 w-4"} />
+                  <X className={iconSize} />
                 </Button>
               )}
             </div>

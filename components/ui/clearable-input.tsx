@@ -1,8 +1,10 @@
 "use client";
 
 import { X } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ClearableInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -17,7 +19,7 @@ export function ClearableInput({
 }: ClearableInputProps) {
   return (
     <div className="relative">
-      <Input value={value} className={`pr-10 ${className ?? ""}`} {...props} />
+      <Input value={value} className={cn("pr-10", className)} {...props} />
       {value && (
         <Button
           type="button"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { EventForm } from "@/components/admin/event-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +14,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { EventForm, EventFormData } from "@/components/admin/event-form";
+import { toEventRequestBody } from "@/lib/event-form";
+import { type EventFormData } from "@/types";
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -26,15 +28,7 @@ export default function CreateEventPage() {
       const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formData.title,
-          slug: formData.slug,
-          event_date: formData.event_date,
-          end_date: formData.end_date || null,
-          location: formData.location,
-          distance: formData.distances,
-          description: formData.description || null,
-        }),
+        body: JSON.stringify(toEventRequestBody(formData)),
       });
 
       if (res.ok) {

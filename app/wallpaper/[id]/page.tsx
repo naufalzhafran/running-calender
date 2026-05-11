@@ -5,10 +5,10 @@ import { ArrowLeft } from "lucide-react";
 
 import { WallpaperShareExperience } from "@/components/event/wallpaper-share-experience";
 import { getEventById } from "@/lib/data";
+import { getCountdownCopy, pickDistance } from "@/lib/event-utils";
 import { buildWallpaperPath, getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
 import { buildAbsoluteSiteUrl } from "@/lib/site-url";
-import { type DistanceDetail } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -17,48 +17,6 @@ type PageProps = {
   searchParams: Promise<{ distance?: string; preset?: string }>;
 };
 
-function normalizeDistanceName(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function pickDistance(
-  distances: DistanceDetail[],
-  requestedDistance: string | undefined,
-) {
-  if (requestedDistance) {
-    const matched = distances.find(
-      (distance) =>
-        normalizeDistanceName(distance.name) ===
-        normalizeDistanceName(requestedDistance),
-    );
-
-    if (matched) {
-      return matched;
-    }
-  }
-
-  const upcoming = [...distances]
-    .filter((distance) => Boolean(distance.date))
-    .sort((left, right) => left.date.localeCompare(right.date));
-
-  return upcoming[0] ?? distances[0] ?? null;
-}
-
-function getCountdownCopy(daysLeft: number) {
-  if (daysLeft < 0) {
-    return `${Math.abs(daysLeft)} hari sejak event`;
-  }
-
-  if (daysLeft === 0) {
-    return "Hari ini event dimulai";
-  }
-
-  if (daysLeft === 1) {
-    return "1 hari lagi menuju event";
-  }
-
-  return `${daysLeft} hari lagi menuju event`;
-}
 async function getWallpaperContext(
   id: string,
   distanceName?: string,

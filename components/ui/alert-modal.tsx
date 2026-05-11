@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type AlertModalType =
   | "success"
@@ -86,7 +87,7 @@ export function AlertModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={`shrink-0 ${iconColor}`}>
+            <div className={cn("shrink-0", iconColor)}>
               <Icon className="h-6 w-6" />
             </div>
             <DialogTitle>{displayTitle}</DialogTitle>

@@ -1,15 +1,8 @@
-import { getEventById } from "@/lib/data";
 import { buildEventCalendar } from "@/lib/calendar";
+import { getEventById } from "@/lib/data";
+import { createSlug } from "@/lib/event-utils";
 
 export const dynamic = "force-dynamic";
-
-function createSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export async function GET(
   request: Request,
