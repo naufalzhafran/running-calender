@@ -4,12 +4,16 @@ import { ClientResponseError } from "pocketbase";
 import {
   createPocketBaseClient,
   type EventRecord,
+  type EventSummaryRecord,
   mapEvent,
+  mapEventSummary,
   PB_EVENTS_COLLECTION,
 } from "@/lib/pocketbase";
 import { type DistanceDetail } from "@/types";
 
 export const EVENTS_TAG = "events";
+const PUBLIC_EVENT_SUMMARY_FIELDS =
+  "id,title,event_date,end_date,location,distance,created";
 
 export function eventTag(id: string) {
   return `event:${id}`;
@@ -40,6 +44,24 @@ export async function listEvents() {
   return records.map(mapEvent);
 }
 
+export async function listEventSummaries() {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(EVENTS_TAG);
+
+  const pb = createPublicClient();
+  const records = await pb
+    .collection(PB_EVENTS_COLLECTION)
+    .getFullList<EventSummaryRecord>({
+      fields: PUBLIC_EVENT_SUMMARY_FIELDS,
+      sort: "event_date",
+      requestKey: null,
+    });
+
+  return records.map(mapEventSummary);
+}
+
 export async function getEventById(id: string) {
   "use cache";
 
@@ -54,6 +76,30 @@ export async function getEventById(id: string) {
     });
 
     return mapEvent(record as EventRecord);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+export async function getEventSummaryById(id: string) {
+  "use cache";
+
+  cacheLife("hours");
+  cacheTag(EVENTS_TAG, eventTag(id));
+
+  const pb = createPublicClient();
+
+  try {
+    const record = await pb.collection(PB_EVENTS_COLLECTION).getOne(id, {
+      fields: PUBLIC_EVENT_SUMMARY_FIELDS,
+      requestKey: null,
+    });
+
+    return mapEventSummary(record as EventSummaryRecord);
   } catch (error) {
     if (isNotFoundError(error)) {
       return null;

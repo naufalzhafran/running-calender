@@ -1,6 +1,13 @@
 export const INDONESIA_TIME_ZONE = "Asia/Jakarta";
 const JAKARTA_OFFSET = "+07:00";
 const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+const jakartaDatePartsFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: INDONESIA_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 function isValidDate(date: Date) {
   return !Number.isNaN(date.getTime());
@@ -29,13 +36,31 @@ function getDateParts(value: string) {
   return { year, month, day };
 }
 
-function getFormatterParts(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
+function getFormatter(
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+) {
+  const normalizedOptions = {
+    ...options,
     timeZone: INDONESIA_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
+  };
+  const cacheKey = `${locale}:${Object.entries(normalizedOptions)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${key}:${String(value)}`)
+    .join("|")}`;
+  const cachedFormatter = formatterCache.get(cacheKey);
+
+  if (cachedFormatter) {
+    return cachedFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, normalizedOptions);
+  formatterCache.set(cacheKey, formatter);
+  return formatter;
+}
+
+function getFormatterParts(date: Date) {
+  const parts = jakartaDatePartsFormatter.formatToParts(date);
 
   const year = parts.find((part) => part.type === "year")?.value;
   const month = parts.find((part) => part.type === "month")?.value;
@@ -87,10 +112,7 @@ export function formatDateInJakarta(
     throw new Error("Invalid time value");
   }
 
-  return new Intl.DateTimeFormat(locale, {
-    ...options,
-    timeZone: INDONESIA_TIME_ZONE,
-  }).format(date);
+  return getFormatter(locale, options).format(date);
 }
 
 export function getJakartaTodayDateString(now = new Date()) {

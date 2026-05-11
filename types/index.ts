@@ -17,6 +17,17 @@ export interface Event {
   created_at: string;
 }
 
+export type EventSummary = Pick<
+  Event,
+  | "id"
+  | "title"
+  | "event_date"
+  | "end_date"
+  | "location"
+  | "distance"
+  | "created_at"
+>;
+
 export interface EventFormData {
   title: string;
   slug: string;

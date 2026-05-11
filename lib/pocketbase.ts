@@ -1,16 +1,19 @@
 import PocketBase, { type RecordModel } from "pocketbase";
 
-import { type DistanceDetail, type Event } from "@/types";
+import { type DistanceDetail, type Event, type EventSummary } from "@/types";
 
-export type EventRecord = RecordModel & {
+export type EventSummaryRecord = RecordModel & {
   title: string;
-  slug: string;
   event_date: string;
   end_date?: string;
   location: string;
   distance?: DistanceDetail[] | null;
-  description?: string;
   created: string;
+};
+
+export type EventRecord = EventSummaryRecord & {
+  slug: string;
+  description?: string;
 };
 
 export const PB_AUTH_COOKIE_NAME = "pb_auth";
@@ -51,16 +54,22 @@ export function exportPocketBaseCookie(client: PocketBase) {
   );
 }
 
-export function mapEvent(record: EventRecord): Event {
+export function mapEventSummary(record: EventSummaryRecord): EventSummary {
   return {
     id: record.id,
     title: record.title,
-    slug: record.slug,
     event_date: record.event_date,
     end_date: record.end_date || null,
     location: record.location,
     distance: Array.isArray(record.distance) ? record.distance : [],
-    description: record.description || null,
     created_at: record.created,
+  };
+}
+
+export function mapEvent(record: EventRecord): Event {
+  return {
+    ...mapEventSummary(record),
+    slug: record.slug,
+    description: record.description || null,
   };
 }

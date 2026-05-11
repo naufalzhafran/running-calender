@@ -42,7 +42,9 @@ export function getEventStatus(eventDate: string): EventStatus {
   return { label: "", variant: "upcoming" };
 }
 
-export function splitEventsBySchedule(events: Event[]) {
+export function splitEventsBySchedule<T extends Pick<Event, "event_date">>(
+  events: T[],
+) {
   return events.reduce(
     (groups, event) => {
       const destination =
@@ -54,8 +56,8 @@ export function splitEventsBySchedule(events: Event[]) {
       return groups;
     },
     {
-      upcomingEvents: [] as Event[],
-      pastEvents: [] as Event[],
+      upcomingEvents: [] as T[],
+      pastEvents: [] as T[],
     },
   );
 }

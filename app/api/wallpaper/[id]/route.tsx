@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 
-import { getEventById } from "@/lib/data";
+import { getEventSummaryById } from "@/lib/data";
 import { normalizeDistanceName, pickDistance } from "@/lib/event-utils";
 import { getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getJakartaTodayDateString } from "@/lib/date";
@@ -9,7 +9,7 @@ import {
   getCachedWallpaperResponse,
   renderAndCacheWallpaperResponse,
 } from "@/lib/wallpaper-response-cache";
-import { type DistanceDetail, type Event } from "@/types";
+import { type DistanceDetail, type EventSummary } from "@/types";
 
 const WALLPAPER_IMAGE_REVALIDATE_SECONDS = 15 * 60;
 const WALLPAPER_IMAGE_STALE_SECONDS = 24 * 60 * 60;
@@ -139,7 +139,7 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function createWallpaperViewModel(options: {
-  event: Event;
+  event: EventSummary;
   selectedDistance: DistanceDetail | null;
   width: number;
   height: number;
@@ -425,7 +425,7 @@ export async function GET(
     }
 
     const dataStartedAt = performance.now();
-    const event = await getEventById(id);
+    const event = await getEventSummaryById(id);
     const dataDuration = performance.now() - dataStartedAt;
 
     if (!event) {

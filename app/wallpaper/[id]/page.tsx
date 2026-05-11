@@ -6,7 +6,7 @@ import { connection } from "next/server";
 import { ArrowLeft } from "lucide-react";
 
 import { WallpaperShareExperience } from "@/components/event/wallpaper-share-experience";
-import { getEventById } from "@/lib/data";
+import { getEventSummaryById } from "@/lib/data";
 import { getCountdownCopy, pickDistance } from "@/lib/event-utils";
 import { buildWallpaperPath, getWallpaperPreset } from "@/lib/wallpaper";
 import { formatDateInJakarta, getDaysUntilDate } from "@/lib/date";
@@ -32,7 +32,7 @@ async function getWallpaperContext(
   distanceName?: string,
   presetValue?: string,
 ) {
-  const event = await getEventById(id);
+  const event = await getEventSummaryById(id);
 
   if (!event) {
     return null;
