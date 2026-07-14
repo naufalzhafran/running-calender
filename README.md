@@ -71,63 +71,20 @@ Notes:
 
 ### Docker (Self-Hosted)
 
-This repository now ships a 2-service Docker Compose setup:
+The production server runs the Next.js app as the `running-calendar` container.
+PocketBase is managed separately as `pocketbase2`; both containers share the
+external Docker network `running-net`. Nginx proxies
+`running.madebynz.xyz` to `127.0.0.1:5678`.
 
-- `web` — the Next.js 16 frontend
-- `pocketbase` — the PocketBase backend on port `8090`
-
-**Prerequisites**
-- Ubuntu/Debian server
-- Docker / Docker Compose
-
-#### First Deploy
+After changes have been pushed to `main`, redeploy with:
 
 ```bash
-# 1. Clone the repo on your server
-git clone <your-repo-url> ~/running-calender
-
-# 2. Set up environment variables
-cd ~/running-calender
-cp .env.example .env
-nano .env  # fill in all values
-
-# 3. Run the setup script
-sudo ./setup.sh
+/home/zhafran/scripts/redeploy-running-calendar.sh
 ```
 
-The script will:
-- Install Docker and Nginx if not present
-- Build and start the Docker containers
-- Configure Nginx to proxy traffic from port 80 to the app
-
-After the first deploy, visit `http://your-server:8090/_/` to bootstrap PocketBase and then apply the collection setup from [pocketbase/README.md](./pocketbase/README.md).
-
-#### Re-deploy (after code changes)
-
-```bash
-cd ~/running-calender
-sudo ./setup.sh
-```
-
-This pulls the latest changes, rebuilds the Docker image, and restarts the container.
-
-#### Enable HTTPS
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d running.madebynz.xyz
-```
-
-#### `setup.sh` arguments
-
-```
-sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
-```
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `DOMAIN` | `running.madebynz.xyz` | Domain name for Nginx config |
-| `SOURCE_DIR` | `~/running-calender` | Path to the cloned repository |
+The script refuses uncommitted tracked changes, fast-forwards the local checkout
+from `origin/main`, builds the image, and recreates only the web container.
+No project `.env` file is required for this production configuration.
 
 ## Project Structure
 
@@ -145,7 +102,6 @@ sudo ./setup.sh [DOMAIN] [SOURCE_DIR]
 │   ├── data.ts             # Event data access
 │   └── utils.ts            # General utilities
 ├── pocketbase/             # PocketBase schema and rule setup notes
-├── docker/pocketbase/      # PocketBase container build
 └── types/                  # TypeScript type definitions
 ```
 

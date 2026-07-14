@@ -1,26 +1,20 @@
 services:
   web:
+    image: running-calendar:latest
+    container_name: running-calendar
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      POCKETBASE_URL: ${POCKETBASE_URL:-http://pocketbase:8090}
-      POCKETBASE_ADMIN_COLLECTION: ${POCKETBASE_ADMIN_COLLECTION:-admins}
+      POCKETBASE_URL: http://pocketbase2:8090
+      POCKETBASE_ADMIN_COLLECTION: admins
+      SITE_URL: https://running.madebynz.xyz
     ports:
-      - "5678:3000"
-    depends_on:
-      - pocketbase
+      - "127.0.0.1:5678:3000"
+    networks:
+      - running-net
 
-  pocketbase:
-    build:
-      context: .
-      dockerfile: docker/pocketbase/Dockerfile
-      args:
-        PB_VERSION: 0.37.5
-    restart: unless-stopped
-    ports:
-      - "8090:8090"
-    volumes:
-      - ./pb_data:/pb/pb_data
-      - ./pb_migrations:/pb/pb_migrations
+networks:
+  running-net:
+    external: true
