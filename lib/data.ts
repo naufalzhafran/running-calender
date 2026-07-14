@@ -109,6 +109,19 @@ export async function getEventSummaryById(id: string) {
   }
 }
 
+export async function listAdminEvents(
+  pb: ReturnType<typeof createPocketBaseClient>,
+) {
+  const records = await pb
+    .collection(PB_EVENTS_COLLECTION)
+    .getFullList<EventRecord>({
+      sort: "event_date",
+      requestKey: null,
+    });
+
+  return records.map(mapEvent);
+}
+
 type EventInput = {
   title: string;
   slug: string;

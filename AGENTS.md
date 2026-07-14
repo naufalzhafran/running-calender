@@ -14,12 +14,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` — Start Next.js dev server
 - `npm run build` — Production build
 - `npm run lint` — Run ESLint
+- `npm run events -- list` — List event data for Codex
+- `npm run events -- get <id-or-slug>` — Inspect one event
+- `npm run events -- create <file.json>` — Create one event
+- `npm run events -- update <id-or-slug> <file.json>` — Patch one event
+- `npm run events -- delete <id-or-slug>` — Preview deletion; add `--yes` to confirm
 - No test framework is configured
 
 ## Workflow Rules
 
 - Do not start the dev server automatically after code changes, plan execution, or verification. Only run `npm run dev` when the user explicitly asks for a local server.
 - Prefer `npm run lint` and `npm run build` for automated verification unless the user requests manual browser/dev-server testing.
+
+## Codex Event Data Interface
+
+- Use `npm run events -- ...` for event CRUD instead of editing PocketBase directly.
+- Resolve events by PocketBase id or slug. Run `list` or `get` before changing an event when the target is ambiguous.
+- Create files may omit `slug`, distance dates/times, description, and end date. Update files are patches and should contain only fields that need to change.
+- Use `--dry-run` to preview normalized create/update payloads. Only use mutating commands when the user has authorized the corresponding data change.
+- Delete previews by default and requires `--yes` to perform the deletion.
+- Commands require a running/deployed app plus `POCKETBASE_ADMIN_EMAIL` and `POCKETBASE_ADMIN_PASSWORD` in an ignored env file.
 
 ## Architecture
 
@@ -34,6 +48,7 @@ This is a **Next.js 16 App Router** application for managing a running event cal
 
 - `/api/events` — Public read-only endpoint
 - `/api/admin/events` — Protected CRUD endpoints (verify PocketBase auth cookie)
+- `GET /api/admin/events` returns an uncached admin event list for the Codex interface
 - `/api/auth/login` and `/api/auth/logout` — Auth endpoints
 
 ### Authentication (`lib/auth.ts`)

@@ -8,8 +8,26 @@ import {
   jsonError,
 } from "@/lib/api-responses";
 import { withAuthCookie, requireAdminApi } from "@/lib/auth";
-import { createEvent, EVENTS_TAG, eventTag } from "@/lib/data";
+import {
+  createEvent,
+  EVENTS_TAG,
+  eventTag,
+  listAdminEvents,
+} from "@/lib/data";
 import { eventPayloadSchema } from "@/lib/validation";
+
+export async function GET() {
+  const { pb, unauthorizedResponse } = await requireAdminApi();
+  if (unauthorizedResponse || !pb) {
+    return unauthorizedResponse;
+  }
+
+  try {
+    return withAuthCookie(NextResponse.json(await listAdminEvents(pb)), pb);
+  } catch {
+    return internalServerError();
+  }
+}
 
 export async function POST(req: NextRequest) {
   const { pb, unauthorizedResponse } = await requireAdminApi();

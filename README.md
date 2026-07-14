@@ -45,6 +45,41 @@ npm run dev
 
 Open <http://127.0.0.1:5678> with your browser.
 
+## Codex event data interface
+
+Codex can list, inspect, create, update, and delete individual events through a structured CLI. Mutations go through the authenticated admin API, preserving PocketBase authorization and normal Next.js cache invalidation.
+
+Add the admin credentials to `.env.local` (the file is gitignored):
+
+```env
+POCKETBASE_ADMIN_EMAIL=admin@example.com
+POCKETBASE_ADMIN_PASSWORD=your-password
+RUNNING_CALENDAR_URL=http://127.0.0.1:5678
+```
+
+Then use:
+
+```bash
+# List or inspect current data
+npm run events -- list
+npm run events -- get contoh-jakarta-run-2027
+
+# Inspect the machine-readable create/update contracts
+npm run events -- schema
+
+# Create an event (add --dry-run to preview only)
+npm run events -- create scripts/event.example.json
+
+# Patch only selected fields on an existing event
+npm run events -- update contoh-jakarta-run-2027 scripts/event-patch.example.json
+
+# Preview a deletion, then explicitly confirm it
+npm run events -- delete contoh-jakarta-run-2027
+npm run events -- delete contoh-jakarta-run-2027 --yes
+```
+
+Events can be addressed by PocketBase id or slug. Create and update input are demonstrated in [`scripts/event.example.json`](./scripts/event.example.json) and [`scripts/event-patch.example.json`](./scripts/event-patch.example.json). Update files act as patches, so omitted fields remain unchanged. Supplying `distance` replaces the complete distance array.
+
 ## Daily Countdown Wallpaper
 
 This app now exposes a dynamic PNG endpoint for iPhone Shortcuts:

@@ -1,0 +1,18 @@
+{
+  "title": "Contoh Jakarta Run 2027",
+  "event_date": "2027-05-16",
+  "location": "Jakarta",
+  "distance": [
+    {
+      "name": "5K",
+      "start_time": "05:45",
+      "cot": "07:00"
+    },
+    {
+      "name": "10K",
+      "start_time": "05:30",
+      "cot": "07:30"
+    }
+  ],
+  "description": "Contoh data event untuk antarmuka Codex."
+}
