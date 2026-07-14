@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
-import { connection } from "next/server";
 import { Archive, ArrowLeft } from "lucide-react";
 
 import { EventList } from "@/components/event/event-list";
@@ -76,23 +74,9 @@ async function ArchiveEventContent() {
   );
 }
 
-async function ConnectionMarker() {
-  await connection();
-  return null;
-}
-
-function DynamicMarker() {
-  return (
-    <Suspense>
-      <ConnectionMarker />
-    </Suspense>
-  );
-}
-
 export default function ArchivePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
-      <DynamicMarker />
       <ArchiveHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-6">

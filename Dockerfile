@@ -7,6 +7,10 @@ RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG POCKETBASE_URL=https://pb2.madebynz.xyz
+ARG SITE_URL=https://running.madebynz.xyz
+ENV POCKETBASE_URL=$POCKETBASE_URL
+ENV SITE_URL=$SITE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -20,21 +24,19 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built app and dependencies needed at runtime (including migrations)
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/migrations ./migrations
-COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
+# Copy the minimal standalone production output.
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
 
-RUN chmod +x ./entrypoint.sh && \
-    chown -R nextjs:nodejs /app
+RUN chmod +x ./entrypoint.sh
 
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 ENTRYPOINT ["./entrypoint.sh"]

@@ -3,4 +3,4 @@
 set -e
 
 echo "Starting Next.js server..."
-exec npm run start
+exec node server.js

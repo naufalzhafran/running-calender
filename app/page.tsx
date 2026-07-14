@@ -1,18 +1,12 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
-import { connection } from "next/server";
 import { Calendar } from "lucide-react";
 
 import { EventList } from "@/components/event/event-list";
 import { EVENTS_TAG, listEventSummaries } from "@/lib/data";
 import { createEventCardViewModels } from "@/lib/event-list-view";
 import { splitEventsBySchedule } from "@/lib/event-utils";
-
-export const unstable_instant = {
-  prefetch: "static",
-};
 
 const HOME_RECENT_PAST_EVENT_LIMIT = 3;
 
@@ -139,23 +133,9 @@ async function HomeEventContent() {
   );
 }
 
-async function ConnectionMarker() {
-  await connection();
-  return null;
-}
-
-function DynamicMarker() {
-  return (
-    <Suspense>
-      <ConnectionMarker />
-    </Suspense>
-  );
-}
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <DynamicMarker />
       <HomeHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
