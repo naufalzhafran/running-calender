@@ -78,7 +78,7 @@ npm run events -- delete contoh-jakarta-run-2027
 npm run events -- delete contoh-jakarta-run-2027 --yes
 ```
 
-### Bulk import and automatic sync
+### Bulk import
 
 `import` upserts many events at once, matching existing events by slug
 (derived from the title when omitted). New events are created, existing ones
@@ -89,14 +89,8 @@ are patched with only the fields in the file, and unchanged ones are skipped.
 npm run events -- import scripts/events.import.example.json --dry-run
 
 # Apply it; --create-only leaves existing events untouched
-npm run events -- import data/events/*.json
+npm run events -- import my-events.json
 ```
-
-The `Sync events` GitHub Action runs the same import whenever a JSON file in
-[`data/events/`](./data/events/README.md) changes on `main`, and can be run by
-hand from the Actions tab (dry run by default). It stays idle until the
-repository has `RUNNING_CALENDAR_URL`, `POCKETBASE_ADMIN_EMAIL` and
-`POCKETBASE_ADMIN_PASSWORD` secrets.
 
 Events can be addressed by PocketBase id or slug. Create and update input are demonstrated in [`scripts/event.example.json`](./scripts/event.example.json) and [`scripts/event-patch.example.json`](./scripts/event-patch.example.json). Update files act as patches, so omitted fields remain unchanged. Supplying `distance` replaces the complete distance array.
 
