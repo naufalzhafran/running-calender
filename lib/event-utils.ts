@@ -31,12 +31,20 @@ export function getEventStatus(eventDate: string): EventStatus {
     return { label: "Selesai", variant: "completed" };
   }
 
+  if (daysUntilEvent === 0) {
+    return { label: "Hari Ini", variant: "this-week" };
+  }
+
+  if (daysUntilEvent === 1) {
+    return { label: "Besok", variant: "this-week" };
+  }
+
   if (daysUntilEvent <= 7) {
-    return { label: "Minggu Ini", variant: "this-week" };
+    return { label: `${daysUntilEvent} hari lagi`, variant: "this-week" };
   }
 
   if (daysUntilEvent <= 30) {
-    return { label: "Coming Soon", variant: "soon" };
+    return { label: "Segera", variant: "soon" };
   }
 
   return { label: "", variant: "upcoming" };

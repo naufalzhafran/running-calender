@@ -47,14 +47,18 @@ export function DistanceFieldset({
         size="icon"
         className="absolute top-2 right-2 h-6 w-6 text-muted-foreground hover:text-destructive z-10"
         onClick={() => onRemove(index)}
+        aria-label={`Hapus kategori ${distance.name || index + 1}`}
       >
-        <X className={iconSize} />
+        <X aria-hidden className={iconSize} />
       </Button>
 
       <div className={fieldSpacing}>
         <div className={inputSpacing}>
-          <Label className="text-xs">Nama Kategori</Label>
+          <Label htmlFor={`distance-${index}-name`} className="text-xs">
+            Nama Kategori
+          </Label>
           <ClearableInput
+            id={`distance-${index}-name`}
             type="text"
             value={distance.name}
             onChange={(e) => onChange(index, "name", e.target.value)}
@@ -66,8 +70,11 @@ export function DistanceFieldset({
         </div>
 
         <div className={cn("flex flex-col", inputSpacing)}>
-          <Label className="text-xs">Tanggal</Label>
+          <Label htmlFor={`distance-${index}-date`} className="text-xs">
+            Tanggal
+          </Label>
           <DatePickerField
+            id={`distance-${index}-date`}
             value={distance.date}
             onChange={handleDateSelect}
             onClear={() => onChange(index, "date", "")}
@@ -102,8 +109,9 @@ export function DistanceFieldset({
                     e.stopPropagation();
                     onChange(index, "start_time", "");
                   }}
+                  aria-label="Hapus start time"
                 >
-                  <X className={iconSize} />
+                  <X aria-hidden className={iconSize} />
                 </Button>
               )}
             </div>
@@ -126,8 +134,9 @@ export function DistanceFieldset({
                     e.stopPropagation();
                     onChange(index, "cot", "");
                   }}
+                  aria-label="Hapus COT"
                 >
-                  <X className={iconSize} />
+                  <X aria-hidden className={iconSize} />
                 </Button>
               )}
             </div>

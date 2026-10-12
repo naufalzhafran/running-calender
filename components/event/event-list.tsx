@@ -16,7 +16,7 @@ const STAGGER_CLASSES = [
 
 const STATUS_BADGE_CLASSES: Record<EventStatus["variant"], string> = {
   completed: "bg-muted text-muted-foreground",
-  "this-week": "bg-amber-100 text-amber-700",
+  "this-week": "bg-amber-100 text-amber-800",
   soon: "bg-primary/10 text-primary",
   upcoming: "bg-muted text-muted-foreground",
 };
@@ -42,46 +42,45 @@ function StatusBadge({ status }: { status: EventStatus }) {
   );
 }
 
+function DistancePill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+      {children}
+    </span>
+  );
+}
+
 function DesktopDistancePreview({ event }: { event: EventCardViewModel }) {
-  if (event.distanceCount === 0) {
+  if (event.distanceNames.length === 0) {
     return null;
   }
 
   return (
-    <div className="hidden min-w-[80px] flex-col items-center justify-center border-l border-border/30 px-4 sm:flex">
-      <span className="mb-1 text-xs text-muted-foreground">
-        {event.distanceCount} kategori
-      </span>
-      <div className="flex gap-1">
-        {event.desktopDistanceNames.map((distanceName, index) => (
-          <span
-            key={`${distanceName}-${index}`}
-            className="h-2 w-2 rounded-full bg-primary/60"
-            title={distanceName}
-          />
-        ))}
-      </div>
+    <div className="hidden w-44 shrink-0 flex-wrap content-center justify-end gap-1.5 border-l border-border/30 px-4 sm:flex">
+      {event.desktopDistanceNames.map((distanceName, index) => (
+        <DistancePill key={`${distanceName}-${index}`}>{distanceName}</DistancePill>
+      ))}
+      {event.hiddenDesktopDistanceCount > 0 && (
+        <span className="px-1 py-1 text-xs text-muted-foreground">
+          +{event.hiddenDesktopDistanceCount}
+        </span>
+      )}
     </div>
   );
 }
 
 function MobileDistancePills({ event }: { event: EventCardViewModel }) {
-  if (event.distanceCount === 0) {
+  if (event.distanceNames.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex flex-wrap gap-2 border-t border-border/30 px-4 pb-4 pt-1 sm:hidden">
+    <div className="flex flex-wrap gap-2 border-t border-border/30 px-4 py-3 sm:hidden">
       {event.mobileDistanceNames.map((distanceName, index) => (
-        <span
-          key={`${distanceName}-${index}`}
-          className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
-        >
-          {distanceName}
-        </span>
+        <DistancePill key={`${distanceName}-${index}`}>{distanceName}</DistancePill>
       ))}
       {event.hiddenMobileDistanceCount > 0 && (
-        <span className="px-2 py-1 text-xs text-muted-foreground">
+        <span className="px-1 py-1 text-xs text-muted-foreground">
           +{event.hiddenMobileDistanceCount}
         </span>
       )}
@@ -101,35 +100,48 @@ function EventCard({
       href={`/events/${event.id}`}
       prefetch={event.isPast ? false : undefined}
       className={cn(
-        "block animate-fade-in-up",
+        "group block animate-fade-in-up rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
         getStaggerClass(index),
-        event.isPast && "opacity-60",
       )}
-      style={{ opacity: 0 }}
     >
-      <article className="card-hover cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card">
+      <article
+        className={cn(
+          "card-hover overflow-hidden rounded-2xl border border-border/50 bg-card transition-shadow group-hover:shadow-sm",
+          event.isPast && "opacity-70",
+        )}
+      >
         <div className="flex items-stretch">
-          <div className="flex w-16 flex-col items-center justify-center border-r border-border/30 bg-primary/5 py-3 sm:w-20 sm:py-4">
-            <span className="text-xs font-medium uppercase text-primary">
+          <time
+            dateTime={event.dateTime}
+            className="flex w-16 shrink-0 flex-col items-center justify-center border-r border-border/30 bg-primary/5 py-3 text-primary sm:w-20 sm:py-4"
+          >
+            <span className="sr-only">{event.fullDateLabel}</span>
+            <span aria-hidden className="text-xs font-semibold uppercase">
               {event.monthLabel}
             </span>
-            <span className="text-xl font-bold leading-none text-primary sm:text-2xl">
+            <span
+              aria-hidden
+              className="text-xl font-bold leading-none sm:text-2xl"
+            >
               {event.dayLabel}
             </span>
-          </div>
+            {event.yearLabel && (
+              <span aria-hidden className="mt-1 text-[11px] font-medium">
+                {event.yearLabel}
+              </span>
+            )}
+          </time>
 
-          <div className="flex-1 p-4 sm:p-5">
+          <div className="min-w-0 flex-1 p-4 sm:p-5">
             <StatusBadge status={event.status} />
 
-            <h3 className="mb-2 line-clamp-2 text-base font-semibold text-foreground sm:text-lg">
+            <h3 className="mb-2 line-clamp-2 text-base font-semibold text-foreground group-hover:text-primary sm:text-lg">
               {event.title}
             </h3>
 
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 shrink-0" />
-                <span className="line-clamp-1">{event.location}</span>
-              </div>
+            <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+              <MapPin aria-hidden className="h-4 w-4 shrink-0" />
+              <span className="line-clamp-1">{event.location}</span>
             </div>
           </div>
 
@@ -156,15 +168,17 @@ export function EventList({
   return (
     <section>
       <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-        <span className="h-5 w-1 rounded-full bg-primary" />
+        <span aria-hidden className="h-5 w-1 rounded-full bg-primary" />
         {title}
       </h2>
 
-      <div className="space-y-4">
+      <ul className="space-y-4">
         {events.map((event, index) => (
-          <EventCard key={event.id} event={event} index={index} />
+          <li key={event.id}>
+            <EventCard event={event} index={index} />
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }

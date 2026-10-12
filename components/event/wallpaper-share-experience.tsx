@@ -108,9 +108,10 @@ function CategorySelector({
             <button
               key={`${distance.name}-${distance.date}`}
               type="button"
+              aria-pressed={isActive}
               onClick={() => onChange(distance.name)}
               className={cn(
-                "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
+                "min-h-10 shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition",
                 isActive
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-foreground",
@@ -450,21 +451,22 @@ function SharePanel({
           className="h-11 w-full rounded-2xl"
         >
           {copiedState === "share" ? (
-            <Check className="h-4 w-4" />
+            <Check aria-hidden className="h-4 w-4" />
           ) : (
-            <Copy className="h-4 w-4" />
+            <Copy aria-hidden className="h-4 w-4" />
           )}
-          Link
+          {copiedState === "share" ? "Tersalin" : "Salin Link"}
         </Button>
       </div>
+      <p className="sr-only" aria-live="polite">
+        {copiedState ? "Link disalin ke clipboard" : ""}
+      </p>
     </div>
   );
 }
 
 function PhonePreview({
   event,
-  daysLeft,
-  distanceTitle,
   previewImagePath,
   selectedDate,
   selectedDistance,
@@ -473,8 +475,6 @@ function PhonePreview({
   onImageReady,
 }: {
   event: WallpaperShareExperienceProps["event"];
-  daysLeft: number;
-  distanceTitle: string;
   previewImagePath: string;
   selectedDate: string;
   selectedDistance: DistanceDetail | null;
@@ -488,16 +488,8 @@ function PhonePreview({
         <div className="absolute inset-x-0 top-0 h-[41%] bg-[#e6dece]" />
         <div className="absolute inset-x-0 bottom-0 h-[59%] bg-[#090909]" />
         <div className="relative p-4 sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-xl">
-              <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
-                {distanceTitle}
-              </h2>
-              <p className="mt-2 text-sm font-medium text-muted-foreground">
-                {event.title}
-              </p>
-            </div>
-            <div className="rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-medium text-stone-100">
+          <div className="flex justify-center">
+            <div className="rounded-full border border-black/10 bg-black/70 px-4 py-2 text-sm font-medium text-stone-100">
               {selectedDistance?.name ?? "-"} • {selectedPreset.width}×
               {selectedPreset.height}
             </div>
@@ -549,14 +541,6 @@ function PhonePreview({
           </div>
 
           <div className="mt-6 grid gap-3 sm:mt-8">
-            <PreviewInfoCard label="Countdown">
-              <p className="mt-3 text-4xl font-bold leading-none text-primary">
-                {Math.abs(daysLeft)}
-              </p>
-              <p className="mt-2 text-sm text-stone-300">
-                {daysLeft < 0 ? "hari berlalu" : "hari lagi"}
-              </p>
-            </PreviewInfoCard>
             <PreviewInfoCard label="Tanggal">
               <p className="mt-3 text-base font-semibold text-stone-100">
                 {formatDateInJakarta(selectedDate, {
@@ -586,7 +570,7 @@ function PreviewInfoCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border/50 bg-black/20 p-4 text-stone-100">
+    <div className="rounded-2xl border border-white/15 bg-white/5 p-4 text-stone-100">
       <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
         {label}
       </p>
@@ -718,7 +702,7 @@ export function WallpaperShareExperience({
         <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground sm:mb-3">
-              Detail Kategori
+              Countdown &amp; Wallpaper
             </p>
             <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
               {distanceTitle}
@@ -771,8 +755,6 @@ export function WallpaperShareExperience({
 
         <PhonePreview
           event={event}
-          daysLeft={daysLeft}
-          distanceTitle={distanceTitle}
           previewImagePath={previewImagePath}
           selectedDate={selectedDate}
           selectedDistance={selectedDistance}

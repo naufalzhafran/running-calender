@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowLeft } from "lucide-react";
 
+import { SiteHeader } from "@/components/layout/site-header";
 import { WallpaperShareExperience } from "@/components/event/wallpaper-share-experience";
 import { getEventSummaryById } from "@/lib/data";
 import { getCountdownCopy, pickDistance } from "@/lib/event-utils";
@@ -118,7 +117,7 @@ function WallpaperShareFallback() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
-        <div className="mx-auto max-w-4xl px-4 py-4">
+        <div className="mx-auto flex min-h-16 max-w-4xl items-center px-4 py-3">
           <div className="h-5 w-24 animate-pulse rounded bg-muted" />
         </div>
       </header>
@@ -160,17 +159,10 @@ async function WallpaperShareContent({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
-        <div className="mx-auto max-w-4xl px-4 py-4">
-          <Link
-            href={`/events/${context.event.id}`}
-            className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
-          </Link>
-        </div>
-      </header>
+      <SiteHeader
+        backHref={`/events/${context.event.id}`}
+        backLabel="Detail event"
+      />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
         <WallpaperShareExperience

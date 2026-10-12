@@ -23,6 +23,7 @@ interface DatePickerFieldProps {
   defaultMonth?: Date;
   buttonClassName?: string;
   iconClassName?: string;
+  id?: string;
 }
 
 export function DatePickerField({
@@ -33,6 +34,7 @@ export function DatePickerField({
   defaultMonth,
   buttonClassName,
   iconClassName,
+  id,
 }: DatePickerFieldProps) {
   const [open, setOpen] = React.useState(false);
   const selectedDate = value ? parseDateOnlyToLocalDate(value) : undefined;
@@ -49,6 +51,8 @@ export function DatePickerField({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            id={id}
+            type="button"
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal px-3 h-10 pr-14",
@@ -87,8 +91,9 @@ export function DatePickerField({
             e.stopPropagation();
             onClear();
           }}
+          aria-label="Hapus tanggal"
         >
-          <X className="h-3 w-3" />
+          <X aria-hidden className="h-3 w-3" />
         </Button>
       )}
     </div>

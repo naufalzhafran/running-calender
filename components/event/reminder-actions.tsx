@@ -46,10 +46,10 @@ export function ReminderActions({
     <div className="rounded-3xl border border-border/50 bg-card p-5">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-foreground">
-          Reminder Mobile
+          Simpan ke Kalender
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Simpan {reminderTarget} ke kalender perangkat untuk mendapatkan reminder.
+          Tambahkan {reminderTarget} ke kalender HP agar dapat pengingat.
         </p>
       </div>
 
@@ -61,7 +61,7 @@ export function ReminderActions({
           <select
             value={selectedDistanceName}
             onChange={(event) => setSelectedDistanceName(event.target.value)}
-            className="h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"
+            className="h-11 w-full rounded-2xl border border-input bg-background px-3 text-base text-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 sm:text-sm"
           >
             {distances.map((distance) => (
               <option key={`${distance.name}-${distance.date}`} value={distance.name}>
@@ -74,14 +74,13 @@ export function ReminderActions({
 
       <Button asChild className="h-11 w-full rounded-2xl">
         <a href={calendarUrl}>
-          <CalendarPlus className="h-4 w-4" />
+          <CalendarPlus aria-hidden className="h-4 w-4" />
           Tambah ke Kalender
         </a>
       </Button>
 
       <p className="mt-3 text-sm text-muted-foreground">
-        File kalender menyertakan reminder 7 hari sebelumnya, 1 hari sebelumnya,
-        dan 3 jam sebelum start.
+        Termasuk pengingat 7 hari, 1 hari, dan 3 jam sebelum start.
       </p>
     </div>
   );

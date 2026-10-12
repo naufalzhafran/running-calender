@@ -1,42 +1,14 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { Calendar } from "lucide-react";
 
-import { EventList } from "@/components/event/event-list";
+import { EventBrowser } from "@/components/event/event-browser";
+import { SiteHeader } from "@/components/layout/site-header";
 import { EVENTS_TAG, listEventSummaries } from "@/lib/data";
 import { createEventCardViewModels } from "@/lib/event-list-view";
 import { splitEventsBySchedule } from "@/lib/event-utils";
 
 const HOME_RECENT_PAST_EVENT_LIMIT = 3;
-
-function HomeHeader() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-4">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/logo-mark.svg"
-            alt=""
-            width={40}
-            height={40}
-            unoptimized
-            className="h-10 w-10 shrink-0"
-            priority
-          />
-          <div>
-            <h1 className="text-xl font-bold leading-tight text-foreground">
-              Kalender Lari
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Indonesia Running Events
-            </p>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function StatsGrid({
   upcomingCount,
@@ -46,17 +18,19 @@ function StatsGrid({
   pastCount: number;
 }) {
   return (
-    <div className="mb-8 grid grid-cols-2 gap-3">
+    <div className="mb-6 grid grid-cols-2 gap-3">
       <div className="rounded-2xl border border-border/50 bg-card p-4">
         <p className="text-2xl font-bold text-primary">{upcomingCount}</p>
         <p className="text-sm text-muted-foreground">Event Mendatang</p>
       </div>
-      <div className="rounded-2xl border border-border/50 bg-card p-4">
-        <p className="text-2xl font-bold text-muted-foreground">
-          {pastCount}
-        </p>
+      <Link
+        href="/archive"
+        prefetch={false}
+        className="rounded-2xl border border-border/50 bg-card p-4 transition-colors hover:border-primary/40"
+      >
+        <p className="text-2xl font-bold text-foreground">{pastCount}</p>
         <p className="text-sm text-muted-foreground">Event Selesai</p>
-      </div>
+      </Link>
     </div>
   );
 }
@@ -65,13 +39,13 @@ function EmptyEventsState() {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-16">
       <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-        <Calendar className="h-10 w-10 text-muted-foreground" />
+        <Calendar aria-hidden className="h-10 w-10 text-muted-foreground" />
       </div>
       <h2 className="mb-2 text-xl font-semibold text-foreground">
         Belum Ada Event
       </h2>
       <p className="max-w-xs text-center text-muted-foreground">
-        Saat ini belum ada jadwal lomba lari. Stay tuned untuk upcoming events!
+        Saat ini belum ada jadwal lomba lari. Cek lagi nanti untuk event terbaru.
       </p>
     </div>
   );
@@ -106,14 +80,14 @@ async function HomeEventContent() {
         <EmptyEventsState />
       ) : (
         <div className="space-y-8">
-          <EventList title="Event Mendatang" events={upcomingEventCards} />
-          <EventList
-            title={
+          <EventBrowser
+            upcomingEvents={upcomingEventCards}
+            recentPastEvents={recentPastEventCards}
+            pastTitle={
               upcomingEventCards.length > 0
                 ? "Event Selesai Terbaru"
                 : "Event Terbaru"
             }
-            events={recentPastEventCards}
           />
 
           {hiddenPastCount > 0 && (
@@ -136,9 +110,10 @@ async function HomeEventContent() {
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <HomeHeader />
+      <SiteHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
+        <h1 className="sr-only">Kalender Lari: jadwal event lari di Indonesia</h1>
         <HomeEventContent />
       </main>
     </div>

@@ -76,7 +76,7 @@ export function AdminDashboardClient({ events }: AdminDashboardClientProps) {
   };
 
   return (
-    <div className="min-h-screen bg-md-background">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
@@ -84,7 +84,7 @@ export function AdminDashboardClient({ events }: AdminDashboardClientProps) {
               Dashboard Admin
             </h1>
             <p className="mt-1 text-muted-foreground">
-              Kelola data event dan peserta.
+              Kelola data event lari.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -170,11 +170,11 @@ export function AdminDashboardClient({ events }: AdminDashboardClientProps) {
                           variant="ghost"
                           size="icon"
                           asChild
-                          className="h-8 w-8"
+                          className="h-10 w-10"
                         >
                           <Link href={`/admin/events/${event.id}`}>
                             <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
+                            <span className="sr-only">Edit {event.title}</span>
                           </Link>
                         </Button>
                         <Button
@@ -182,10 +182,10 @@ export function AdminDashboardClient({ events }: AdminDashboardClientProps) {
                           size="icon"
                           onClick={() => confirmDelete(event.id)}
                           disabled={isPending}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="h-10 w-10 text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Hapus</span>
+                          <span className="sr-only">Hapus {event.title}</span>
                         </Button>
                       </div>
                     </TableCell>

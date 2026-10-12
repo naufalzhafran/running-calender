@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,77 +31,91 @@ export default function LoginPage() {
         router.push("/admin");
       } else {
         const data = await res.json();
-        setError(data.message || "Login failed");
+        setError(data.message || "Email atau password salah.");
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-md-background text-md-on-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full relative z-10">
-        <div className="bg-md-surface-container-low rounded-xl p-8 border border-md-outline/10">
-          <div className="relative z-10">
-            {/* Header with Icon */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 bg-md-primary-container rounded-2xl flex items-center justify-center mb-6">
-                <Lock className="w-8 h-8 text-md-on-primary-container" />
+    <main className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-md">
+        <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm sm:p-8">
+          <div className="mb-8 flex flex-col items-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+              <Lock aria-hidden className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-center text-3xl font-bold tracking-tight text-foreground">
+              Masuk Admin
+            </h1>
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              Masuk untuk mengelola event.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div
+                role="alert"
+                className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-sm font-medium text-destructive"
+              >
+                {error}
               </div>
-              <h1 className="text-3xl font-bold text-md-on-surface text-center tracking-tight">
-                Admin Access
-              </h1>
-              <p className="text-md-on-surface-variant mt-2 text-center text-sm">
-                Sign in to manage events
-              </p>
+            )}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  autoComplete="username"
+                  placeholder="admin@contoh.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={error ? true : undefined}
+                  className="h-12 rounded-xl text-base sm:text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  aria-invalid={error ? true : undefined}
+                  className="h-12 rounded-xl text-base sm:text-sm"
+                />
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm font-medium flex items-center justify-center border border-destructive/20">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    placeholder="Email admin"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 bg-md-surface-container-highest/50 border-md-outline/10 focus-visible:ring-md-primary"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 bg-md-surface-container-highest/50 border-md-outline/10 focus-visible:ring-md-primary"
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 rounded-full font-medium text-sm tracking-wide"
-              >
-                {loading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-          </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-12 w-full rounded-full text-sm font-medium tracking-wide"
+            >
+              {loading ? "Memproses..." : "Masuk"}
+            </Button>
+          </form>
         </div>
+
+        <p className="mt-6 text-center text-sm">
+          <Link
+            href="/"
+            className="font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Kembali ke kalender
+          </Link>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

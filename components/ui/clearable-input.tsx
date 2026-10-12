@@ -27,8 +27,9 @@ export function ClearableInput({
           size="icon"
           className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
           onClick={onClear}
+          aria-label="Kosongkan isian"
         >
-          <X className="h-4 w-4" />
+          <X aria-hidden className="h-4 w-4" />
         </Button>
       )}
     </div>

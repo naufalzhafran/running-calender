@@ -1,7 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Clock, MapPin, Ruler } from "lucide-react";
+import { Calendar, Clock, ExternalLink, MapPin, Ruler, Smartphone } from "lucide-react";
+
+import { ReminderActions } from "@/components/event/reminder-actions";
+import { SiteHeader } from "@/components/layout/site-header";
 
 import { buttonVariants } from "@/components/ui/button";
 import { getEventById } from "@/lib/data";
@@ -18,22 +21,6 @@ export const unstable_instant = {
 type PageProps = {
   params: Promise<{ id: string }>;
 };
-
-function BackHeader() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-4">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Link>
-      </div>
-    </header>
-  );
-}
 
 function DistancePills({ distances }: { distances: DistanceDetail[] }) {
   if (distances.length === 0) {
@@ -105,16 +92,26 @@ function EventInfoGrid({ event }: { event: Event }) {
     <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
       <InfoTile
         label="Tanggal"
-        icon={<Calendar className="h-6 w-6 text-primary" />}
+        icon={<Calendar aria-hidden className="h-6 w-6 text-primary" />}
       >
         <DateRange event={event} />
       </InfoTile>
 
       <InfoTile
         label="Lokasi"
-        icon={<MapPin className="h-6 w-6 text-muted-foreground" />}
+        icon={<MapPin aria-hidden className="h-6 w-6 text-primary" />}
       >
         <p className="font-semibold text-foreground">{event.location}</p>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Buka di Google Maps
+          <ExternalLink aria-hidden className="h-3.5 w-3.5" />
+          <span className="sr-only">(tab baru)</span>
+        </a>
       </InfoTile>
     </div>
   );
@@ -150,52 +147,48 @@ function DistanceMetaRow({
 function DistanceCard({
   event,
   distance,
-  index,
 }: {
   event: Event;
   distance: DistanceDetail;
-  index: number;
 }) {
-  const distanceDate = distance.date
-    ? formatDateInJakarta(distance.date, {
-        day: "numeric",
-        month: "short",
-      })
-    : "-";
+  const distanceDate = formatDateInJakarta(distance.date || event.event_date, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   return (
     <div
-      key={`${distance.name}-${index}`}
-      className="rounded-3xl border border-border/50 bg-card p-5 transition-colors hover:border-primary/20"
+      className="flex flex-col rounded-3xl border border-border/50 bg-card p-5 transition-colors hover:border-primary/20"
     >
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <div className="text-xl font-bold text-foreground">
+          <h3 className="text-xl font-bold text-foreground">
             {distance.name}
-          </div>
+          </h3>
           <p className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
             Kategori Race
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border/50 bg-background/70 px-4 py-2">
+      <div className="mb-5 rounded-2xl border border-border/50 bg-background/70 px-4 py-2">
         <DistanceMetaRow
           withDivider
           label="Tanggal"
           value={distanceDate}
-          icon={<Calendar className="h-4 w-4" />}
+          icon={<Calendar aria-hidden className="h-4 w-4" />}
         />
         <DistanceMetaRow
           withDivider
           label="Start"
           value={distance.start_time || "-"}
-          icon={<Clock className="h-4 w-4" />}
+          icon={<Clock aria-hidden className="h-4 w-4" />}
         />
         <DistanceMetaRow
           label="COT"
           value={distance.cot || "-"}
-          icon={<Clock className="h-4 w-4" />}
+          icon={<Clock aria-hidden className="h-4 w-4" />}
         />
       </div>
 
@@ -205,11 +198,13 @@ function DistanceCard({
           distance: distance.name,
         })}
         className={buttonVariants({
-          className: "mt-5 h-11 w-full rounded-2xl",
+          variant: "outline",
+          className: "mt-auto h-11 w-full rounded-2xl",
         })}
+        aria-label={`Countdown dan wallpaper ${distance.name}`}
       >
-        <Ruler className="h-4 w-4" />
-        Lihat Detail Kategori
+        <Smartphone aria-hidden className="h-4 w-4" />
+        Countdown &amp; Wallpaper
       </Link>
     </div>
   );
@@ -223,7 +218,7 @@ function DistanceSection({ event }: { event: Event }) {
   return (
     <div className="mb-8">
       <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-        <Ruler className="h-5 w-5 text-primary" />
+        <Ruler aria-hidden className="h-5 w-5 text-primary" />
         Kategori
       </h2>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -232,7 +227,6 @@ function DistanceSection({ event }: { event: Event }) {
             key={`${distance.name}-${index}`}
             event={event}
             distance={distance}
-            index={index}
           />
         ))}
       </div>
@@ -299,6 +293,15 @@ async function EventDetails({ id }: { id: string }) {
         </h1>
 
         <EventInfoGrid event={event} />
+        {!isPast && event.distance.length > 0 && (
+          <div className="mb-8">
+            <ReminderActions
+              eventId={event.id}
+              eventTitle={event.title}
+              distances={event.distance}
+            />
+          </div>
+        )}
         <DistanceSection event={event} />
         <EventDescription description={event.description} />
       </div>
@@ -309,7 +312,7 @@ async function EventDetails({ id }: { id: string }) {
 export default function EventPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-20">
-      <BackHeader />
+      <SiteHeader backHref="/" backLabel="Semua event" />
 
       <main className="mx-auto max-w-4xl px-4 py-6">
         <Suspense fallback={<EventDetailsFallback />}>

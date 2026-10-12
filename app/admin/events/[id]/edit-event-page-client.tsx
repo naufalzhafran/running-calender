@@ -47,7 +47,7 @@ export function EditEventPageClient({ event }: EditEventPageClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-md-background px-4 py-10">
+    <div className="min-h-screen bg-muted/30 px-4 py-10">
       <div className="container mx-auto max-w-3xl">
         <Button
           variant="ghost"

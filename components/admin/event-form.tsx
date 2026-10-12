@@ -141,8 +141,9 @@ export function EventForm({
 
       {/* Date */}
       <div className="space-y-2 flex flex-col">
-        <Label>Tanggal</Label>
+        <Label htmlFor="event_date">Tanggal</Label>
         <DatePickerField
+          id="event_date"
           value={formData.event_date}
           onChange={(date) => handleDateSelect("event_date", date)}
           onClear={() => handleDateClear("event_date")}
@@ -151,8 +152,9 @@ export function EventForm({
 
       {/* End Date */}
       <div className="space-y-2 flex flex-col">
-        <Label>Tanggal Selesai (Opsional)</Label>
+        <Label htmlFor="end_date">Tanggal Selesai (Opsional)</Label>
         <DatePickerField
+          id="end_date"
           value={formData.end_date}
           onChange={(date) => handleDateSelect("end_date", date)}
           onClear={() => handleDateClear("end_date")}
@@ -244,8 +246,9 @@ export function EventForm({
               onClick={() =>
                 setFormData((prev) => ({ ...prev, description: "" }))
               }
+              aria-label="Kosongkan deskripsi"
             >
-              <X className="h-4 w-4" />
+              <X aria-hidden className="h-4 w-4" />
             </Button>
           )}
         </div>
