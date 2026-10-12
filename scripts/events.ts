@@ -67,9 +67,16 @@ Usage:
   npm run events -- create <file.json> [--dry-run] [--url <url>]
   npm run events -- update <id-or-slug> <file.json> [--dry-run] [--url <url>]
   npm run events -- delete <id-or-slug> [--yes] [--url <url>]
+  npm run events -- import <file.json...> [--dry-run] [--create-only] [--url <url>]
 
 Create and update accept JSON files. Update files are patches, so include only
 the fields that should change. Delete previews the target unless --yes is used.
+
+Import accepts files holding one create object or an array of them, and
+upserts each event by slug (derived from the title when omitted). New slugs
+are created; existing events are patched with only the fields the file
+provides, and skipped when nothing changed. --create-only never touches
+existing events.
 
 Environment:
   RUNNING_CALENDAR_URL       App URL (falls back to SITE_URL or ${DEFAULT_APP_URL})
@@ -94,6 +101,7 @@ function parseArguments(args: string[]) {
   let appUrl: string | undefined;
   let dryRun = false;
   let confirmed = false;
+  let createOnly = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -117,6 +125,11 @@ function parseArguments(args: string[]) {
       continue;
     }
 
+    if (argument === "--create-only") {
+      createOnly = true;
+      continue;
+    }
+
     if (argument.startsWith("--")) {
       throw new Error(`Unknown option: ${argument}`);
     }
@@ -128,6 +141,7 @@ function parseArguments(args: string[]) {
     positionals,
     dryRun,
     confirmed,
+    createOnly,
     appUrl: (
       appUrl ??
       process.env.RUNNING_CALENDAR_URL ??
@@ -297,6 +311,137 @@ function normalizeUpdate(event: Event, input: UpdateInput) {
   });
 }
 
+function getChangedFields(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+) {
+  return Object.keys(after).filter(
+    (key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]),
+  );
+}
+
+async function readImportItems(filePaths: string[]) {
+  const items: { source: string; input: CreateInput }[] = [];
+  const issues: { source: string; path: string; message: string }[] = [];
+
+  for (const filePath of filePaths) {
+    const content = await readJsonFile(filePath);
+    const entries = Array.isArray(content) ? content : [content];
+
+    entries.forEach((entry, index) => {
+      const source = Array.isArray(content) ? `${filePath}[${index}]` : filePath;
+      const parsed = createInputSchema.safeParse(entry);
+
+      if (parsed.success) {
+        items.push({ source, input: parsed.data });
+      } else {
+        issues.push(
+          ...formatIssues(parsed.error).map((issue) => ({ source, ...issue })),
+        );
+      }
+    });
+  }
+
+  return { items, issues };
+}
+
+async function importEvents(
+  appUrl: string,
+  filePaths: string[],
+  { dryRun, createOnly }: { dryRun: boolean; createOnly: boolean },
+) {
+  const { items, issues } = await readImportItems(filePaths);
+
+  if (issues.length > 0) {
+    printJson({ ok: false, message: "Invalid event data", issues });
+    process.exitCode = 1;
+    return;
+  }
+
+  const seen = new Map<string, string>();
+  for (const item of items) {
+    const slug = item.input.slug ?? createSlug(item.input.title);
+    const previous = seen.get(slug);
+
+    if (previous) {
+      throw new Error(
+        `Duplicate slug "${slug}" in ${previous} and ${item.source}`,
+      );
+    }
+
+    seen.set(slug, item.source);
+  }
+
+  const cookie = await login(appUrl);
+  const existing = new Map(
+    (await listEvents(appUrl, cookie)).map((event) => [event.slug, event]),
+  );
+  const summary = {
+    created: [] as string[],
+    updated: [] as { slug: string; fields: string[] }[],
+    unchanged: [] as string[],
+    skipped: [] as string[],
+    failed: [] as { source: string; slug: string; message: string }[],
+  };
+
+  for (const { source, input } of items) {
+    const slug = input.slug ?? createSlug(input.title);
+    const event = existing.get(slug);
+
+    try {
+      if (!event) {
+        const payload = normalizeCreate({ ...input, slug });
+        if (!dryRun) {
+          await apiRequest(appUrl, cookie, "/api/admin/events", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+        }
+        summary.created.push(slug);
+        continue;
+      }
+
+      if (createOnly) {
+        summary.skipped.push(slug);
+        continue;
+      }
+
+      // Treat the import entry as a patch so fields edited by hand and not
+      // present in the source (description, end date, ...) are kept.
+      const patch = Object.fromEntries(
+        Object.entries(input).filter(([key]) => key !== "slug"),
+      ) as UpdateInput;
+      const before = normalizeUpdate(event, {});
+      const after = normalizeUpdate(event, patch);
+      const fields = getChangedFields(before, after);
+
+      if (fields.length === 0) {
+        summary.unchanged.push(slug);
+        continue;
+      }
+
+      if (!dryRun) {
+        await apiRequest(appUrl, cookie, `/api/admin/events/${event.id}`, {
+          method: "PUT",
+          body: JSON.stringify(after),
+        });
+      }
+      summary.updated.push({ slug, fields });
+    } catch (error) {
+      summary.failed.push({
+        source,
+        slug,
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+
+  printJson({ ok: summary.failed.length === 0, dry_run: dryRun, ...summary });
+  if (summary.failed.length > 0) {
+    process.exitCode = 1;
+  }
+}
+
 function parseFile<T>(schema: z.ZodType<T>, input: unknown) {
   const parsed = schema.safeParse(input);
 
@@ -321,7 +466,8 @@ async function main() {
     return;
   }
 
-  const { positionals, dryRun, confirmed, appUrl } = parseArguments(args);
+  const { positionals, dryRun, confirmed, createOnly, appUrl } =
+    parseArguments(args);
 
   if (command === "schema") {
     const target = positionals[0];
@@ -363,6 +509,15 @@ async function main() {
       body: JSON.stringify(payload),
     });
     printJson({ ok: true, event });
+    return;
+  }
+
+  if (command === "import") {
+    if (positionals.length === 0) {
+      throw new Error("import requires at least one JSON file path");
+    }
+
+    await importEvents(appUrl, positionals, { dryRun, createOnly });
     return;
   }
 
