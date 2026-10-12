@@ -78,6 +78,20 @@ npm run events -- delete contoh-jakarta-run-2027
 npm run events -- delete contoh-jakarta-run-2027 --yes
 ```
 
+### Bulk import
+
+`import` upserts many events at once, matching existing events by slug
+(derived from the title when omitted). New events are created, existing ones
+are patched with only the fields in the file, and unchanged ones are skipped.
+
+```bash
+# Preview what would be created or updated
+npm run events -- import scripts/events.import.example.json --dry-run
+
+# Apply it; --create-only leaves existing events untouched
+npm run events -- import my-events.json
+```
+
 Events can be addressed by PocketBase id or slug. Create and update input are demonstrated in [`scripts/event.example.json`](./scripts/event.example.json) and [`scripts/event-patch.example.json`](./scripts/event-patch.example.json). Update files act as patches, so omitted fields remain unchanged. Supplying `distance` replaces the complete distance array.
 
 ## Daily Countdown Wallpaper

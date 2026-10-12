@@ -19,6 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run events -- create <file.json>` — Create one event
 - `npm run events -- update <id-or-slug> <file.json>` — Patch one event
 - `npm run events -- delete <id-or-slug>` — Preview deletion; add `--yes` to confirm
+- `npm run events -- import <file.json...>` — Upsert many events by slug; `--dry-run` previews, `--create-only` skips existing
 - No test framework is configured
 
 ## Workflow Rules
