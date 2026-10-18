@@ -17,3 +17,6 @@
 .agents
 .claude
 pb_data
+
+# Local secrets
+admin-token.txt
