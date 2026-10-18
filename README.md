@@ -134,7 +134,7 @@ Event JSON fields:
 
 - **Optional fields:** `slug` is generated from the title if missing. Each distance `date` defaults to `event_date`. `end_date`, `description`, `start_time`, `cot` and `route_url` can be omitted, `null` or `""`. `cut_off_points` can be omitted or `[]`.
 - **Route info:** `route_url` is an http(s) link to the course map (for example a Strava route). Each cut-off point needs a `name`, a `km` greater than 0 and a `cot` (the time of day it closes, `HH:MM`). The event page shows them as a timeline from start to finish.
-- **Course map:** `route_polyline` is the course as a [Google encoded polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) (precision 5, at most 20,000 characters, so simplify long GPS tracks first). The event page draws it on an OpenStreetMap map with the start, finish, COP markers and direction arrows. It is only returned by `GET /api/events/{slug}` and the admin endpoints, not by the public list.
+- **Course map:** `route_polyline` is the course as a [Google encoded polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) (precision 5, at most 20,000 characters; `api route encode` builds one from a GPX file, see [Managing events](#2-call-the-api)). The event page draws it on an OpenStreetMap map with the start, finish, COP markers and direction arrows. It is only returned by `GET /api/events/{slug}` and the admin endpoints, not by the public list.
 - **Old files:** `distance` is accepted as an alias for `distances`, so JSON files from the previous PocketBase CLI still work.
 - **PATCH:** sending `distances` replaces the whole list. Sending `"end_date": null` clears it.
 - **Unknown fields are rejected**, so a typo like `evnt_date` returns an error instead of being silently ignored.
@@ -207,6 +207,14 @@ curl -X PATCH "$RC_API/api/admin/events/contoh-jakarta-run-2027" \
   -H "Authorization: Bearer $RC_TOKEN" -H "Content-Type: application/json" \
   --data @examples/event-patch.json
 ```
+
+Turn a GPX course file into a `route_polyline`. The command reads the track points (or the route points if the file has no track), joins all segments into one line, simplifies it with Douglas-Peucker at a 4 m tolerance and prints the encoded polyline. It prints the measured distance to stderr, so you can check it against the category, and it fails if the result is over the 20,000-character limit. If that happens, retry with a larger tolerance such as `--tolerance 8`. It needs no database or token, so you can run it locally:
+
+```bash
+cd server && go run ./cmd/api route encode ~/Downloads/course.gpx > polyline.txt
+```
+
+Paste the output into `distances[].route_polyline` in the event JSON, then create or PATCH the event as above.
 
 Delete an event:
 

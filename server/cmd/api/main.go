@@ -4,6 +4,7 @@
 //	api token create --name NAME  create a token (printed once)
 //	api token list                list tokens
 //	api token revoke NAME         revoke a token
+//	api route encode FILE.gpx     print a GPX course as an encoded polyline
 package main
 
 import (
@@ -23,6 +24,7 @@ import (
 	"running-calendar/internal/db"
 	"running-calendar/internal/events"
 	"running-calendar/internal/httpapi"
+	"running-calendar/internal/route"
 	"running-calendar/internal/tokens"
 )
 
@@ -39,6 +41,7 @@ func usage() {
   api token create --name NAME
   api token list
   api token revoke NAME
+  api route encode [--tolerance METERS] FILE.gpx
 
 environment:
   ADDR          listen address (default :8080)
@@ -54,6 +57,10 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.LUTC)
 	if len(os.Args) < 2 {
 		usage()
+	}
+	if os.Args[1] == "route" {
+		routeCommand(os.Args[2:])
+		return
 	}
 
 	ctx := context.Background()
@@ -141,6 +148,40 @@ func tokenCommand(ctx context.Context, store *tokens.Store, args []string) {
 	default:
 		usage()
 	}
+}
+
+// maxPolyline matches the route_polyline limit enforced by the admin API.
+const maxPolyline = 20000
+
+func routeCommand(args []string) {
+	if len(args) == 0 || args[0] != "encode" {
+		usage()
+	}
+	fs := flag.NewFlagSet("route encode", flag.ExitOnError)
+	tolerance := fs.Float64("tolerance", 4, "simplification tolerance in meters")
+	fs.Parse(args[1:])
+	if fs.NArg() != 1 || *tolerance < 0 {
+		usage()
+	}
+
+	f, err := os.Open(fs.Arg(0))
+	if err != nil {
+		log.Fatal(err)
+	}
+	points, err := route.ParseGPX(f)
+	f.Close()
+	if err != nil {
+		log.Fatalf("%s: %v", fs.Arg(0), err)
+	}
+	simplified := route.Simplify(points, *tolerance)
+	polyline := route.Encode(simplified)
+
+	fmt.Fprintf(os.Stderr, "distance %.2f km (simplified %.2f km), %d points -> %d, %d characters\n",
+		route.Distance(points)/1000, route.Distance(simplified)/1000, len(points), len(simplified), len(polyline))
+	if len(polyline) > maxPolyline {
+		log.Fatalf("polyline is %d characters, over the API limit of %d; retry with a larger --tolerance", len(polyline), maxPolyline)
+	}
+	fmt.Println(polyline)
 }
 
 func orDash(s *string) string {
