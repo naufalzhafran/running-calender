@@ -35,26 +35,6 @@ function dateRange(event) {
   return `${start} – ${esc(formatDate(event.end_date, { day: "numeric", month: "long" }))}`;
 }
 
-function distanceCard(event, distance) {
-  const wallpaperUrl = `/wallpaper/${encodeURIComponent(event.slug)}?${new URLSearchParams({ distance: distance.name })}`;
-  const date = formatDate(distance.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-  return `
-    <div class="distance-card">
-      ${distanceChip(distance.name, "lg")}
-      <dl class="meta-rows">
-        <div class="meta-row"><dt class="caption">${icon("calendar")}Tanggal</dt><dd>${esc(date)}</dd></div>
-        <div class="meta-row"><dt class="caption">${icon("clock")}Start</dt><dd>${esc(formatTime(distance.start_time) || "-")}</dd></div>
-        <div class="meta-row"><dt class="caption">${icon("clock")}Cut-off (COT)</dt><dd>${esc(formatTime(distance.cot) || "-")}</dd></div>
-      </dl>
-      <a href="${esc(wallpaperUrl)}" class="btn btn--secondary btn--block" aria-label="Countdown dan wallpaper ${esc(distance.name)}">
-        ${icon("smartphone")}Countdown &amp; Wallpaper
-      </a>
-    </div>`;
-}
-
-const hasRoute = (distance) =>
-  Boolean(distance.route_url || distance.route_polyline) || distance.cut_off_points?.length > 0;
-
 function courseStop(variant, label, km, time) {
   return `
     <li class="course__stop course__stop--${variant}">
@@ -64,13 +44,18 @@ function courseStop(variant, label, km, time) {
     </li>`;
 }
 
-function routeCard(distance) {
+/** One card per category: race date, then start → COPs → finish (COT). */
+function distanceCard(distance) {
+  const date = formatDate(distance.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
   const points = distance.cut_off_points ?? [];
   return `
     <div class="distance-card">
-      ${distanceChip(distance.name, "lg")}
-      <ol class="course" aria-label="Rute ${esc(distance.name)}">
-        ${courseStop("start", "Start", "KM 0", esc(formatTime(distance.start_time) || "-"))}
+      <div class="distance-card__head">
+        ${distanceChip(distance.name, "lg")}
+        <p class="distance-card__date caption">${icon("calendar")}${esc(date)}</p>
+      </div>
+      <ol class="course" aria-label="Jadwal ${esc(distance.name)}">
+        ${courseStop("start", "Start", points.length ? "KM 0" : "", esc(formatTime(distance.start_time) || "-"))}
         ${points.map((p) => courseStop("cop", esc(p.name), `KM ${esc(formatKm(p.km))}`, esc(formatTime(p.cot)))).join("")}
         ${courseStop("finish", "Finish (COT)", "", esc(formatTime(distance.cot) || "-"))}
       </ol>
@@ -81,6 +66,7 @@ function render(event) {
   const past = isPastEvent(event);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   const status = past ? { label: "Event telah selesai", variant: "plain" } : eventStatus(event);
+  const hasCops = event.distances.some((d) => d.cut_off_points?.length);
 
   content.innerHTML = `
     <article>
@@ -100,6 +86,12 @@ function render(event) {
               Buka di Google Maps${icon("external-link")}<span class="sr-only">(tab baru)</span>
             </a>`)}
         </dl>
+        ${event.distances.length ? `
+          <div class="detail__actions">
+            <a href="/wallpaper/${encodeURIComponent(event.slug)}" class="btn btn--secondary">
+              ${icon("smartphone")}Countdown &amp; Wallpaper
+            </a>
+          </div>` : ""}
       </header>
 
       <div class="detail__grid">
@@ -108,18 +100,16 @@ function render(event) {
             <section>
               <div class="section-head">
                 <h2 class="display-m">Kategori</h2>
-                <p class="caption tabular">${event.distances.length} jarak</p>
+                <p class="caption tabular">${event.distances.length} jarak${hasCops ? " · waktu COP = jam tutup" : ""}</p>
               </div>
-              <div class="distance-grid">${event.distances.map((d) => distanceCard(event, d)).join("")}</div>
+              <div class="distance-grid">${event.distances.map(distanceCard).join("")}</div>
             </section>` : ""}
-          ${event.distances.some(hasRoute) ? `
+          ${event.distances.some((d) => d.route_polyline) ? `
             <section>
               <div class="section-head">
-                <h2 class="display-m">Rute</h2>
-                <p class="caption">Waktu COP = jam tutup</p>
+                <h2 class="display-m">Peta rute</h2>
               </div>
-              ${event.distances.some((d) => d.route_polyline) ? '<div class="route-map-block" id="route-map"></div>' : ""}
-              <div class="distance-grid">${event.distances.filter(hasRoute).map(routeCard).join("")}</div>
+              <div id="route-map"></div>
             </section>` : ""}
           ${event.description ? `
             <section class="description">

@@ -723,6 +723,8 @@ img, svg {
 
 .detail__hero .route { max-width: 36rem; }
 
+.detail__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
 .facts {
   display: grid;
   gap: var(--space-4);
@@ -797,22 +799,18 @@ img, svg {
   background: var(--surface-200);
 }
 
-.distance-card .btn { margin-top: auto; }
-.distance-card .distance-chip:not(.distance-chip--trail) { background: var(--surface-100); }
-
-.meta-rows { width: 100%; }
-
-.meta-row {
-  padding: var(--space-2) 0;
+.distance-card__head {
+  width: 100%;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-2) var(--space-3);
 }
 
-.meta-row + .meta-row { border-top: 1px solid var(--border); }
-.meta-row dt { display: flex; align-items: center; gap: var(--space-2); }
-.meta-row dd { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.distance-card__date { display: flex; align-items: center; gap: var(--space-2); }
+
+.distance-card .distance-chip:not(.distance-chip--trail) { background: var(--surface-100); }
 
 /* Course timeline: the route line motif turned vertical, start dot to finish flag */
 
@@ -880,8 +878,7 @@ img, svg {
 
 /* Course map (Leaflet + OpenStreetMap), colored only through tokens */
 
-.route-map-block { margin-bottom: var(--space-4); }
-.route-map-block .route-map__chips { margin-bottom: var(--space-3); }
+.route-map__chips { margin-bottom: var(--space-3); }
 
 .route-map {
   overflow: hidden;
