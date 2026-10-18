@@ -4,6 +4,7 @@ import {
   eventBadges,
   eventStatus,
   formatDate,
+  formatKm,
   formatLongDate,
   formatTime,
   icon,
@@ -50,6 +51,34 @@ function distanceCard(event, distance) {
     </div>`;
 }
 
+const hasRoute = (distance) => Boolean(distance.route_url) || distance.cut_off_points?.length > 0;
+
+function courseStop(variant, label, km, time) {
+  return `
+    <li class="course__stop course__stop--${variant}">
+      <span class="course__marker" aria-hidden="true">${variant === "finish" ? icon("flag") : ""}</span>
+      <span class="course__label">${label}${km ? `<span class="caption tabular">${km}</span>` : ""}</span>
+      <span class="course__time">${time}</span>
+    </li>`;
+}
+
+function routeCard(distance) {
+  const points = distance.cut_off_points ?? [];
+  return `
+    <div class="distance-card">
+      ${distanceChip(distance.name, "lg")}
+      <ol class="course" aria-label="Rute ${esc(distance.name)}">
+        ${courseStop("start", "Start", "KM 0", esc(formatTime(distance.start_time) || "-"))}
+        ${points.map((p) => courseStop("cop", esc(p.name), `KM ${esc(formatKm(p.km))}`, esc(formatTime(p.cot)))).join("")}
+        ${courseStop("finish", "Finish (COT)", "", esc(formatTime(distance.cot) || "-"))}
+      </ol>
+      ${distance.route_url ? `
+        <a href="${esc(distance.route_url)}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--block" aria-label="Peta rute ${esc(distance.name)} (tab baru)">
+          ${icon("route")}Lihat peta rute${icon("external-link")}
+        </a>` : ""}
+    </div>`;
+}
+
 function render(event) {
   const past = isPastEvent(event);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
@@ -84,6 +113,14 @@ function render(event) {
                 <p class="caption tabular">${event.distances.length} jarak</p>
               </div>
               <div class="distance-grid">${event.distances.map((d) => distanceCard(event, d)).join("")}</div>
+            </section>` : ""}
+          ${event.distances.some(hasRoute) ? `
+            <section>
+              <div class="section-head">
+                <h2 class="display-m">Rute</h2>
+                <p class="caption">Waktu COP = jam tutup</p>
+              </div>
+              <div class="distance-grid">${event.distances.filter(hasRoute).map(routeCard).join("")}</div>
             </section>` : ""}
           ${event.description ? `
             <section class="description">

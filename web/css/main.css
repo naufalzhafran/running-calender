@@ -493,8 +493,6 @@ img, svg {
   font-variant-numeric: tabular-nums;
 }
 
-a.stat .stat__label { text-decoration: underline; text-decoration-color: var(--border); text-underline-offset: 4px; }
-a.stat:hover .stat__label { color: var(--ink); text-decoration-color: currentColor; }
 
 @media (min-width: 1024px) {
   .hero {
@@ -812,6 +810,70 @@ a.stat:hover .stat__label { color: var(--ink); text-decoration-color: currentCol
 .meta-row + .meta-row { border-top: 1px solid var(--border); }
 .meta-row dt { display: flex; align-items: center; gap: var(--space-2); }
 .meta-row dd { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* Course timeline: the route line motif turned vertical, start dot to finish flag */
+
+.course {
+  --marker: 1.5rem;
+  position: relative;
+  width: 100%;
+  list-style: none;
+}
+
+.course::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--space-2) + var(--marker) / 2);
+  bottom: calc(var(--space-2) + var(--marker) / 2);
+  left: calc(var(--marker) / 2 - 3px);
+  width: 6px;
+  background: radial-gradient(circle, var(--trail) 2px, transparent 2.5px) center top / 6px 10px repeat-y;
+}
+
+.course__stop {
+  position: relative;
+  padding: var(--space-2) 0;
+  display: grid;
+  grid-template-columns: var(--marker) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.course__marker {
+  width: var(--marker);
+  height: var(--marker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+}
+
+.course__stop--start .course__marker {
+  background: var(--trail);
+  box-shadow: inset 0 0 0 6px var(--surface-200);
+}
+
+.course__stop--cop .course__marker {
+  background: var(--surface-100);
+  box-shadow: inset 0 0 0 2px var(--trail), 0 0 0 4px var(--surface-200);
+}
+
+.course__stop--finish .course__marker {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+.course__marker .icon { width: 0.875rem; height: 0.875rem; }
+
+.course__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2);
+  font-weight: 600;
+}
+
+.course__time { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
 
 .description p { max-width: 42rem; white-space: pre-wrap; color: var(--ink-muted); }
 .description h2 { margin-bottom: var(--space-3); }

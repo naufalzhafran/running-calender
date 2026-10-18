@@ -149,7 +149,6 @@ async function load() {
     state.pastTotal = past.total;
 
     document.getElementById("upcoming-count").textContent = upcoming.total;
-    document.getElementById("past-count").textContent = past.total;
 
     if (upcoming.total + past.total === 0) {
       renderEmpty();
