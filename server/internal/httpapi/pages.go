@@ -23,7 +23,7 @@ const (
 	metaEnd     = "<!--meta:end-->"
 	dataMarker  = "<!--page-data-->"
 	siteName    = "Kalender Lari"
-	defaultIcon = "/icons/icon-512.png"
+	defaultIcon = "/icons/icon-512.png?v=2"
 )
 
 type pageMeta struct {
