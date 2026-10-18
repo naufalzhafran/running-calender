@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
@@ -91,7 +92,7 @@ func (s *Store) List(ctx context.Context, f ListFilter) ([]Event, int, error) {
 	if err := rows.Err(); err != nil {
 		return nil, 0, err
 	}
-	if err := attachDistances(ctx, s.db, list); err != nil {
+	if err := attachDistances(ctx, s.db, list, f.IncludeDescription); err != nil {
 		return nil, 0, err
 	}
 	return list, total, nil
@@ -288,13 +289,15 @@ func getBySlug(ctx context.Context, q queryer, slug string) (Event, error) {
 		return Event{}, err
 	}
 	list := []Event{ev}
-	if err := attachDistances(ctx, q, list); err != nil {
+	if err := attachDistances(ctx, q, list, true); err != nil {
 		return Event{}, err
 	}
 	return list[0], nil
 }
 
-func attachDistances(ctx context.Context, q queryer, list []Event) error {
+// attachDistances loads each event's distances. withPolyline also loads the
+// course geometry, which only detail and admin responses need.
+func attachDistances(ctx context.Context, q queryer, list []Event, withPolyline bool) error {
 	if len(list) == 0 {
 		return nil
 	}
@@ -307,7 +310,7 @@ func attachDistances(ctx context.Context, q queryer, list []Event) error {
 	}
 	placeholders := strings.TrimSuffix(strings.Repeat("?,", len(list)), ",")
 	rows, err := q.QueryContext(ctx,
-		"SELECT event_id, name, race_date, start_time, cot FROM event_distances WHERE event_id IN ("+placeholders+") ORDER BY event_id, position",
+		"SELECT event_id, name, race_date, start_time, cot, route_url, cut_off_points, "+polylineColumn(withPolyline)+" FROM event_distances WHERE event_id IN ("+placeholders+") ORDER BY event_id, position",
 		args...)
 	if err != nil {
 		return err
@@ -316,15 +319,29 @@ func attachDistances(ctx context.Context, q queryer, list []Event) error {
 	for rows.Next() {
 		var eventID int64
 		var d Distance
-		var start, cot sql.NullString
-		if err := rows.Scan(&eventID, &d.Name, &d.Date, &start, &cot); err != nil {
+		var start, cot, routeURL, points, polyline sql.NullString
+		if err := rows.Scan(&eventID, &d.Name, &d.Date, &start, &cot, &routeURL, &points, &polyline); err != nil {
 			return err
 		}
-		d.StartTime, d.COT = nullable(start), nullable(cot)
+		d.StartTime, d.COT, d.RouteURL = nullable(start), nullable(cot), nullable(routeURL)
+		d.RoutePolyline = nullable(polyline)
+		d.CutOffPoints = []CutOffPoint{}
+		if points.Valid {
+			if err := json.Unmarshal([]byte(points.String), &d.CutOffPoints); err != nil {
+				return err
+			}
+		}
 		i := index[eventID]
 		list[i].Distances = append(list[i].Distances, d)
 	}
 	return rows.Err()
+}
+
+func polylineColumn(include bool) string {
+	if include {
+		return "route_polyline"
+	}
+	return "NULL"
 }
 
 func insertEvent(ctx context.Context, tx *sql.Tx, ev Event) error {
@@ -357,9 +374,18 @@ func updateEvent(ctx context.Context, tx *sql.Tx, ev Event) error {
 
 func insertDistances(ctx context.Context, tx *sql.Tx, eventID int64, distances []Distance) error {
 	for i, d := range distances {
+		var points *string
+		if len(d.CutOffPoints) > 0 {
+			b, err := json.Marshal(d.CutOffPoints)
+			if err != nil {
+				return err
+			}
+			s := string(b)
+			points = &s
+		}
 		if _, err := tx.ExecContext(ctx,
-			`INSERT INTO event_distances (event_id, position, name, race_date, start_time, cot) VALUES (?, ?, ?, ?, ?, ?)`,
-			eventID, i, d.Name, d.Date, d.StartTime, d.COT); err != nil {
+			`INSERT INTO event_distances (event_id, position, name, race_date, start_time, cot, route_url, cut_off_points, route_polyline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			eventID, i, d.Name, d.Date, d.StartTime, d.COT, d.RouteURL, points, d.RoutePolyline); err != nil {
 			return err
 		}
 	}

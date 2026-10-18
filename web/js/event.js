@@ -15,6 +15,7 @@ import {
   routeLine,
 } from "./lib.js";
 import { reminderCard } from "./reminder.js";
+import { routeMap } from "./route-map.js";
 
 const content = document.getElementById("content");
 
@@ -51,7 +52,8 @@ function distanceCard(event, distance) {
     </div>`;
 }
 
-const hasRoute = (distance) => Boolean(distance.route_url) || distance.cut_off_points?.length > 0;
+const hasRoute = (distance) =>
+  Boolean(distance.route_url || distance.route_polyline) || distance.cut_off_points?.length > 0;
 
 function courseStop(variant, label, km, time) {
   return `
@@ -72,10 +74,6 @@ function routeCard(distance) {
         ${points.map((p) => courseStop("cop", esc(p.name), `KM ${esc(formatKm(p.km))}`, esc(formatTime(p.cot)))).join("")}
         ${courseStop("finish", "Finish (COT)", "", esc(formatTime(distance.cot) || "-"))}
       </ol>
-      ${distance.route_url ? `
-        <a href="${esc(distance.route_url)}" target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--block" aria-label="Peta rute ${esc(distance.name)} (tab baru)">
-          ${icon("route")}Lihat peta rute${icon("external-link")}
-        </a>` : ""}
     </div>`;
 }
 
@@ -120,6 +118,7 @@ function render(event) {
                 <h2 class="display-m">Rute</h2>
                 <p class="caption">Waktu COP = jam tutup</p>
               </div>
+              ${event.distances.some((d) => d.route_polyline) ? '<div class="route-map-block" id="route-map"></div>' : ""}
               <div class="distance-grid">${event.distances.filter(hasRoute).map(routeCard).join("")}</div>
             </section>` : ""}
           ${event.description ? `
@@ -131,6 +130,11 @@ function render(event) {
         ${!past && event.distances.length ? '<aside class="detail__aside" id="reminder"></aside>' : ""}
       </div>
     </article>`;
+
+  const map = content.querySelector("#route-map");
+  if (map) {
+    routeMap(map, event.distances);
+  }
 
   const reminder = content.querySelector("#reminder");
   if (reminder) {

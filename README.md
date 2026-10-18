@@ -40,7 +40,7 @@ The SQLite schema lives in [`server/internal/db/migrations/`](server/internal/db
 | Table | Purpose |
 |---|---|
 | `events` | `slug` (unique, used in URLs), `title`, `event_date`, `end_date`, `location`, `description`, generated `last_date`, timestamps |
-| `event_distances` | One row per race category: `name`, `race_date`, `start_time`, `cot`, `position` (display order) |
+| `event_distances` | One row per race category: `name`, `race_date`, `start_time`, `cot`, `route_url`, `cut_off_points` (JSON array), `route_polyline`, `position` (display order) |
 | `api_tokens` | Admin tokens: `name`, `token_hash` (SHA-256), `token_prefix`, `last_used_at`, `revoked_at` |
 
 - Dates are `YYYY-MM-DD` and times are `HH:MM`, both in Asia/Jakarta time.
@@ -122,12 +122,19 @@ Event JSON fields:
   "location": "Jakarta",
   "description": "Optional text",
   "distances": [
-    { "name": "10K", "date": "2027-05-16", "start_time": "05:30", "cot": "07:30" }
+    {
+      "name": "10K", "date": "2027-05-16", "start_time": "05:30", "cot": "07:30",
+      "route_url": "https://www.strava.com/routes/123",
+      "route_polyline": "_p~iF~ps|U_ulLnnqC",
+      "cut_off_points": [{ "name": "COP 1", "km": 5.5, "cot": "06:30" }]
+    }
   ]
 }
 ```
 
-- **Optional fields:** `slug` is generated from the title if missing. Each distance `date` defaults to `event_date`. `end_date`, `description`, `start_time` and `cot` can be omitted, `null` or `""`.
+- **Optional fields:** `slug` is generated from the title if missing. Each distance `date` defaults to `event_date`. `end_date`, `description`, `start_time`, `cot` and `route_url` can be omitted, `null` or `""`. `cut_off_points` can be omitted or `[]`.
+- **Route info:** `route_url` is an http(s) link to the course map (for example a Strava route). Each cut-off point needs a `name`, a `km` greater than 0 and a `cot` (the time of day it closes, `HH:MM`). The event page shows them as a timeline from start to finish.
+- **Course map:** `route_polyline` is the course as a [Google encoded polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) (precision 5, at most 20,000 characters, so simplify long GPS tracks first). The event page draws it on an OpenStreetMap map with the start, finish, COP markers and direction arrows. It is only returned by `GET /api/events/{slug}` and the admin endpoints, not by the public list.
 - **Old files:** `distance` is accepted as an alias for `distances`, so JSON files from the previous PocketBase CLI still work.
 - **PATCH:** sending `distances` replaces the whole list. Sending `"end_date": null` clears it.
 - **Unknown fields are rejected**, so a typo like `evnt_date` returns an error instead of being silently ignored.
@@ -289,5 +296,6 @@ sqlite3 /var/lib/running-calendar/app.db "VACUUM INTO '/var/backups/running-cale
 ## Notes
 
 - **Wallpaper PNGs** are rendered on the server because the iOS Shortcut described on the wallpaper page fetches the image URL directly every day. Renders are cached in memory for 15 minutes per event version, day, distance and size. The font is Go Bold/Regular from `golang.org/x/image`. To use another font, replace the TTF in [`server/internal/wallpaper/render.go`](server/internal/wallpaper/render.go).
+- **Course map:** Leaflet 1.9.4 is vendored in [`web/vendor/leaflet/`](web/vendor/leaflet/) and loaded only when an event has a `route_polyline`. Tiles come from `tile.openstreetmap.org` (keep the attribution). All map colors come from CSS tokens in `main.css`, including `--map-tiles-filter`, which tones the tiles to the light or dark surfaces.
 - **Wallpaper presets** are defined twice and must stay in sync: [`server/internal/wallpaper/presets.go`](server/internal/wallpaper/presets.go) and [`web/js/wallpaper-presets.js`](web/js/wallpaper-presets.js).
 - **Caching:** HTML, JS and CSS have no fingerprinted filenames, so nginx serves them with `Cache-Control: no-cache` (the browser revalidates and usually gets a 304). The service worker caches them for offline use. Bump `CACHE_NAME` in [`web/sw.js`](web/sw.js) when the app shell file list changes.
