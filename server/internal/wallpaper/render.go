@@ -2,6 +2,7 @@ package wallpaper
 
 import (
 	"bytes"
+	_ "embed"
 	"image"
 	"image/color"
 	"image/draw"
@@ -12,8 +13,6 @@ import (
 	"time"
 
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
 	"golang.org/x/image/vector"
@@ -22,9 +21,21 @@ import (
 	"running-calendar/internal/jakarta"
 )
 
+// The design guide's faces: Archivo for headings and numbers, Figtree for
+// text. Static TTFs, since opentype cannot pick a variable font instance.
 var (
-	boldFont    = mustParse(gobold.TTF)
-	regularFont = mustParse(goregular.TTF)
+	//go:embed fonts/Archivo-Bold.ttf
+	archivoBoldTTF []byte
+	//go:embed fonts/Figtree-Regular.ttf
+	figtreeRegularTTF []byte
+	//go:embed fonts/Figtree-Medium.ttf
+	figtreeMediumTTF []byte
+)
+
+var (
+	boldFont    = mustParse(archivoBoldTTF)
+	regularFont = mustParse(figtreeRegularTTF)
+	mediumFont  = mustParse(figtreeMediumTTF)
 
 	colBackground = color.RGBA{0x06, 0x06, 0x06, 0xff}
 	colPaper      = color.RGBA{0xe6, 0xde, 0xce, 0xff}
@@ -310,7 +321,7 @@ func Render(m Model, width, height int) ([]byte, error) {
 	// Footer, laid out bottom-up from the inset.
 	category := textStyle{font: boldFont, size: float64(clamp(pct(width, 0.052), 56, 74)), lineHeight: 1.02, color: colWhite}
 	body := textStyle{font: regularFont, size: float64(clamp(pct(width, 0.025), 26, 34)), lineHeight: 1.25, spacing: 2, color: colBody}
-	meta := textStyle{font: regularFont, size: float64(clamp(pct(width, 0.02), 20, 28)), lineHeight: 1.25, spacing: 3, color: colMeta}
+	meta := textStyle{font: mediumFont, size: float64(clamp(pct(width, 0.02), 20, 28)), lineHeight: 1.25, spacing: 3, color: colMeta}
 
 	type block struct {
 		style textStyle
@@ -340,7 +351,7 @@ func Render(m Model, width, height int) ([]byte, error) {
 	cx := float64(width) - padX - radius
 	cy := footerBottom - radius
 	c.ring(cx, cy, radius, 2, colRing)
-	badge := textStyle{font: regularFont, size: float64(clamp(pct(width, 0.017), 18, 22)), lineHeight: 1, spacing: 4, color: colBadge}
+	badge := textStyle{font: mediumFont, size: float64(clamp(pct(width, 0.017), 18, 22)), lineHeight: 1, spacing: 4, color: colBadge}
 	c.drawLine(badge, cx-c.measure(badge, "RUN")/2, cy-badge.size/2, "RUN")
 
 	var buf bytes.Buffer
