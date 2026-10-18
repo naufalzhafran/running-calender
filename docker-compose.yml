@@ -1,20 +1,20 @@
+# Go API only. The static site in web/ is served by the VPS's own nginx,
+# which proxies /api, /events/* and /wallpaper/* to this container.
 services:
-  web:
-    image: running-calendar:latest
-    container_name: running-calendar
-    build:
-      context: .
-      dockerfile: Dockerfile
+  api:
+    build: ./server
+    image: running-calendar-api:latest
+    container_name: running-calendar-api
     restart: unless-stopped
     environment:
-      POCKETBASE_URL: http://pocketbase2:8090
-      POCKETBASE_ADMIN_COLLECTION: admins
-      SITE_URL: https://running.madebynz.xyz
+      ADDR: ":8080"
+      DB_PATH: /data/app.db
+      # The web dir is mounted whole so the relative `current` symlink is
+      # followed per request and new static releases are picked up live.
+      WEB_ROOT: /web/current
+      SITE_URL: ${SITE_URL:-https://running.madebynz.xyz}
     ports:
-      - "127.0.0.1:5678:3000"
-    networks:
-      - running-net
-
-networks:
-  running-net:
-    external: true
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    volumes:
+      - ${DATA_DIR:-/var/lib/running-calendar}:/data
+      - ${WEB_DIR:-/var/www/running-calendar}:/web:ro

@@ -1,77 +1,38 @@
-
-<!-- BEGIN:nextjs-agent-rules -->
- 
-# Next.js: ALWAYS read docs before coding
- 
-Before any Next.js work, find and read the relevant doc in `node_modules/next/dist/docs/`. Your training data is outdated — the docs are the source of truth.
- 
-<!-- END:nextjs-agent-rules -->
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Commands
-
-- `npm run dev` — Start Next.js dev server
-- `npm run build` — Production build
-- `npm run lint` — Run ESLint
-- `npm run events -- list` — List event data for Codex
-- `npm run events -- get <id-or-slug>` — Inspect one event
-- `npm run events -- create <file.json>` — Create one event
-- `npm run events -- update <id-or-slug> <file.json>` — Patch one event
-- `npm run events -- delete <id-or-slug>` — Preview deletion; add `--yes` to confirm
-- `npm run events -- import <file.json...>` — Upsert many events by slug; `--dry-run` previews, `--create-only` skips existing
-- No test framework is configured
-
-## Workflow Rules
-
-- Do not start the dev server automatically after code changes, plan execution, or verification. Only run `npm run dev` when the user explicitly asks for a local server.
-- Prefer `npm run lint` and `npm run build` for automated verification unless the user requests manual browser/dev-server testing.
-
-## Codex Event Data Interface
-
-- Use `npm run events -- ...` for event CRUD instead of editing PocketBase directly.
-- Resolve events by PocketBase id or slug. Run `list` or `get` before changing an event when the target is ambiguous.
-- Create files may omit `slug`, distance dates/times, description, and end date. Update files are patches and should contain only fields that need to change.
-- Use `--dry-run` to preview normalized create/update payloads. Only use mutating commands when the user has authorized the corresponding data change.
-- Delete previews by default and requires `--yes` to perform the deletion.
-- Commands require a running/deployed app plus `POCKETBASE_ADMIN_EMAIL` and `POCKETBASE_ADMIN_PASSWORD` in an ignored env file.
+This file provides guidance to Claude Code (claude.ai/code) and other agents when working with code in this repository.
 
 ## Architecture
 
-This is a **Next.js 16 App Router** application for managing a running event calendar (Indonesian language UI). It uses **PocketBase** for data and auth, and **Shadcn UI** components.
+Kalender Lari is a running event calendar (Indonesian UI) with two parts:
 
-### Data Flow
+- `web/`: static site in plain HTML, CSS and vanilla JS (ES modules). There is no framework, no bundler and no build step. In production the VPS nginx serves it.
+- `server/`: Go REST API (standard library `net/http`) with SQLite (`modernc.org/sqlite`, pure Go). It runs in Docker via the root `docker-compose.yml`.
 
-- **Server Components** (default): Fetch PocketBase data through helpers in `lib/data.ts`. Pages use `export const dynamic = "force-dynamic"` for real-time data.
-- **Client Components** (`"use client"`): Fetch data through `/api` route handlers. Used for interactive pages like admin dashboard, event forms, and login.
+nginx proxies `/api/*`, `/events/{slug}` and `/wallpaper/{slug}` to Go. For the two page routes, Go reads `web/event.html` or `web/wallpaper.html`, swaps the `<!--meta:start-->…<!--meta:end-->` region for per-event title and Open Graph tags, and replaces `<!--page-data-->` with the event JSON.
 
-### API Routes (`app/api/`)
+See README.md for the API, schema, data entry and deployment.
 
-- `/api/events` — Public read-only endpoint
-- `/api/admin/events` — Protected CRUD endpoints (verify PocketBase auth cookie)
-- `GET /api/admin/events` returns an uncached admin event list for the Codex interface
-- `/api/auth/login` and `/api/auth/logout` — Auth endpoints
+## Commands
 
-### Authentication (`lib/auth.ts`)
+- `cd server && go vet ./... && go build ./...`: verify the Go code
+- `cd server && SERVE_STATIC=1 WEB_ROOT=../web go run ./cmd/api serve`: local server with the static site at http://localhost:8080
+- `cd server && go run ./cmd/api token create --name NAME`: create an admin API token (printed once)
+- No test framework is configured.
 
-Admin users live in the PocketBase auth collection configured by `POCKETBASE_ADMIN_COLLECTION` (default `admins`). The Next.js app stores the PocketBase auth state in the `pb_auth` HTTP-only cookie and refreshes it server-side.
+## Workflow Rules
 
-### Key Directories
+- Do not start the local server automatically after code changes, plan execution, or verification. Only run it when the user explicitly asks for a local server.
+- Prefer `go vet` and `go build` for automated verification unless the user requests manual browser testing.
 
-- `app/` — Pages and API routes (App Router)
-- `app/admin/` — Protected admin pages (dashboard, event create/edit)
-- `components/ui/` — Shadcn UI components (Tailwind v4 + CVA variants)
-- `lib/` — `pocketbase.ts` (client helpers), `auth.ts` (auth cookie helpers), `data.ts` (record access), `utils.ts` (cn helper)
-- `types/` — TypeScript interfaces (Event, DistanceDetail)
-- `pocketbase/` — collection and API rule setup notes
+## Event data
 
-### Styling
+- Change event data through the admin API (`/api/admin/events…` with `Authorization: Bearer <token>`), not by editing SQLite directly. README.md has curl examples.
+- Events are addressed by `slug`. Use `GET /api/admin/events/{slug}` before changing an event when the target is ambiguous.
+- Use `POST /api/admin/events/import?dry_run=1` to preview bulk changes. Only run mutating requests when the user has authorized that data change.
 
-Tailwind CSS v4 with `@theme` directive in `globals.css` for CSS variables. Uses a Material Design-inspired custom color theme (`--md-primary`, `--md-surface-container`, etc.). Component variants via `class-variance-authority`.
+## Conventions
 
-## Environment Variables
-
-```
-POCKETBASE_URL=http://127.0.0.1:8090
-POCKETBASE_ADMIN_COLLECTION=admins
-```
+- Dates are `YYYY-MM-DD` and times are `HH:MM`, in Asia/Jakarta. Go uses `internal/jakarta`; JS uses `web/js/lib.js`.
+- Schema changes go in a new `server/internal/db/migrations/NNNN_name.sql` file. Never edit an applied migration.
+- In JS, escape every dynamic value inserted into HTML with `esc()` from `web/js/lib.js`.
+- Wallpaper presets exist in both `server/internal/wallpaper/presets.go` and `web/js/wallpaper-presets.js`. Keep them in sync.
+- If you add a JS or CSS file, add it to `APP_SHELL` in `web/sw.js` and bump `CACHE_NAME`.

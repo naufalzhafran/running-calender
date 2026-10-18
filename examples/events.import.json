@@ -1,0 +1,23 @@
+[
+  {
+    "title": "Contoh Jakarta Run 2027",
+    "slug": "contoh-jakarta-run-2027",
+    "event_date": "2027-05-16",
+    "location": "Jakarta",
+    "distances": [
+      { "name": "5K", "start_time": "05:45", "cot": "07:00" },
+      { "name": "10K", "start_time": "05:30", "cot": "07:30" }
+    ]
+  },
+  {
+    "title": "Contoh Bandung Half Marathon 2027",
+    "event_date": "2027-07-04",
+    "end_date": "2027-07-05",
+    "location": "Bandung",
+    "distances": [
+      { "name": "10K", "date": "2027-07-04", "start_time": "05:30" },
+      { "name": "21K", "date": "2027-07-05", "start_time": "05:00", "cot": "08:30" }
+    ],
+    "description": "Dua hari race."
+  }
+]

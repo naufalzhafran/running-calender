@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalender Lari</title>
+<meta name="description" content="Kalender event lari terpusat: jadwal lomba lari di Indonesia.">
+<meta name="theme-color" content="#24a96b">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kalender Lari">
+<meta property="og:title" content="Kalender Lari">
+<meta property="og:description" content="Kalender event lari terpusat: jadwal lomba lari di Indonesia.">
+<meta property="og:image" content="/icons/icon-512.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/css/main.css">
+<script type="module" src="/js/home.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="/" class="brand">
+      <img src="/logo-mark.svg" alt="" width="40" height="40">
+      <span>
+        <span class="brand__name">Kalender Lari</span>
+        <span class="brand__tagline">Jadwal event lari di Indonesia</span>
+      </span>
+    </a>
+  </div>
+</header>
+
+<main class="container">
+  <h1 class="sr-only">Kalender Lari: jadwal event lari di Indonesia</h1>
+
+  <div class="stats">
+    <div class="stat">
+      <p class="stat__value stat__value--primary" id="upcoming-count">–</p>
+      <p class="stat__label">Event Mendatang</p>
+    </div>
+    <a href="/archive" class="stat">
+      <p class="stat__value" id="past-count">–</p>
+      <p class="stat__label">Event Selesai</p>
+    </a>
+  </div>
+
+  <div id="content" aria-busy="true">
+    <div class="stack-sm">
+      <div class="skeleton" style="height:3rem"></div>
+      <div class="skeleton" style="height:6rem"></div>
+      <div class="skeleton" style="height:6rem"></div>
+      <div class="skeleton" style="height:6rem"></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

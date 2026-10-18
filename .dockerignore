@@ -1,9 +1,0 @@
-.git
-.gitignore
-.dockerignore
-node_modules
-.next
-.env*
-README.md
-*.md
-setup.sh
