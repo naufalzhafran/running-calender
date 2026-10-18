@@ -28,7 +28,7 @@ server/                     Go module
   Dockerfile
 web/                        static site (deployed to /var/www/running-calendar)
 deploy/nginx/               nginx site config for the VPS
-deploy/deploy-web.sh        uploads web/ as a new release
+deploy/deploy-web.sh        uploads web/ to the VPS
 examples/                   sample JSON payloads for the admin API
 docker-compose.yml          runs the Go API only
 ```
@@ -236,7 +236,7 @@ curl "$RC_API/api/admin/events?when=all" -H "Authorization: Bearer $RC_TOKEN"
 1. Create the data and web directories. The API container runs as the distroless `nonroot` user (uid 65532), so it must own the data directory.
 
    ```bash
-   sudo mkdir -p /var/lib/running-calendar /var/www/running-calendar/releases
+   sudo mkdir -p /var/lib/running-calendar /var/www/running-calendar/current
    ```
 
    ```bash
@@ -275,16 +275,18 @@ curl "$RC_API/api/admin/events?when=all" -H "Authorization: Bearer $RC_TOKEN"
 
 ### Deploying changes
 
-**Static site:** run this from your machine. It uploads `web/` to `releases/<timestamp>-<sha>`, points `current` at it and keeps the last 5 releases. No nginx reload is needed.
+**On the VPS (both parts at once):** run this from the repo. It pulls, rebuilds the API, replaces the static site and checks the API is healthy. Set `NO_PULL=1` to skip `git pull`.
+
+```bash
+./deploy/deploy.sh
+```
+
+Or deploy the parts separately:
+
+**Static site:** run this from your machine. It replaces `/var/www/running-calendar/current` with `web/`. No nginx reload is needed.
 
 ```bash
 DEPLOY_HOST=user@your-vps ./deploy/deploy-web.sh
-```
-
-To roll back, point `current` at an older release on the VPS:
-
-```bash
-cd /var/www/running-calendar && ln -sfn releases/<older-release> current
 ```
 
 **API:** on the VPS, pull the repo and rebuild:

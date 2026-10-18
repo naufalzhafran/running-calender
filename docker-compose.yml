@@ -9,8 +9,8 @@ services:
     environment:
       ADDR: ":8080"
       DB_PATH: /data/app.db
-      # The web dir is mounted whole so the relative `current` symlink is
-      # followed per request and new static releases are picked up live.
+      # The web dir is mounted read-only, so redeployed static files are
+      # picked up live.
       WEB_ROOT: /web/current
       SITE_URL: ${SITE_URL:-https://running.madebynz.xyz}
     ports:
