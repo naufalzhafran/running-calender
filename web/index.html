@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kalender Lari</title>
 <meta name="description" content="Kalender event lari terpusat: jadwal lomba lari di Indonesia.">
-<meta name="theme-color" content="#24a96b">
+<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14120f" media="(prefers-color-scheme: dark)">
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Kalender Lari">
@@ -15,7 +16,10 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-maskable-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/css/main.css">
 <script type="module" src="/js/home.js"></script>
 </head>
@@ -23,35 +27,48 @@
 <header class="site-header">
   <div class="site-header__inner">
     <a href="/" class="brand">
-      <img src="/logo-mark.svg" alt="" width="40" height="40">
+      <img src="/logo-mark.svg" alt="" width="36" height="36">
       <span>
         <span class="brand__name">Kalender Lari</span>
-        <span class="brand__tagline">Jadwal event lari di Indonesia</span>
+        <span class="brand__tagline caption">Jadwal lomba lari di Indonesia</span>
       </span>
     </a>
   </div>
 </header>
 
 <main class="container">
-  <h1 class="sr-only">Kalender Lari: jadwal event lari di Indonesia</h1>
-
-  <div class="stats">
-    <div class="stat">
-      <p class="stat__value stat__value--primary" id="upcoming-count">–</p>
-      <p class="stat__label">Event Mendatang</p>
+  <section class="hero">
+    <div class="hero__copy">
+      <p class="caption">Kalender lari &amp; olahraga · Indonesia</p>
+      <h1 class="display-xl">Temukan lomba lari berikutnya.</h1>
+      <p class="hero__lead">Semua jadwal lomba lari di Indonesia dalam satu kalender. Pilih jarak, cek tanggal dan lokasi, lalu simpan ke kalender HP.</p>
     </div>
-    <a href="/archive" class="stat">
-      <p class="stat__value" id="past-count">–</p>
-      <p class="stat__label">Event Selesai</p>
-    </a>
-  </div>
+    <div class="hero__stats">
+      <div class="stat">
+        <p class="stat__value" id="upcoming-count">–</p>
+        <p class="caption stat__label">Event mendatang</p>
+      </div>
+      <a href="/archive" class="stat">
+        <p class="stat__value" id="past-count">–</p>
+        <p class="caption stat__label">Event selesai</p>
+      </a>
+    </div>
+    <svg class="route" viewBox="0 0 640 110" aria-hidden="true" focusable="false">
+      <path d="M24 78 C 120 20, 200 100, 300 56 S 480 14, 608 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+      <circle cx="24" cy="78" r="8" fill="currentColor"/>
+      <line class="route__pole" x1="612" y1="44" x2="612" y2="8" stroke-width="3" stroke-linecap="round"/>
+      <path class="route__flag" d="M612 8 L636 15 L612 22 Z"/>
+    </svg>
+  </section>
 
   <div id="content" aria-busy="true">
-    <div class="stack-sm">
-      <div class="skeleton" style="height:3rem"></div>
-      <div class="skeleton" style="height:6rem"></div>
-      <div class="skeleton" style="height:6rem"></div>
-      <div class="skeleton" style="height:6rem"></div>
+    <div class="stack">
+      <div class="skeleton skeleton--sm" style="height:8rem"></div>
+      <div class="event-grid">
+        <div class="skeleton" style="height:15rem"></div>
+        <div class="skeleton" style="height:15rem"></div>
+        <div class="skeleton" style="height:15rem"></div>
+      </div>
     </div>
   </div>
 </main>

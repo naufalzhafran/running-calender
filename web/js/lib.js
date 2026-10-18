@@ -68,18 +68,63 @@ export function daysUntil(value) {
 export const lastDate = (event) => event.end_date || event.event_date;
 export const isPastEvent = (event) => lastDate(event) < todayInJakarta();
 
+/**
+ * The badge shown on a card: sun for this week, trail for an ongoing event,
+ * plain for finished ones. Upcoming events further out get no badge.
+ */
 export function eventStatus(event) {
   const days = daysUntil(event.event_date);
   if (days < 0) {
     return isPastEvent(event)
-      ? { label: "Selesai", variant: "completed" }
-      : { label: "Sedang Berlangsung", variant: "this-week" };
+      ? { label: "Selesai", variant: "plain" }
+      : { label: "Sedang berlangsung", variant: "trail" };
   }
-  if (days === 0) return { label: "Hari Ini", variant: "this-week" };
-  if (days === 1) return { label: "Besok", variant: "this-week" };
-  if (days <= 7) return { label: `${days} hari lagi`, variant: "this-week" };
-  if (days <= 30) return { label: "Segera", variant: "soon" };
-  return { label: "", variant: "upcoming" };
+  if (days === 0) return { label: "Hari ini", variant: "sun" };
+  if (days === 1) return { label: "Besok", variant: "sun" };
+  if (days <= 7) return { label: "Minggu ini", variant: "sun" };
+  return { label: "", variant: "" };
+}
+
+/** Runner shorthand for the days left: H-12, H-1, Hari H. */
+export function countdownLabel(value) {
+  const days = daysUntil(value);
+  if (days < 0) return "";
+  return days === 0 ? "Hari H" : `H-${days}`;
+}
+
+/** "05:30" → "05.30 WIB", the Indonesian way of writing a clock time. */
+export const formatTime = (value) => (value ? `${value.replace(":", ".")} WIB` : "");
+
+export const isTrail = (name) => /trail/i.test(name);
+
+export function distanceChip(name, size = "") {
+  const classes = ["distance-chip"];
+  if (size) classes.push(`distance-chip--${size}`);
+  if (isTrail(name)) classes.push("distance-chip--trail");
+  return `<span class="${classes.join(" ")}">${esc(name.trim())}</span>`;
+}
+
+export function badge(label, variant) {
+  return `<span class="badge${variant && variant !== "plain" ? ` badge--${variant}` : ""}">${esc(label)}</span>`;
+}
+
+/** Status badge plus a Trail badge when any distance is a trail race. */
+export function eventBadges(event, { status = eventStatus(event) } = {}) {
+  const badges = [];
+  if (status.label) badges.push(badge(status.label, status.variant));
+  if (event.distances.some((d) => isTrail(d.name))) badges.push(badge("Trail", "trail"));
+  return badges.length ? `<div class="badge-row">${badges.join("")}</div>` : "";
+}
+
+/** The route line motif: a dashed trail with a start dot and a finish flag. */
+export function routeLine(className = "") {
+  return `
+    <svg class="route ${className}" viewBox="0 0 640 110" aria-hidden="true" focusable="false">
+      <path d="M24 78 C 120 20, 200 100, 300 56 S 480 14, 608 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+      <circle cx="24" cy="78" r="8" fill="currentColor"/>
+      <line class="route__pole" x1="612" y1="44" x2="612" y2="8" stroke-width="3" stroke-linecap="round"/>
+      <path class="route__flag" d="M612 8 L636 15 L612 22 Z"/>
+    </svg>`;
 }
 
 export const normalizeName = (value) => String(value ?? "").trim().toLowerCase();
@@ -101,6 +146,7 @@ export function calendarUrl(slug, distanceName) {
 
 // Icon paths from Lucide (ISC license), 24×24 stroke icons.
 const ICONS = {
+  "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
   archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
   calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
   "calendar-plus": '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M3 10h18"/><path d="M16 19h6"/><path d="M19 16v6"/>',
@@ -125,10 +171,10 @@ export function icon(name, className = "") {
 
 export function renderError(container, message, retry) {
   container.innerHTML = `
-    <div class="card error-box" role="alert">
+    <div class="no-results error-box" role="alert">
       <p>${esc(message)}</p>
       <p class="muted">Periksa koneksi lalu coba lagi.</p>
-      <button type="button" class="btn btn--outline">Coba lagi</button>
+      <button type="button" class="btn btn--secondary">Coba lagi</button>
     </div>`;
   container.querySelector("button").addEventListener("click", retry);
 }

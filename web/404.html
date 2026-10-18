@@ -5,20 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tidak ditemukan | Kalender Lari</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#24a96b">
+<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14120f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 <main class="center-page">
-  <div>
-    <div class="center-page__icon">
-      <svg class="icon icon-xl" style="width:2rem;height:2rem" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    </div>
-    <h1>Halaman tidak ditemukan</h1>
-    <p>Halaman yang kamu cari tidak ada atau sudah dipindahkan.</p>
-    <a href="/" class="btn btn--primary">Kembali ke Beranda</a>
-  </div>
+  <img src="/logo-mark.svg" alt="" width="48" height="48">
+  <h1 class="display-m">Halaman tidak ditemukan</h1>
+  <p>Halaman yang kamu cari tidak ada atau sudah dipindahkan.</p>
+  <svg class="route" viewBox="0 0 640 110" aria-hidden="true" focusable="false">
+      <path d="M24 78 C 120 20, 200 100, 300 56 S 480 14, 608 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+      <circle cx="24" cy="78" r="8" fill="currentColor"/>
+      <line class="route__pole" x1="612" y1="44" x2="612" y2="8" stroke-width="3" stroke-linecap="round"/>
+      <path class="route__flag" d="M612 8 L636 15 L612 22 Z"/>
+    </svg>
+  <a href="/" class="btn btn--primary">Kembali ke beranda</a>
 </main>
 </body>
 </html>

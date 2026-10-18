@@ -5,11 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!--meta:start--><title>Detail Event | Kalender Lari</title>
 <meta name="description" content="Detail event lari, kategori jarak, dan pengingat kalender."><!--meta:end-->
-<meta name="theme-color" content="#24a96b">
+<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14120f" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-maskable-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/css/main.css">
 <!--page-data-->
 <script type="module" src="/js/event.js"></script>
@@ -27,15 +31,17 @@
   </div>
 </header>
 
-<main class="container page-bottom">
+<main class="container">
   <div id="content" aria-busy="true">
-    <div class="card detail">
-      <div class="detail__body stack-sm">
-        <div class="skeleton" style="height:1.75rem;width:10rem"></div>
-        <div class="skeleton" style="height:2.5rem;width:75%"></div>
-        <div class="skeleton" style="height:6rem"></div>
-        <div class="skeleton" style="height:16rem"></div>
-      </div>
+    <div class="detail__hero">
+      <div class="skeleton skeleton--sm" style="height:1.75rem;width:8rem"></div>
+      <div class="skeleton skeleton--sm" style="height:3.25rem;width:80%"></div>
+      <div class="skeleton skeleton--sm" style="height:2.5rem;width:14rem"></div>
+      <div class="skeleton skeleton--sm" style="height:5rem"></div>
+    </div>
+    <div class="distance-grid">
+      <div class="skeleton" style="height:16rem"></div>
+      <div class="skeleton" style="height:16rem"></div>
     </div>
   </div>
 </main>

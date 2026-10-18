@@ -1,4 +1,4 @@
-import { eventListSection } from "./event-list.js";
+import { eventListSection, eventMonthSections } from "./event-list.js";
 import { apiGet, esc, icon, normalizeName, registerServiceWorker, renderError } from "./lib.js";
 
 const RECENT_PAST_LIMIT = 3;
@@ -41,7 +41,7 @@ function renderShell() {
 
   content.innerHTML = `
     <div class="stack">
-      <div role="search">
+      <div role="search" class="band filter-bar">
         <label for="search" class="sr-only">Cari event berdasarkan nama atau lokasi</label>
         <div class="search">
           ${icon("search")}
@@ -51,7 +51,7 @@ function renderShell() {
           </button>
         </div>
         ${filters.length > 1 ? `
-          <div class="chips" role="group" aria-label="Filter kategori jarak">
+          <div class="chips" role="group" aria-label="Filter jarak">
             <button type="button" class="chip" data-distance="" aria-pressed="true">Semua</button>
             ${filters.map((f) => `<button type="button" class="chip" data-distance="${esc(f.value)}" aria-pressed="false">${esc(f.label)}</button>`).join("")}
           </div>` : ""}
@@ -60,7 +60,7 @@ function renderShell() {
       <div id="results" class="stack"></div>
       ${hiddenPast > 0 ? `
         <div class="center">
-          <a href="/archive" class="btn btn--outline">Lihat ${hiddenPast} event selesai lainnya</a>
+          <a href="/archive" class="btn btn--secondary">Lihat ${hiddenPast} event selesai lainnya</a>
         </div>` : ""}
     </div>`;
 
@@ -115,24 +115,24 @@ function renderResults() {
     results.innerHTML = `
       <div class="no-results">
         <p>Tidak ada event yang cocok</p>
-        <p class="muted">Coba kata kunci atau kategori jarak lain.</p>
-        <button type="button" class="btn btn--outline">Reset filter</button>
+        <p class="muted">Coba kata kunci atau jarak lain.</p>
+        <button type="button" class="btn btn--secondary">Reset filter</button>
       </div>`;
     results.querySelector("button").addEventListener("click", resetFilters);
     return;
   }
 
-  const pastTitle = state.upcoming.length > 0 ? "Event Selesai Terbaru" : "Event Terbaru";
+  const pastTitle = state.upcoming.length > 0 ? "Baru selesai" : "Event terbaru";
   const options = { animate: firstRender };
   firstRender = false;
-  results.innerHTML = eventListSection("Event Mendatang", upcoming, options) + eventListSection(pastTitle, past, options);
+  results.innerHTML = eventMonthSections(upcoming, options) + eventListSection(pastTitle, past, options);
 }
 
 function renderEmpty() {
   content.innerHTML = `
     <div class="empty">
       <div class="empty__icon">${icon("calendar", "icon-xl")}</div>
-      <h2>Belum Ada Event</h2>
+      <h2 class="display-m">Belum ada event</h2>
       <p>Saat ini belum ada jadwal lomba lari. Cek lagi nanti untuk event terbaru.</p>
     </div>`;
 }

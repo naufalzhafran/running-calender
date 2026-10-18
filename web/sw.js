@@ -2,7 +2,7 @@
 // fallback; static assets are served from cache and refreshed in the background.
 // Bump CACHE_NAME when the cached file list changes.
 
-const CACHE_NAME = "kalender-lari-v2";
+const CACHE_NAME = "kalender-lari-v3";
 const APP_SHELL = [
   "/",
   "/offline",

@@ -1,29 +1,45 @@
 // Renders event cards for the home and archive pages.
 
-import { esc, eventStatus, formatDate, formatLongDate, icon, isPastEvent, todayInJakarta } from "./lib.js";
+import { countdownLabel, distanceChip, eventBadges, esc, formatDate, formatTime, icon, isPastEvent } from "./lib.js";
 
-const DESKTOP_DISTANCE_LIMIT = 3;
-const MOBILE_DISTANCE_LIMIT = 4;
+const DISTANCE_LIMIT = 4;
 const MAX_STAGGER = 6;
 
-function distancePills(names, limit, modifier) {
+function distanceChips(names) {
   if (names.length === 0) {
     return "";
   }
-  const hidden = names.length - limit;
+  const hidden = names.length - DISTANCE_LIMIT;
   return `
-    <div class="event-card__distances event-card__distances--${modifier}">
-      ${names.slice(0, limit).map((name) => `<span class="pill">${esc(name)}</span>`).join("")}
-      ${hidden > 0 ? `<span class="event-card__more">+${hidden}</span>` : ""}
+    <div class="chip-row">
+      ${names.slice(0, DISTANCE_LIMIT).map((name) => distanceChip(name)).join("")}
+      ${hidden > 0 ? `<span class="distance-chip distance-chip--more">+${hidden}</span>` : ""}
     </div>`;
 }
 
+/** "Minggu, 15 Nov 2026", or "Sabtu, 14 Nov 2026 – 15 Nov" for multi-day events. */
+function dateLabel(event) {
+  const start = formatDate(event.event_date, { weekday: "long", day: "numeric", month: "short", year: "numeric" });
+  if (!event.end_date || event.end_date === event.event_date) {
+    return start;
+  }
+  return `${start} – ${formatDate(event.end_date, { day: "numeric", month: "short" })}`;
+}
+
+/** The earliest start time on the first race day, if any distance has one. */
+function firstStart(event) {
+  const times = event.distances
+    .filter((d) => d.date === event.event_date && d.start_time)
+    .map((d) => d.start_time)
+    .sort();
+  return times[0] ?? "";
+}
+
 function eventCard(event, index, animate) {
-  const status = eventStatus(event);
   const past = isPastEvent(event);
   const names = event.distances.map((d) => d.name.trim());
-  const year = event.event_date.slice(0, 4);
-  const showYear = year !== todayInJakarta().slice(0, 4);
+  const start = firstStart(event);
+  const countdown = past ? "" : countdownLabel(event.event_date);
   const delay = (Math.min(index, MAX_STAGGER - 1) + 1) * 0.05;
   const classes = `event-card${past ? " event-card--past" : ""}${animate ? " event-card--animate" : ""}`;
   const style = animate ? ` style="animation-delay:${delay}s"` : "";
@@ -31,25 +47,34 @@ function eventCard(event, index, animate) {
   return `
     <li>
       <a href="/events/${encodeURIComponent(event.slug)}" class="${classes}"${style}>
-        <article>
-          <div class="event-card__row">
-            <time datetime="${esc(event.event_date)}" class="event-card__date">
-              <span class="sr-only">${esc(formatLongDate(event.event_date))}</span>
-              <span aria-hidden="true" class="event-card__month">${esc(formatDate(event.event_date, { month: "short" }))}</span>
-              <span aria-hidden="true" class="event-card__day">${esc(formatDate(event.event_date, { day: "numeric" }))}</span>
-              ${showYear ? `<span aria-hidden="true" class="event-card__year">${esc(year)}</span>` : ""}
-            </time>
-            <div class="event-card__body">
-              ${status.label ? `<span class="status status--${status.variant}">${esc(status.label)}</span>` : ""}
-              <h3 class="event-card__title">${esc(event.title)}</h3>
-              <div class="event-card__location">${icon("map-pin")}<span>${esc(event.location)}</span></div>
-            </div>
-            ${distancePills(names, DESKTOP_DISTANCE_LIMIT, "desktop")}
-          </div>
-          ${distancePills(names, MOBILE_DISTANCE_LIMIT, "mobile")}
-        </article>
+        ${eventBadges(event)}
+        ${distanceChips(names)}
+        <h3 class="event-card__title">${esc(event.title)}</h3>
+        <div class="event-card__meta caption tabular">
+          <span><time datetime="${esc(event.event_date)}">${esc(dateLabel(event))}</time>${start ? ` · ${esc(formatTime(start))}` : ""}</span>
+          <span>${esc(event.location)}</span>
+        </div>
+        <div class="event-card__foot">
+          ${countdown ? `
+            <span class="event-card__countdown">
+              <span aria-hidden="true">${esc(countdown)}</span>
+              <span class="sr-only">${countdown === "Hari H" ? "Hari ini" : `${esc(countdown.slice(2))} hari lagi`}</span>
+            </span>` : ""}
+          <span class="event-card__cta">${past ? "Lihat arsip" : "Lihat detail"}${icon("arrow-right")}</span>
+        </div>
       </a>
     </li>`;
+}
+
+function section(title, events, animate, offset = 0) {
+  return `
+    <section>
+      <div class="section-head">
+        <h2 class="display-m">${esc(title)}</h2>
+        <p class="caption tabular">${events.length} event</p>
+      </div>
+      <ul class="event-grid">${events.map((event, i) => eventCard(event, offset + i, animate)).join("")}</ul>
+    </section>`;
 }
 
 /**
@@ -57,12 +82,25 @@ function eventCard(event, index, animate) {
  * animate only on first render so filtering does not replay the fade-in.
  */
 export function eventListSection(title, events, { animate = true } = {}) {
-  if (events.length === 0) {
-    return "";
+  return events.length === 0 ? "" : section(title, events, animate);
+}
+
+/** One section per calendar month ("November 2026"), in the given order. */
+export function eventMonthSections(events, { animate = true } = {}) {
+  const months = [];
+  for (const event of events) {
+    const key = event.event_date.slice(0, 7);
+    if (months.at(-1)?.key !== key) {
+      months.push({ key, title: formatDate(event.event_date, { month: "long", year: "numeric" }), events: [] });
+    }
+    months.at(-1).events.push(event);
   }
-  return `
-    <section>
-      <h2 class="section-title"><span aria-hidden="true" class="section-title__bar"></span>${esc(title)}</h2>
-      <ul class="event-list">${events.map((event, i) => eventCard(event, i, animate)).join("")}</ul>
-    </section>`;
+  let offset = 0;
+  return months
+    .map((month) => {
+      const html = section(month.title, month.events, animate, offset);
+      offset += month.events.length;
+      return html;
+    })
+    .join("");
 }

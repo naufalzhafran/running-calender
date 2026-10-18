@@ -5,11 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arsip Event | Kalender Lari</title>
 <meta name="description" content="Arsip event lari yang sudah selesai.">
-<meta name="theme-color" content="#24a96b">
+<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14120f" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-maskable-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..700&family=Figtree:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/css/main.css">
 <script type="module" src="/js/archive.js"></script>
 </head>
@@ -26,12 +30,14 @@
   </div>
 </header>
 
-<main class="container page-bottom">
+<main class="container">
   <div id="content" aria-busy="true">
-    <div class="stack-sm">
-      <div class="skeleton" style="height:4rem"></div>
-      <div class="skeleton" style="height:6rem"></div>
-      <div class="skeleton" style="height:6rem"></div>
+    <div class="stack">
+      <div class="skeleton skeleton--sm" style="height:6rem;max-width:24rem"></div>
+      <div class="event-grid">
+        <div class="skeleton" style="height:15rem"></div>
+        <div class="skeleton" style="height:15rem"></div>
+      </div>
     </div>
   </div>
 </main>

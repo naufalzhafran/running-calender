@@ -40,8 +40,8 @@ function shortcutGuide() {
     <details class="guide">
       <summary>
         <div>
-          <strong>Shortcut Instruction</strong>
-          <span>Setup manual sekali untuk update wallpaper dari URL.</span>
+          <strong>Panduan Shortcut iOS</strong>
+          <span class="caption">Setup sekali untuk update wallpaper dari URL.</span>
         </div>
         ${icon("chevron-down")}
       </summary>
@@ -50,7 +50,7 @@ function shortcutGuide() {
           <p>Sebelum mulai</p>
           <div class="guide__numbered">
             <div><span class="guide__num">1</span><p>Pilih device/resolusi yang sesuai.</p></div>
-            <div><span class="guide__num">2</span><p>Tap <b>Copy URL Gambar</b>.</p></div>
+            <div><span class="guide__num">2</span><p>Tap <b>Copy URL gambar</b>.</p></div>
           </div>
         </div>
         <div>
@@ -89,58 +89,58 @@ function render(event) {
   document.getElementById("back-link").href = `/events/${encodeURIComponent(event.slug)}`;
 
   content.innerHTML = `
-    <section class="card wp">
-      <div class="wp__header">
+    <section class="wp">
+      <header class="wp__header">
         <div>
-          <p class="eyebrow">Countdown &amp; Wallpaper</p>
-          <h1 data-bind="distance-title"></h1>
+          <p class="caption">Countdown &amp; Wallpaper</p>
+          <h1 class="display-xl" data-bind="distance-title"></h1>
           <p class="wp__event">${esc(event.title)}</p>
         </div>
         <div class="countdown">
-          <p class="eyebrow">Countdown</p>
+          <p class="caption">Menuju race</p>
           <div class="countdown__row">
             <span class="countdown__value" data-bind="days"></span>
             <span class="countdown__unit" data-bind="days-unit"></span>
           </div>
         </div>
-      </div>
+      </header>
 
       <div class="wp__grid">
         <div class="wp__controls">
-          ${event.distances.length ? `
-            <div class="card panel panel--muted">
-              <p class="eyebrow">Kategori</p>
-              <div class="chips">
+          ${event.distances.length > 1 ? `
+            <div class="card panel">
+              <p class="caption">Jarak</p>
+              <div class="chips" role="group" aria-label="Pilih jarak">
                 ${event.distances.map((d) => `<button type="button" class="chip" data-distance="${esc(d.name)}">${esc(d.name)}</button>`).join("")}
               </div>
             </div>` : ""}
 
-          <div data-bind="reminder"></div>
-
           <div class="card panel">
-            <p class="eyebrow">Wallpaper</p>
+            <h2 class="title">Wallpaper</h2>
             <div class="panel__stack">
               <label>
-                <span class="eyebrow" style="display:block;margin-bottom:0.5rem">Device</span>
+                <span class="caption label">Device</span>
                 <select class="field device-select">
                   ${Object.entries(WALLPAPER_PRESETS).map(([key, p]) =>
                     `<option value="${esc(key)}">${esc(p.label)} (${p.width}×${p.height})</option>`).join("")}
                 </select>
               </label>
               <div class="panel__buttons">
-                <a class="btn btn--primary btn--block" data-bind="download" download>${icon("download")}Download Wallpaper</a>
-                <a class="btn btn--outline btn--block" data-bind="open" target="_blank" rel="noopener noreferrer">${icon("external-link")}Buka Resolusi Penuh</a>
-                <button type="button" class="btn btn--outline btn--block" data-bind="copy-image"></button>
+                <a class="btn btn--primary btn--block" data-bind="download" download>${icon("download")}Download wallpaper</a>
+                <a class="btn btn--secondary btn--block" data-bind="open" target="_blank" rel="noopener noreferrer">${icon("external-link")}Buka resolusi penuh</a>
+                <button type="button" class="btn btn--secondary btn--block" data-bind="copy-image"></button>
               </div>
               ${shortcutGuide()}
             </div>
           </div>
 
+          <div data-bind="reminder"></div>
+
           <div class="card panel">
-            <p class="eyebrow">Bagikan</p>
+            <h2 class="title">Bagikan</h2>
             <div class="share-grid">
-              <button type="button" class="btn btn--outline" data-bind="share">${icon("share")}Share</button>
-              <button type="button" class="btn btn--outline" data-bind="copy-share"></button>
+              <button type="button" class="btn btn--secondary" data-bind="share">${icon("share")}Share</button>
+              <button type="button" class="btn btn--secondary" data-bind="copy-share"></button>
             </div>
             <p class="sr-only" aria-live="polite" data-bind="copy-status"></p>
           </div>
@@ -159,10 +159,10 @@ function render(event) {
                   </div>
                 </div>
               </div>
-              <div class="preview-info">
-                <div><p>Tanggal</p><p data-bind="date"></p></div>
-                <div><p>Lokasi</p><p>${esc(event.location)}</p></div>
-              </div>
+              <dl class="preview-info">
+                <div><dt class="caption">Tanggal</dt><dd class="tabular" data-bind="date"></dd></div>
+                <div><dt class="caption">Lokasi</dt><dd>${esc(event.location)}</dd></div>
+              </dl>
             </div>
           </div>
         </div>
@@ -181,8 +181,8 @@ function render(event) {
 
   function renderCopyButtons() {
     $("copy-image").innerHTML = copied === "image"
-      ? `${icon("check")}URL Gambar Tersalin`
-      : `${icon("image")}Copy URL Gambar`;
+      ? `${icon("check")}URL gambar tersalin`
+      : `${icon("image")}Copy URL gambar`;
     $("copy-share").innerHTML = copied === "share"
       ? `${icon("check")}Tersalin`
       : `${icon("copy")}Salin Link`;
@@ -202,7 +202,7 @@ function render(event) {
     $("days-unit").textContent = days < 0 ? "hari berlalu" : "hari lagi";
     $("download").href = fullImage;
     $("open").href = fullImage;
-    $("badge").textContent = `${distance?.name ?? "-"} • ${preset.width}×${preset.height}`;
+    $("badge").textContent = `${distance?.name ?? "-"} · ${preset.width}×${preset.height}`;
     $("date").textContent = formatDate(date, { day: "numeric", month: "long", year: "numeric" });
     select.value = preset.key;
 
@@ -217,7 +217,7 @@ function render(event) {
     }
 
     if (distance) {
-      reminderCard($("reminder"), event, [distance]);
+      reminderCard($("reminder"), event, [distance], { primary: false });
     }
     renderCopyButtons();
     history.replaceState(null, "", sharePath(event, distance, preset));
@@ -282,9 +282,9 @@ async function load() {
     if (error.status === 404) {
       content.innerHTML = `
         <div class="empty">
-          <h1>Event tidak ditemukan</h1>
+          <h1 class="display-m">Event tidak ditemukan</h1>
           <p>Event ini mungkin sudah dihapus atau tautannya salah.</p>
-          <a href="/" class="btn btn--outline" style="margin-top:1rem">Lihat semua event</a>
+          <a href="/" class="btn btn--secondary">Lihat semua event</a>
         </div>`;
       return;
     }
